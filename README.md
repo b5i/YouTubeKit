@@ -1,3 +1,3 @@
 # YouTubeKit
 
-A simple Swift library to interact with YouTube
+A way to interact with YouTube's API in Swift
