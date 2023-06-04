@@ -1,117 +1,11 @@
 //
-//  RequestHeaders.swift
+//  YouTubeHeaders.swift
 //  
 //
 //  Created by Antoine Bollengier on 25.04.23.
 //
 
 import Foundation
-
-public class HeadersModel {
-    public static let shared = HeadersModel()
-    
-    public var selectedLocale: String = Locale.preferredLanguages[0]
-}
-
-
-
-public struct HeadersList: Codable {
-    var url: URL
-    
-    var method: HTTPMethod
-    var headers: [Header]
-    var addQueryAfterParts: [AddQueryInfo]?
-    var httpBody: [String]?
-    var parameters: [ParameterToAdd]?
-    
-    public enum HTTPMethod: String, Codable {
-        case GET, POST
-    }
-    
-    public struct ParameterToAdd: Codable {
-        var name: String
-        var content: String
-        var specialContent: ParameterToAddSpecialContent?
-    }
-
-    public enum ParameterToAddSpecialContent: String, Codable {
-        case query
-    }
-
-    public struct Header: Codable {
-        var name: String
-        var content: String
-    }
-
-    public struct AddQueryInfo: Codable {
-        var index: Int
-        var encode: Bool
-        var content: ContentTypes?
-        public enum ContentTypes: Codable {
-            case browseId
-            case continuation
-            case params
-            case visitorData
-            
-            ///Those are used during the modification of a playlist
-            case movingVideoID
-            case videoBeforeID
-            case playlistEditToken
-        }
-    }
-}
-
-/// List of possibles requests where you can send to YouTube
-public enum HeaderTypes: String {
-    /// Get home menu videos.
-    case home
-    
-    /// Get search results.
-    /// - Parameter query: Search query
-    case search
-    
-    /// Get search results that have a Creative Commons license.
-    /// - Parameter query: Search query
-    case restrictedSearch
-    
-    /// Get streaming infos for a video.
-    /// - Parameter query: Video's ID
-    case format
-    
-    /// Get streaming infos for a video, including adaptative formats.
-    /// - Parameter query: Video's ID
-    case formatAdaptative
-    
-    /// Get autocompletion for query.
-    /// - Parameter query: Search query
-    case autoCompletion
-    
-    /// Get channel infos.
-    /// - Parameter browseId: Channel's ID
-    /// - Parameter params: The operation param (videos, shorts, directs, playlists)
-    case channelHeaders
-    
-    /// Get playlist's videos.
-    /// - Parameter browseId: Playlist's ID
-    case playlistHeaders
-    
-    /// Get playlist's videos (continuation).
-    /// - Parameter continuation: Playlist's continuation token
-    case playlistContinuationHeaders
-    
-    /// Get home menu's videos (continuation).
-    /// - Parameter continuation: Home menu's continuation token
-    case homeVideosContinuationHeader
-    
-    /// Get search's results (continuation).
-    /// - Parameter visitorData: The visitorData token
-    /// - Parameter continuation: Search's continuation token
-    case searchContinuationHeaders
-    
-    /// Get channel's results (continuation).
-    /// - Parameter continuation: Channel query's continuation token
-    case channelContinuationHeaders
-}
 
 public class YouTubeHeaders {
     

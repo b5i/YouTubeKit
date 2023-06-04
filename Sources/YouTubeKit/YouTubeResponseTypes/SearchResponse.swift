@@ -213,12 +213,13 @@ public enum YTSearchResultType: String, Codable, CaseIterable {
     }
 }
 
-public protocol YTSearchResult: Codable, Identifiable {
+public protocol YTSearchResult: Codable {
     static var type: YTSearchResultType { get }
     static func decodeJSON(data: Data) -> Self
     static func decodeJSON(json: JSON) -> Self
     var id: Int? { get set }
 }
+
 
 public extension YTSearchResult {
     static func decodeJSON(data: Data) -> Self {

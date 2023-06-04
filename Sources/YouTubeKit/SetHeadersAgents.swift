@@ -7,6 +7,19 @@
 
 import Foundation
 
+
+/// Creates an instance of ``URLRequest`` with given headers and parameters.
+/// - Parameters:
+///   - content: List of headers and other informations in order to make the request.
+///   - query: See ``HeaderTypes``.
+///   - browseId: See ``HeaderTypes``.
+///   - params: See ``HeaderTypes``.
+///   - continuation: See ``HeaderTypes``.
+///   - visitorData: See ``HeaderTypes``.
+///   - movingVideoID: See ``HeaderTypes``.
+///   - videoBeforeID: See ``HeaderTypes``.
+///   - playlistEditToken: See ``HeaderTypes``.
+/// - Returns: An ``URLRequest``built with the provided parameters and headers.
 public func setHeadersAgentFor(
     content: HeadersList,
     query: String = "",
