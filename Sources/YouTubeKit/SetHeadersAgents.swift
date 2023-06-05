@@ -36,17 +36,20 @@ public func setHeadersAgentFor(
         var parametersToAppend = [URLQueryItem]()
         for parameter in content.parameters! {
             if parameter.specialContent != nil {
+                /// Check which specialContent to add
                 switch parameter.specialContent! {
                 case .query:
                         parametersToAppend.append(URLQueryItem(name: parameter.name, value: "\(parameter.content)\(query)"))
                 }
             } else {
+                /// No specialContent specified, adding normal value
                 parametersToAppend.append(URLQueryItem(name: parameter.name, value: parameter.content))
             }
         }
         url.append(queryItems: parametersToAppend)
     }
     var request = URLRequest(url: url)
+    /// Looping each header and add it to the request
     for header in content.headers {
         request.setValue(header.content, forHTTPHeaderField: header.name)
     }
@@ -54,6 +57,7 @@ public func setHeadersAgentFor(
         var body = ""
         for (index, partToBreak) in content.httpBody!.enumerated() {
             if (content.addQueryAfterParts!.contains(where: {$0.index == index && $0.encode})) {
+                /// Dynamic strings that have to be encoded.
                 switch content.addQueryAfterParts![index].content {
                 case .browseId:
                     body = "\(body)\(partToBreak)\(browseId.addingPercentEncoding(withAllowedCharacters: .urlHostAllowed)!)"
@@ -72,6 +76,7 @@ public func setHeadersAgentFor(
                 default:
                     body = "\(body)\(partToBreak)\(query.addingPercentEncoding(withAllowedCharacters: .urlHostAllowed)!)"
                 }
+                /// Dynamic strings that  don't have to be encoded.
             } else if (content.addQueryAfterParts!.contains(where: {$0.index == index})) {
                 switch content.addQueryAfterParts![index].content {
                 case .browseId:
@@ -102,20 +107,20 @@ public func setHeadersAgentFor(
 }
 
 public extension URL {
-    //adapted from https://stackoverflow.com/questions/34060754/how-can-i-build-a-url-with-query-parameters-containing-multiple-values-for-the-s
+    ///adapted from https://stackoverflow.com/questions/34060754/how-can-i-build-a-url-with-query-parameters-containing-multiple-values-for-the-s
     mutating func append(queryItems queryItemsToAdd: [URLQueryItem]) {
         guard var urlComponents = URLComponents(string: self.absoluteString) else { return }
         
-        // Create array of existing query items
+        /// Create array of existing query items
         var queryItems: [URLQueryItem] = urlComponents.queryItems ??  []
         
-        // Append the new query item in the existing query items array
+        /// Append the new query item in the existing query items array
         queryItems.append(contentsOf: queryItemsToAdd)
         
-        // Append updated query items array in the url component object
+        /// Append updated query items array in the url component object
         urlComponents.queryItems = queryItems
         
-        // Returns the url from new url components
+        /// Returns the url from new url components
         self = urlComponents.url!
     }
 }

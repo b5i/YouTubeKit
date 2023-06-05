@@ -7,31 +7,55 @@
 
 import Foundation
 
+/// Class managing headers.
+///
+/// Instead of initialize an instance of it everytime, use
+/// ```
+/// YoutTubeHeaders.shared
+/// ```
 public class YouTubeHeaders {
     
+    /// Shared instance of the class.
     public static let shared = YouTubeHeaders()
     
-    public static let headers: [HeaderTypes : HeadersList] = [:]
-    
+    /// Custom headers that will be defined by the following methods.
     var customHeaders: [HeaderTypes : HeadersList] = [:]
     
     
+    /// Add or modify custom headers.
+    /// - Parameters:
+    ///   - json: a json representation of the headers to modifiy.
+    ///   - headersType: type of the header to be modified.
     public func replaceHeaders(withJSONData json: Data, headersType: HeaderTypes) throws {
         customHeaders[headersType] = try JSONDecoder().decode(HeadersList.self, from: json)
     }
     
+    /// Add or modify custom headers.
+    /// - Parameters:
+    ///   - json: a json representation of the headers to modifiy.
+    ///   - headersType: type of the header to be modified.
     public func replaceHeaders(withJSONString json: String, headersType: HeaderTypes) throws {
         customHeaders[headersType] = try JSONDecoder().decode(HeadersList.self, from: json.data(using: .utf8) ?? Data())
     }
     
+    /// Add or modify custom headers.
+    /// - Parameters:
+    ///   - headers: headers to modify in the ``HeadersList`` format.
+    ///   - headersType: type of the header to be modified.
     public func replaceHeaders(withHeaders headers: HeadersList, headersType: HeaderTypes) {
         customHeaders[headersType] = headers
     }
     
+    /// Remove some custom headers.
+    /// - Parameters:
+    ///   - type: type of the header to be removed.
     public func removeCustomHeaders(ofType type: HeaderTypes) {
         customHeaders[type] = nil
     }
     
+    /// Return headers from a specified type.
+    /// - Parameter type: type of the demanded headers.
+    /// - Returns: A ``HeadersList`` that can be used to make requests.
     public func getHeaders(forType type: HeaderTypes) -> HeadersList {
         switch type {
         case .home:
@@ -63,6 +87,8 @@ public class YouTubeHeaders {
     
     // MARK: - Default Headers
     
+    /// Get headers for a search request.
+    /// - Returns: The headers for this request.
     func searchHeaders() -> HeadersList {
         if let headers = self.customHeaders[.search] {
             return headers
@@ -97,6 +123,8 @@ public class YouTubeHeaders {
         }
     }
     
+    /// Get headers for a restricted search request (items with Common Creative copyright).
+    /// - Returns: The headers for this request.
     func restrictedSearchHeaders() -> HeadersList {
         if let headers = self.customHeaders[.restrictedSearch] {
             return headers
@@ -131,6 +159,8 @@ public class YouTubeHeaders {
         }
     }
     
+    /// Get headers to get the videos present in the home page of YouTube.
+    /// - Returns: The headers for this request.
     func homeHeaders() -> HeadersList {
         if let headers = self.customHeaders[.home] {
             return headers
@@ -157,6 +187,8 @@ public class YouTubeHeaders {
         }
     }
     
+    /// Get headers to get the video's main HLS stream link.
+    /// - Returns: The headers for this request.
     func getFormatsHeaders() -> HeadersList {
         if let headers = self.customHeaders[.format] {
             return headers
@@ -188,6 +220,8 @@ public class YouTubeHeaders {
         }
     }
     
+    /// Get headers to get the video's download and stream formats, this version consumes more bandwidth but includes custom formats (more options).
+    /// - Returns: The headers for this request.
     func getFormatAdaptatives() -> HeadersList {
         if let headers = self.customHeaders[.formatAdaptative] {
             return headers
@@ -216,6 +250,8 @@ public class YouTubeHeaders {
         }
     }
     
+    /// Get headers for a search completion.
+    /// - Returns: The headers for this request.
     func searchCompletionHeaders() -> HeadersList {
         if let headers = self.customHeaders[.autoCompletion] {
             return headers
@@ -246,6 +282,8 @@ public class YouTubeHeaders {
         }
     }
     
+    /// Get headers to get the contents from a channel.
+    /// - Returns: The headers for this request.
     func getChannelVideosHeaders() -> HeadersList {
         if let headers = self.customHeaders[.channelHeaders] {
             return headers
@@ -277,6 +315,8 @@ public class YouTubeHeaders {
         }
     }
     
+    /// Get headers to get the contents from a playlist.
+    /// - Returns: The headers for this request.
     func getPlaylistVideosHeaders() -> HeadersList {
         if let headers = self.customHeaders[.playlistHeaders] {
             return headers
@@ -306,6 +346,8 @@ public class YouTubeHeaders {
         }
     }
     
+    /// Get headers to get the continuation of a `getPlaylistVideosHeaders()` ("more results" button).
+    /// - Returns: The headers for this request.
     func getPlaylistVideosContinuationHeaders() -> HeadersList {
         if let headers = self.customHeaders[.playlistContinuationHeaders] {
             return headers
@@ -335,6 +377,8 @@ public class YouTubeHeaders {
         }
     }
     
+    /// Get headers to get the continuation of a `homeHeaders()` ("more results" button).
+    /// - Returns: The headers for this request.
     func getHomeVideosContinuationHeaders() -> HeadersList {
         if let headers = self.customHeaders[.homeVideosContinuationHeader] {
             return headers
@@ -366,6 +410,8 @@ public class YouTubeHeaders {
         }
     }
     
+    /// Get headers to get the continuation of a `homeHeaders()` ("more results" button).
+    /// - Returns: The headers for this request.
     func searchContinuationHeaders() -> HeadersList {
         if let headers = self.customHeaders[.searchContinuationHeaders] {
             return headers
@@ -374,6 +420,8 @@ public class YouTubeHeaders {
         }
     }
     
+    /// Get headers to get the continuation of a `searchHeaders()` ("more results" button).
+    /// - Returns: The headers for this request.
     func channelContinuationHeaders() -> HeadersList {
         if let headers = self.customHeaders[.channelContinuationHeaders] {
             return headers

@@ -55,7 +55,7 @@ public struct HeadersList: Codable {
     /// Lists the dynamic parameters possiblities.
     public enum ParameterToAddSpecialContent: String, Codable {
         
-        /// Is defined with the `query` parameter of the function ``setHeadersAgentFor``.
+        /// Is defined with the `query` parameter of the function ``setHeadersAgentFor(content:query:browseId:params:continuation:visitorData:movingVideoID:videoBeforeID:playlistEditToken:)``.
         case query
     }
 
@@ -95,7 +95,7 @@ public struct HeadersList: Codable {
         /// Content of the part to be added after the `index-th` of the body.
         var content: ContentTypes?
         
-        /// All content of the posibilities are defined in their parameter of the function ``setHeadersAgentFor()``.
+        /// All content of the posibilities are defined in their parameter of the function ``setHeadersAgentFor(content:query:browseId:params:continuation:visitorData:movingVideoID:videoBeforeID:playlistEditToken:)``
         ///
         /// You can know wether to define them or not in ``HeaderTypes``
         public enum ContentTypes: Codable {

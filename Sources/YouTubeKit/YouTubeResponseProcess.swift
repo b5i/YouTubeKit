@@ -7,11 +7,33 @@
 
 import Foundation
 
+/// Define a particular YouTube response and how to process it.
+///
+/// e.g.
+/// ```
+/// struct MyCustomResponse: YouTubeResponse {
+///     static var headersType: HeaderTypes = .exampleHeadersType
+///     static func decodeData(data: Data) -> MyCustomResponse {
+///         ///Extract the data from the JSON here and return a MyCustomResponse
+///         var myNewCustomResponse = MyCustomResponse()
+///         var myJSON = JSON(data)
+///         myNewCustomResponse.name = myJSON["name"].string
+///         myNewCustomResponse.id = myJSON["id"].int
+///     }
+///
+///     var name: String?
+///     var id: Int?
+/// }
+/// ```
 public protocol YouTubeResponse {
+    /// Headers type defined to make the request with the required headers.
     static var headersType: HeaderTypes { get }
+    
+    /// A function to decode the data and create an instance of the struct.
     static func decodeData(data: Data) -> Self
 }
 
+/// Process a JSON response with its data and the type it is conform to.
 public func processJSONResponse<ResponseType: YouTubeResponse>(data: Data, type: ResponseType) -> ResponseType {
     return ResponseType.decodeData(data: data)
 }

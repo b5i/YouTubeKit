@@ -12,7 +12,7 @@ struct SwiftUIView: View {
     var body: some View {
         TextField("Search", $text)
         Button {
-            sendRequest(responseType: SearchResponse.self, result: { result, error in
+            sendRequest(responseType: SearchResponse.self, query: text, result: { result, error in
                 print(result)
                 print(error)
             })

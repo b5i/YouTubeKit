@@ -7,14 +7,16 @@
 
 import Foundation
 
-///The string value of the YTSearchResultTypes are the HTML renderer values in YouTube's API response
+/// The string value of the YTSearchResultTypes are the HTML renderer values in YouTube's API response
 public enum YTSearchResultType: String, Codable, CaseIterable {
+    /// Types represents the string value of their distinguished JSON dictionnary's name.
     case video = "videoRenderer"
     case channel = "channelRenderer"
     case playlist = "playlistRenderer"
     //case visitorData
     
-    static func getDecodingClass(forType type: Self) -> (any YTSearchResult.Type) {
+    /// Get the struct that has to be use to decode a particular item.
+    static func getDecodingStruct(forType type: Self) -> (any YTSearchResult.Type) {
         switch type {
         case .video:
             return Video.self
@@ -25,8 +27,10 @@ public enum YTSearchResultType: String, Codable, CaseIterable {
         }
     }
     
+    /// Struct representing a video.
     public struct Video: YTSearchResult, Codable {
         public static func decodeJSON(json: JSON) -> Video {
+            /// Inititalize a new ``YTSearchResultType/Video-swift.struct`` instance to put the informations in it.
             var video = Video()
             
             if json["title"]["simpleText"].string != nil {
@@ -62,14 +66,52 @@ public enum YTSearchResultType: String, Codable, CaseIterable {
         }
         
         public static var type: YTSearchResultType = .video
+        
         public var id: Int?
         
+        /// String identifier of the video, can be used to get the formats of the video.
+        ///
+        /// For example:
+        ///
+        ///     let video: Video = ...
+        ///     if let videoId = video.videoId {
+        ///         sendRequest(responseType: FormatsResponse.self, query: video.videoId, result: { result, error in
+        ///             print(result)
+        ///             print(error)
+        ///         })
+        ///     }
         public var videoId: String?
+        
+        /// Video's title.
         public var title: String?
+        
+        /// Channel informations.
+        ///
+        /// Possibly not defined when reading in ``YTSearchResultType/Playlist-swift.struct/frontVideos`` properties.
         public var channel: Channel.LittleChannelInfos = .init()
+        
+        /// Number of views of the video, in a shortened string.
+        ///
+        /// Possibly not defined when reading in ``YTSearchResultType/Playlist-swift.struct/frontVideos`` properties.
         public var viewCount: String?
+        
+        /// String representing the moment when the video was posted.
+        ///
+        /// Usually like `posted 3 months ago`.
+        ///
+        /// Possibly not defined when reading in ``YTSearchResultType/Playlist-swift.struct/frontVideos`` properties.
         public var timePosted: String?
+        
+        /// String representing the duration of the video.
+        ///
+        /// Can be `live` instead of `ab:cd` if the video is a livestream.
         public var timeLength: String?
+        
+        /// Array of thumbnails.
+        ///
+        /// Usually sorted by resolution, from low to high.
+        ///
+        /// Possibly not defined when reading in ``YTSearchResultType/Playlist-swift.struct/frontVideos`` properties.
         public var thumbnails: [Thumbnail] = []
         
         ///Not necessary here because of prepareJSON() method
@@ -86,8 +128,10 @@ public enum YTSearchResultType: String, Codable, CaseIterable {
          */
     }
     
+    /// Struct representing a channel.
     public struct Channel: YTSearchResult {
         public static func decodeJSON(json: JSON) -> Channel {
+            /// Inititalize a new ``YTSearchResultType/Channel-swift.struct`` instance to put the informations in it.
             var channel = Channel()
             channel.name = json["title"]["simpleText"].string
             
@@ -95,7 +139,7 @@ public enum YTSearchResultType: String, Codable, CaseIterable {
             
             appendThumbnails(json: json, thumbnailList: &channel.thumbnails)
             
-            
+            /// There's an error in YouTube's API
             channel.subscriberCount = json["videoCountText"]["simpleText"].string
             
             if let badgesList = json["ownerBadges"].array {
@@ -109,14 +153,40 @@ public enum YTSearchResultType: String, Codable, CaseIterable {
             return channel
         }
         
-        
         public static var type: YTSearchResultType = .channel
+        
         public var id: Int?
         
+        /// Channel's name.
         public var name: String?
+        
+        /// Channel's identifier, can be used to get the informations about the channel.
+        ///
+        /// For example:
+        /// ```
+        /// let channel: Channel = ...
+        /// if let channelId = channel.browseId {
+        ///     sendRequest(responseType: ChannelInfos.self, browseId: channelId, params: ("Kind of the wanted informations // (TODO) need to create an enum with the possibilites"), result: { result, error in
+        ///         print(result)
+        ///         print(error)
+        ///     })
+        /// }
+        /// ```
         public var browseId: String?
+        
+        /// Array of thumbnails representing the avatar of the channel.
+        ///
+        /// Usually sorted by resolution, from low to high.
         public var thumbnails: [Thumbnail] = []
+        
+        /// Channel's subscribers count.
+        ///
+        /// Usually like "123k subscribers".
         public var subscriberCount: String?
+        
+        /// Array of string identifiers of the badges that a channel has.
+        ///
+        /// Usually like "BADGE_STYLE_TYPE_VERIFIED
         public var badges: [String] = []
         
         ///Not necessary here because of prepareJSON() method
@@ -130,14 +200,31 @@ public enum YTSearchResultType: String, Codable, CaseIterable {
         }
          */
         
+        /// Structure found in search requests in **video** and **playlist** types.
         public struct LittleChannelInfos: Codable {
+            /// Name of the owning channel.
             public var name: String? = ""
+            
+            /// Channel's identifier, can be used to get the informations about the channel.
+            ///
+            /// For example:
+            /// ```
+            /// let channel: Channel = ...
+            /// if let channelId = channel.browseId {
+            ///     sendRequest(responseType: ChannelInfos.self, browseId: channelId, params: ("Kind of the wanted informations // (TODO) need to create an enum with the possibilites"), result: { result, error in
+            ///         print(result)
+            ///         print(error)
+            ///     })
+            /// }
+            /// ```
             public var browseId: String? = ""
         }
     }
 
+    /// Struct representing a playlist.
     public struct Playlist: YTSearchResult {
         public static func decodeJSON(json: JSON) -> Playlist {
+            /// Inititalize a new ``YTSearchResultType/Playlist-swift.struct`` instance to put the informations in it.
             var playlist = Playlist()
             playlist.title = json["title"]["simpleText"].string
             
@@ -167,14 +254,43 @@ public enum YTSearchResultType: String, Codable, CaseIterable {
         }
         
         public static var type: YTSearchResultType = .playlist
+        
         public var id: Int?
         
+        /// Playlist's identifier, can be used to get the informations about the channel.
+        ///
+        /// For example:
+        /// ```
+        /// let playlist: Playlist = ...
+        /// if let playlistId = playlist.playlistId {
+        ///     sendRequest(responseType: PlaylistInfos.self, browseId: playlistId, result: { result, error in
+        ///         print(result)
+        ///         print(error)
+        ///     })
+        /// }
+        /// ```
         public var playlistId: String?
+        
+        /// Title of the playlist.
         public var title: String?
+        
+        /// Array of thumbnails.
+        ///
+        /// Usually sorted by resolution, from low to high.
         public var thumbnails: [Thumbnail] = []
+        
+        /// A string representing the number of video in the playlist.
         public var videoCount: String?
+
+        /// Channel informations.
         public var channel: Channel.LittleChannelInfos = .init()
+        
+        /// String representing the moment when the video was posted.
+        ///
+        /// Usually like `posted 3 months ago`.
         public var timePosted: String?
+        
+        /// An array of videos that are contained in the playlist, usually the first ones.
         public var frontVideos: [Video] = []
         
         ///Not necessary here because of prepareJSON() method
@@ -192,12 +308,23 @@ public enum YTSearchResultType: String, Codable, CaseIterable {
          */
     }
     
+    /// Struct representing a thumbnail.
     public struct Thumbnail: Codable {
+        /// Width of the image.
         public var width: Int?
+        
+        /// Height of the image.
         public var height: Int?
+        
+        /// URL of the image.
         public var url: URL
     }
     
+    
+    /// Append to  `[Thumbnail]` another `[Thumbnail]` from JSON.
+    /// - Parameters:
+    ///   - json: the JSON of the thumbnails.
+    ///   - thumbnailList: the array of `Thumbnail` where the ones in the given JSON have to be appended.
     static func appendThumbnails(json: JSON, thumbnailList: inout [Thumbnail]) {
         for thumbnail in json["thumbnail"]["thumbnails"].array ?? [] {
             if let url = thumbnail["url"].url {
@@ -213,17 +340,43 @@ public enum YTSearchResultType: String, Codable, CaseIterable {
     }
 }
 
+/// Protocol representing a search result.
 public protocol YTSearchResult: Codable {
+    /// Defines the item's type, for example a video or a channel
+    ///
+    /// You can filter array of YTSearchResult conform items using
+    ///
+    ///     var array: [any YTSearchResult] = ...
+    ///     array.filterTypes(acceptedTypes: [.video])
+    ///
+    /// to get videos only for example.
     static var type: YTSearchResultType { get }
+    
+    /// Decode and process the JSON from Data, and give a decoded version of it..
+    /// - Parameter data: the JSON encoded in Data.
+    /// - Returns: an instance of the decoded JSON object.
     static func decodeJSON(data: Data) -> Self
+    
+    /// Process the JSON and give a decoded version of it.
+    /// - Parameter json: the JSON that has to be decoded.
+    /// - Returns: an instance of the decoded JSON object.
     static func decodeJSON(json: JSON) -> Self
+    
+    /// Identifier of the item in the request result array, useful when you want to display all your results in the right order.
+    /// Has to be defined during the array push operation.
     var id: Int? { get set }
 }
-
 
 public extension YTSearchResult {
     static func decodeJSON(data: Data) -> Self {
         return decodeJSON(json: JSON(data))
+    }
+}
+
+public extension [YTSearchResult] {
+    /// Making easier to filter item types of your array
+    func filterTypes(acceptedTypes: [YTSearchResultType] = YTSearchResultType.allCases) -> [YTSearchResult] {
+        return self.filter({acceptedTypes.contains(type(of: $0).type)})
     }
 }
 
@@ -270,7 +423,7 @@ public struct SearchResponse: YouTubeResponse {
         if let castedElementType = getResultElementType(element: element) {
             do {
                 return YTSearchResultType
-                    .getDecodingClass(forType: castedElementType)
+                    .getDecodingStruct(forType: castedElementType)
                     .decodeJSON(data: try element[castedElementType.rawValue].rawData())
             } catch {}
         }
