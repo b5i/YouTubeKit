@@ -105,11 +105,11 @@ extension HeaderTypes: RawRepresentable {
 }
 
 extension HeaderTypes: Hashable {
-    static func == (lhs: HeaderTypes, rhs: HeaderTypes) -> Bool {
+    public static func == (lhs: HeaderTypes, rhs: HeaderTypes) -> Bool {
         return lhs.rawValue == rhs.rawValue
     }
     
-    func hash(into hasher: inout Hasher) {
+    public func hash(into hasher: inout Hasher) {
         hasher.combine(rawValue)
     }
 }

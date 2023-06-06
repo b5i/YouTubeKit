@@ -16,6 +16,7 @@ public struct HeadersList: Codable {
     /// Get an empty instance of ``HeadersList``.
     public static func getEmtpy() -> HeadersList {
         HeadersList(
+            isEmpty: true,
             url: URL(string: "https://www.example.com")!,
             method: .GET,
             headers: []

@@ -34,6 +34,8 @@ public func sendRequest<ResponseType: YouTubeResponse>(
     /// Get request headers.
     let headers = YouTubeHeaders.shared.getHeaders(forType: ResponseType.headersType)
     
+    guard !headers.isEmpty else { result(nil, "The headers from ID: \(ResponseType.headersType) are empty! (probably an error in the name or they are not added in YouTubeHeaders.shared.customHeadersFunctions)"); return}
+    
     /// Create request
     let request = setHeadersAgentFor(
         content: headers,
@@ -60,3 +62,5 @@ public func sendRequest<ResponseType: YouTubeResponse>(
     /// Start it
     task.resume()
 }
+
+extension String: Error {}
