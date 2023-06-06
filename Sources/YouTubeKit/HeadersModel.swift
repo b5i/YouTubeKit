@@ -9,6 +9,7 @@ import Foundation
 
 /// Used to configure the request to the YouTube API
 public class HeadersModel {
+    /// A shared instance of the model.
     public static let shared = HeadersModel()
     
     /// Set the locale you want to receive the call responses in.

@@ -342,7 +342,7 @@ public enum YTSearchResultType: String, Codable, CaseIterable {
 
 /// Protocol representing a search result.
 public protocol YTSearchResult: Codable {
-    /// Defines the item's type, for example a video or a channel
+    /// Defines the item's type, for example a video or a channel.
     ///
     /// You can filter array of YTSearchResult conform items using
     ///
@@ -368,6 +368,9 @@ public protocol YTSearchResult: Codable {
 }
 
 public extension YTSearchResult {
+    /// Decode JSON from raw data.
+    /// - Parameter data: raw data to be decoded.
+    /// - Returns: An instance of the YTSearchResult.
     static func decodeJSON(data: Data) -> Self {
         return decodeJSON(json: JSON(data))
     }
@@ -380,10 +383,14 @@ public extension [YTSearchResult] {
     }
 }
 
+/// Struct representing a search response.
 public struct SearchResponse: YouTubeResponse {
     public static var headersType: HeaderTypes = .search
     
+    /// String token that will be useful in case of a search continuation request ("load more" button).
     public var continuationToken: String = ""
+    
+    /// Results of the search.
     public var results: [any YTSearchResult] = []
     
     public static func decodeData(data: Data) -> SearchResponse {
@@ -412,6 +419,10 @@ public struct SearchResponse: YouTubeResponse {
         return searchResponse
     }
     
+    /// Decode each results in a JSON array and add them to a ``SearchResponse``.
+    /// - Parameters:
+    ///   - results: the JSON results.
+    ///   - searchResponse: the ``SearchResponse`` where the decoded results will be appended.
     static func decodeResults(results: [JSON], searchResponse: inout SearchResponse) {
         for resultElement in results {
             guard let castedElement = getCastedResultElement(element: resultElement) else { continue } //continue if element type is not handled
@@ -419,6 +430,9 @@ public struct SearchResponse: YouTubeResponse {
         }
     }
     
+    /// Get the structure of a JSON element that is a query result.
+    /// - Parameter element: JSON element that will be casted.
+    /// - Returns: a ``YTSearchResult`` and nil if the given element wasn't conform to any ``YTSearchResult`` type.
     static func getCastedResultElement(element: JSON) -> (any YTSearchResult)? {
         if let castedElementType = getResultElementType(element: element) {
             do {
@@ -430,6 +444,9 @@ public struct SearchResponse: YouTubeResponse {
         return nil
     }
     
+    /// Get the result type of a given JSON element.
+    /// - Parameter element: the JSON where its the type has to be determined.
+    /// - Returns: the type of the JSON element, nil if the element isn't conform to any ``YTSearchResult`` type.
     static func getResultElementType(element: JSON) -> YTSearchResultType? {
         for searchResultType in YTSearchResultType.allCases {
             if element[searchResultType.rawValue].dictionary != nil {
