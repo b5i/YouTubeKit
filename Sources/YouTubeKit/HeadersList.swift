@@ -9,27 +9,40 @@ import Foundation
 
 /// Main structure used to define headers, and convert them to a valid ``URLRequest``
 public struct HeadersList: Codable {
+    
+    /// Used to check wether a custom headers is defined or not.
+    public private(set) var isEmpty: Bool = false
+    
+    /// Get an empty instance of ``HeadersList``.
+    public static func getEmtpy() -> HeadersList {
+        HeadersList(
+            url: URL(string: "https://www.example.com")!,
+            method: .GET,
+            headers: []
+        )
+    }
+    
     /// URL of the call.
-    var url: URL
+    public var url: URL
     
     /// Method of the call.
-    var method: HTTPMethod
+    public var method: HTTPMethod
     
     /// HTTP headers used in the call.
-    var headers: [Header]
+    public var headers: [Header]
     
     /// The body is usually splitted in multiple parts where a dynamic string has to be placed, setting the ``addQueryAfterParts`` lets you specify what to place between those parts of body and if it should encode it or not.
     ///
     /// Not required if the mode of the request is `GET`
-    var addQueryAfterParts: [AddQueryInfo]?
+    public var addQueryAfterParts: [AddQueryInfo]?
     
     /// Body of the request, can be splitted in multiple parts if the call use dynamic values inside it. See ``addQueryAfterParts`` and ``AddQueryInfo``
     ///
     /// Not required if the mode of the request is `GET`
-    var httpBody: [String]?
+    public var httpBody: [String]?
     
     /// Used to define parameters to add to the url.
-    var parameters: [ParameterToAdd]?
+    public var parameters: [ParameterToAdd]?
     
     /// Method of the request.
     public enum HTTPMethod: String, Codable {

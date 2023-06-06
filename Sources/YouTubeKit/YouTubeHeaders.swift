@@ -19,7 +19,10 @@ public class YouTubeHeaders {
     public static let shared = YouTubeHeaders()
     
     /// Custom headers that will be defined by the following methods.
-    var customHeaders: [HeaderTypes : HeadersList] = [:]
+    public var customHeaders: [HeaderTypes : HeadersList] = [:]
+    
+    /// Custom headers functions that generate ``HeadersList``.
+    public var customHeadersFunctions: [String: () -> HeadersList] = [:]
     
     
     /// Add or modify custom headers.
@@ -82,6 +85,12 @@ public class YouTubeHeaders {
             return searchContinuationHeaders()
         case .channelContinuationHeaders:
             return channelContinuationHeaders()
+        case .customHeaders(let stringIdentifier):
+            if let headersGenerator = customHeadersFunctions[stringIdentifier] {
+                return headersGenerator()
+            } else {
+                return HeadersList.getEmtpy()
+            }
         }
     }
     

@@ -8,7 +8,7 @@
 import Foundation
 
 /// List of possibles requests where you can send to YouTube
-public enum HeaderTypes: String {
+public enum HeaderTypes {
     /// Get home menu videos.
     case home
     
@@ -57,4 +57,59 @@ public enum HeaderTypes: String {
     /// Get channel's results (continuation).
     /// - Parameter continuation: Channel query's continuation token
     case channelContinuationHeaders
+    
+    /// For custom headers
+    case customHeaders(String)
+}
+
+extension HeaderTypes: RawRepresentable {
+    
+    public init?(rawValue: String) {
+        return nil
+    }
+    
+    public var rawValue: String {
+        switch self {
+            
+        case .home:
+            return "home"
+        case .search:
+            return "search"
+        case .restrictedSearch:
+            return "restrictedSearch"
+        case .format:
+            return "format"
+        case .formatAdaptative:
+            return "formatAdaptative"
+        case .autoCompletion:
+            return "autoCompletion"
+        case .channelHeaders:
+            return "channelHeaders"
+        case .playlistHeaders:
+            return "playlistHeaders"
+        case .playlistContinuationHeaders:
+            return "playlistContinuationHeaders"
+        case .homeVideosContinuationHeader:
+            return "homeVideosContinuationHeader"
+        case .searchContinuationHeaders:
+            return "searchContinuationHeaders"
+        case .channelContinuationHeaders:
+            return "channelContinuationHeaders"
+        case .customHeaders(let stringIdentifier):
+            return stringIdentifier
+        }
+    }
+    
+    public typealias RawValue = String
+    
+}
+
+extension HeaderTypes: Hashable {
+    static func == (lhs: HeaderTypes, rhs: HeaderTypes) -> Bool {
+        return lhs.rawValue == rhs.rawValue
+    }
+    
+    func hash(into hasher: inout Hasher) {
+        hasher.combine(rawValue)
+    }
 }
