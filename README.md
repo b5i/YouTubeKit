@@ -14,7 +14,7 @@ YouTubeKit is a powerful Swift package to make requests to the YouTube API witho
 Please note that this is adapted from another iOS app and so is in constant developpement.
 
 ## Make requests:
-With YouTubeKit you can make a large variety of requests to the YouTube API, new request types are added often and you can even create your own in [Custom requests/responses](custom-requests/responses).
+With YouTubeKit you can make a large variety of requests to the YouTube API, new request types are added often and you can even create your own in [Custom requests/responses](#custom-requests-and-responses).
 
 1. Make sure you have an instance of `YouTubeModel`, if not you can have it with
   ```swift
@@ -63,7 +63,7 @@ With YouTubeKit you can make a large variety of requests to the YouTube API, new
   ```
 
 
-## Custom requests/responses:
+## Custom requests and responses:
 To create custom headers and so custom request/response function you have to:
 1. Append the function that is used to generate the `HeadersList` in `YouTubeModel.customHeadersFunctions`, e.g
 
