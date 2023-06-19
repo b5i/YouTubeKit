@@ -6,6 +6,9 @@
 //  
 
 import Foundation
+#if canImport(FoundationNetworking)
+import FoundationNetworking
+#endif
 
 /// List of possibles requests where you can send to YouTube
 public enum HeaderTypes {

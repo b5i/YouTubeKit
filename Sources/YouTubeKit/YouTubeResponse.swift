@@ -6,6 +6,9 @@
 //  
 
 import Foundation
+#if canImport(FoundationNetworking)
+import FoundationNetworking
+#endif
 
 /// Define a particular YouTube response and how to process it.
 ///

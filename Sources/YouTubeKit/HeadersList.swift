@@ -6,6 +6,9 @@
 //  
 
 import Foundation
+#if canImport(FoundationNetworking)
+import FoundationNetworking
+#endif
 
 /// Main structure used to define headers, and convert them to a valid ``/Foundation/URLRequest``
 public struct HeadersList: Codable {
