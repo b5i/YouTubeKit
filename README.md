@@ -88,3 +88,13 @@ sendRequest(responseType: NameAndSurnameResponse.self, data: [:], result: { resu
 })
 ```
 Note: you would include in the request the parameters if needed like: query, browseId or anything like this to put in the body of the request to send.
+
+
+## Troubleshooting: 
+This category lists solutions to problems you might encounter with YouTubeKit.
+
+### Connections problems
+- ```Error Domain=NSURLErrorDomain Code=-1003 "A server with the specified hostname could not be found."```
+
+  This issue can be resolved by enabling the `Outgoing Connections (Client)` in the `Signing & Capabilities` category of your project's target in Xcode.
+
