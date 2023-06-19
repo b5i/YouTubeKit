@@ -164,14 +164,18 @@ public struct HeadersList: Codable {
         if content.method == .POST {
             var body = ""
             for (index, partToBreak) in content.httpBody!.enumerated() {
-                let encodeData = content.addQueryAfterParts![index].encode
-                let dataTypeToAdd: AddQueryInfo.ContentTypes = content.addQueryAfterParts![index].content ?? .query
-                var dataToAdd: String = data[dataTypeToAdd] ?? ""
-                        
-                if encodeData {
-                    dataToAdd = dataToAdd.addingPercentEncoding(withAllowedCharacters: .urlHostAllowed)!
+                if content.addQueryAfterParts!.count > index {
+                    let encodeData = content.addQueryAfterParts![index].encode
+                    let dataTypeToAdd: AddQueryInfo.ContentTypes = content.addQueryAfterParts![index].content ?? .query
+                    var dataToAdd: String = data[dataTypeToAdd] ?? ""
+                    
+                    if encodeData {
+                        dataToAdd = dataToAdd.addingPercentEncoding(withAllowedCharacters: .urlHostAllowed)!
+                    }
+                    body = "\(body)\(partToBreak)\(dataToAdd)"
+                } else {
+                    body = "\(body)\(partToBreak)"
                 }
-                body = "\(body)\(partToBreak)\(dataToAdd)"
             }
             request.httpBody = body.data(using: .utf8)
         }

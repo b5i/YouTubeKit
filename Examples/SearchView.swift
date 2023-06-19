@@ -11,7 +11,7 @@ struct SwiftUIView: View {
     private var YTM = YouTubeModel()
     @State private var text: String = ""
     var body: some View {
-        TextField("Search", $text)
+        TextField("Search", text: $text)
         Button {
             YTM.sendRequest(responseType: SearchResponse.self, data: [.query: text], result: { result, error in
                 print(result)

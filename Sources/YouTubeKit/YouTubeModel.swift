@@ -15,6 +15,8 @@ import Foundation
 /// ```
 public class YouTubeModel {
     
+    public init() {}
+    
     /// Set the locale you want to receive the call responses in.
     public var selectedLocale: String = Locale.preferredLanguages[0]
     
