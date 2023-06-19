@@ -113,7 +113,7 @@ public struct HeadersList: Codable {
         /// All content of the posibilities are defined in their parameter of the function ``setHeadersAgentFor(content:data:)``
         ///
         /// You can know wether to define them or not in ``HeaderTypes``
-        public enum ContentTypes: Codable {
+        public enum ContentTypes: String, Codable, CaseIterable, RawRepresentable {
             case query
             case browseId
             case continuation
@@ -148,6 +148,7 @@ public struct HeadersList: Codable {
                             URLQueryItem(
                                 name: parameter.name,
                                 value: "\(parameter.content)\(data[.query] ?? "")"
+                                    .addingPercentEncoding(withAllowedCharacters: .urlHostAllowed)!
                             )
                         )
                     }
@@ -157,6 +158,7 @@ public struct HeadersList: Codable {
                         URLQueryItem(
                             name: parameter.name,
                             value: parameter.content
+                                .addingPercentEncoding(withAllowedCharacters: .urlHostAllowed)!
                         )
                     )
                 }

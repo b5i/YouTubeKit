@@ -29,9 +29,15 @@ public enum YTSearchResultType: String, Codable, CaseIterable {
     
     /// Struct representing a video.
     public struct Video: YTSearchResult, Codable {
+        public static func == (lhs: YTSearchResultType.Video, rhs: YTSearchResultType.Video) -> Bool {
+            return lhs.channel.browseId == rhs.channel.browseId && lhs.channel.name == rhs.channel.name && lhs.thumbnails == rhs.thumbnails && lhs.timeLength == rhs.timeLength && lhs.timePosted == rhs.timePosted && lhs.title == rhs.title && lhs.videoId == rhs.videoId && lhs.viewCount == rhs.viewCount
+        }
+        
         public static func decodeJSON(json: JSON) -> Video {
             /// Inititalize a new ``YTSearchResultType/Video-swift.struct`` instance to put the informations in it.
             var video = Video()
+            
+            video.videoId = json["videoId"].string
             
             if json["title"]["simpleText"].string != nil {
                 video.title = json["title"]["simpleText"].string
@@ -203,7 +209,7 @@ public enum YTSearchResultType: String, Codable, CaseIterable {
         /// Structure found in search requests in **video** and **playlist** types.
         public struct LittleChannelInfos: Codable {
             /// Name of the owning channel.
-            public var name: String? = ""
+            public var name: String?
             
             /// Channel's identifier, can be used to get the informations about the channel.
             ///
@@ -217,18 +223,25 @@ public enum YTSearchResultType: String, Codable, CaseIterable {
             ///     })
             /// }
             /// ```
-            public var browseId: String? = ""
+            public var browseId: String?
         }
     }
 
     /// Struct representing a playlist.
     public struct Playlist: YTSearchResult {
+        public static func == (lhs: YTSearchResultType.Playlist, rhs: YTSearchResultType.Playlist) -> Bool {
+            return lhs.channel.browseId == rhs.channel.browseId && lhs.channel.name == rhs.channel.name && lhs.playlistId == rhs.playlistId && lhs.timePosted == rhs.timePosted && lhs.videoCount == rhs.videoCount && lhs.title == rhs.title && lhs.frontVideos == rhs.frontVideos
+        }
+        
         public static func decodeJSON(json: JSON) -> Playlist {
             /// Inititalize a new ``YTSearchResultType/Playlist-swift.struct`` instance to put the informations in it.
             var playlist = Playlist()
+            
+            playlist.playlistId = json["playlistId"].string
+            
             playlist.title = json["title"]["simpleText"].string
             
-            appendThumbnails(json: json["thumbnailRenderer"]["playlistVideoThumbnailRenderer"]["thumbnail"], thumbnailList: &playlist.thumbnails)
+            appendThumbnails(json: json["thumbnailRenderer"]["playlistVideoThumbnailRenderer"], thumbnailList: &playlist.thumbnails)
                         
             playlist.videoCount = ""
             for videoCountTextPart in json["videoCountText"]["runs"].array ?? [] {
@@ -309,7 +322,7 @@ public enum YTSearchResultType: String, Codable, CaseIterable {
     }
     
     /// Struct representing a thumbnail.
-    public struct Thumbnail: Codable {
+    public struct Thumbnail: Codable, Equatable {
         /// Width of the image.
         public var width: Int?
         
@@ -327,14 +340,26 @@ public enum YTSearchResultType: String, Codable, CaseIterable {
     ///   - thumbnailList: the array of `Thumbnail` where the ones in the given JSON have to be appended.
     static func appendThumbnails(json: JSON, thumbnailList: inout [Thumbnail]) {
         for thumbnail in json["thumbnail"]["thumbnails"].array ?? [] {
-            if let url = thumbnail["url"].url {
-                thumbnailList.append(
-                    Thumbnail(
-                        width: thumbnail["width"].int,
-                        height: thumbnail["height"].int,
-                        url: url
+            if var url = thumbnail["url"].url {
+                /// URL is of form "//yt3.googleusercontent.com/ytc"
+                if url.absoluteString.prefix(2) == "//" {
+                    url = URL(string: "https:\(url.absoluteString)") ?? url
+                    thumbnailList.append(
+                        Thumbnail(
+                            width: thumbnail["width"].int,
+                            height: thumbnail["height"].int,
+                            url: url
+                        )
                     )
-                )
+                } else {
+                    thumbnailList.append(
+                        Thumbnail(
+                            width: thumbnail["width"].int,
+                            height: thumbnail["height"].int,
+                            url: url
+                        )
+                    )
+                }
             }
         }
     }

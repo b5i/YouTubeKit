@@ -9,7 +9,7 @@ import Foundation
 
 public extension [YTSearchResult] {
     /// Making easier to filter item types of your array
-    func filterTypes(acceptedTypes: [YTSearchResultType] = YTSearchResultType.allCases) -> [YTSearchResult] {
+    func filterTypes(acceptedTypes: [YTSearchResultType] = YTSearchResultType.allCases) -> [any YTSearchResult] {
         return self.filter({acceptedTypes.contains(type(of: $0).type)})
     }
 }

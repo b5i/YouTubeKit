@@ -18,9 +18,11 @@ struct SwiftUIView: View {
                 print(error)
             })
             /// You can also use async await system
+            /*
             Task {
                 let (result, error) = await SearchResponse.sendRequest(youtubeModel: YTM, data: [.query : text])
             }
+            */
         } label: {
             Text("Search")
         }
