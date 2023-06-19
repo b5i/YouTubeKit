@@ -1,7 +1,7 @@
 //
-//  SearchResponse.swift
+//  YTSearchResultType.swift
 //
-//  Created by Antoine Bollengier (github.com/b5i) on 03.06.23.
+//  Created by Antoine Bollengier (github.com/b5i) on 19.06.2023.
 //  Copyright © 2023 Antoine Bollengier. All rights reserved.
 //  
 
@@ -337,123 +337,5 @@ public enum YTSearchResultType: String, Codable, CaseIterable {
                 )
             }
         }
-    }
-}
-
-/// Protocol representing a search result.
-public protocol YTSearchResult: Codable {
-    /// Defines the item's type, for example a video or a channel.
-    ///
-    /// You can filter array of YTSearchResult conform items using
-    ///
-    ///     var array: [any YTSearchResult] = ...
-    ///     array.filterTypes(acceptedTypes: [.video])
-    ///
-    /// to get videos only for example.
-    static var type: YTSearchResultType { get }
-    
-    /// Decode and process the JSON from Data, and give a decoded version of it..
-    /// - Parameter data: the JSON encoded in Data.
-    /// - Returns: an instance of the decoded JSON object.
-    static func decodeJSON(data: Data) -> Self
-    
-    /// Process the JSON and give a decoded version of it.
-    /// - Parameter json: the JSON that has to be decoded.
-    /// - Returns: an instance of the decoded JSON object.
-    static func decodeJSON(json: JSON) -> Self
-    
-    /// Identifier of the item in the request result array, useful when you want to display all your results in the right order.
-    /// Has to be defined during the array push operation.
-    var id: Int? { get set }
-}
-
-public extension YTSearchResult {
-    /// Decode JSON from raw data.
-    /// - Parameter data: raw data to be decoded.
-    /// - Returns: An instance of the YTSearchResult.
-    static func decodeJSON(data: Data) -> Self {
-        return decodeJSON(json: JSON(data))
-    }
-}
-
-public extension [YTSearchResult] {
-    /// Making easier to filter item types of your array
-    func filterTypes(acceptedTypes: [YTSearchResultType] = YTSearchResultType.allCases) -> [YTSearchResult] {
-        return self.filter({acceptedTypes.contains(type(of: $0).type)})
-    }
-}
-
-/// Struct representing a search response.
-public struct SearchResponse: YouTubeResponse {
-    public static var headersType: HeaderTypes = .search
-    
-    /// String token that will be useful in case of a search continuation request ("load more" button).
-    public var continuationToken: String = ""
-    
-    /// Results of the search.
-    public var results: [any YTSearchResult] = []
-    
-    public static func decodeData(data: Data) -> SearchResponse {
-        var searchResponse = SearchResponse()
-        let json = JSON(data)
-        ///Get the continuation token and actual search results among ads
-        if let continuationJSON = json["contents"]["twoColumnSearchResultsRenderer"]["primaryContents"]["sectionListRenderer"]["contents"].array {
-            ///Check wether each "contents" entry is
-            for potentialContinuationRenderer in continuationJSON {
-                if let continuationToken = potentialContinuationRenderer["continuationItemRenderer"]["continuationEndpoint"]["continuationCommand"]["token"].string {
-                    ///1. A continuationItemRenderer that contains a continuation token
-                    searchResponse.continuationToken = continuationToken
-                } else if
-                    let adArray = potentialContinuationRenderer["itemSectionRenderer"]["contents"].array,
-                        adArray.count == 1,
-                        adArray[0]["adSlotRenderer"]["enablePacfLoggingWeb"].bool != nil {
-                    ///2. An advertising entry
-                    continue
-                } else if let resultsList = potentialContinuationRenderer["itemSectionRenderer"]["contents"].array {
-                    ///3. The actual list of results
-                    decodeResults(results: resultsList, searchResponse: &searchResponse)
-                }
-            }
-        }
-        
-        return searchResponse
-    }
-    
-    /// Decode each results in a JSON array and add them to a ``SearchResponse``.
-    /// - Parameters:
-    ///   - results: the JSON results.
-    ///   - searchResponse: the ``SearchResponse`` where the decoded results will be appended.
-    static func decodeResults(results: [JSON], searchResponse: inout SearchResponse) {
-        for (index, resultElement) in results.enumerated() {
-            guard var castedElement = getCastedResultElement(element: resultElement) else { continue } //continue if element type is not handled
-            castedElement.id = index
-            searchResponse.results.append(castedElement)
-        }
-    }
-    
-    /// Get the structure of a JSON element that is a query result.
-    /// - Parameter element: JSON element that will be casted.
-    /// - Returns: a ``YTSearchResult`` and nil if the given element wasn't conform to any ``YTSearchResult`` type.
-    static func getCastedResultElement(element: JSON) -> (any YTSearchResult)? {
-        if let castedElementType = getResultElementType(element: element) {
-            do {
-                return YTSearchResultType
-                    .getDecodingStruct(forType: castedElementType)
-                    .decodeJSON(data: try element[castedElementType.rawValue].rawData())
-            } catch {}
-        }
-        return nil
-    }
-    
-    /// Get the result type of a given JSON element.
-    /// - Parameter element: the JSON where its the type has to be determined.
-    /// - Returns: the type of the JSON element, nil if the element isn't conform to any ``YTSearchResult`` type.
-    static func getResultElementType(element: JSON) -> YTSearchResultType? {
-        for searchResultType in YTSearchResultType.allCases {
-            if element[searchResultType.rawValue].dictionary != nil {
-                return searchResultType
-            }
-        }
-        return nil
     }
 }

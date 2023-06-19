@@ -38,6 +38,14 @@ public protocol YouTubeResponse {
         data: [HeadersList.AddQueryInfo.ContentTypes : String],
         result: @escaping (Self?, Error?) -> ()
     )
+
+    /// A function to call the request of the given YouTubeResponse.
+    @available(macOS 10.15, iOS 13.0, watchOS 6.0, tvOS 13.0, *)
+    static func sendRequest(
+        youtubeModel: YouTubeModel,
+        data: [HeadersList.AddQueryInfo.ContentTypes : String]
+    ) async -> (Self?, Error?)
+
 }
 
 public extension YouTubeResponse {
@@ -47,12 +55,23 @@ public extension YouTubeResponse {
         data: [HeadersList.AddQueryInfo.ContentTypes : String],
         result: @escaping (Self?, Error?) -> ()
     ) {
-        
         /// Call YouTubeModel's `sendRequest` function to have a more readable use.
         youtubeModel.sendRequest(
             responseType: Self.self,
             data: data,
             result: result
         )
+    }
+    
+    @available(macOS 10.15, iOS 13.0, watchOS 6.0, tvOS 13.0, *)
+    static func sendRequest(
+        youtubeModel: YouTubeModel,
+        data: [HeadersList.AddQueryInfo.ContentTypes : String]
+    ) async -> (Self?, Error?) {
+        return await withCheckedContinuation({ (continuation: CheckedContinuation<(Self?, Error?), Never>) in
+            sendRequest(youtubeModel: youtubeModel, data: data, result: { result, error in
+                continuation.resume(returning: (result, error))
+            })
+        })
     }
 }

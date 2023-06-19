@@ -68,6 +68,7 @@ To create custom headers and so custom request/response function you have to:
 1. Append the function that is used to generate the `HeadersList` in `YouTubeModel.customHeadersFunctions`, e.g
 
 ```swift
+let YTM = YouTubeModel()
 let myCustomHeadersFunction: () -> HeadersList = {
     HeadersList(
         url: URL(string: "https://www.myrequesturl.com")!,
@@ -75,7 +76,7 @@ let myCustomHeadersFunction: () -> HeadersList = {
         headers: [
             .init(name: "Accept", content: "*/*"),
             .init(name: "Accept-Encoding", content: "gzip, deflate, br"),
-            .init(name: "Accept-Language", content: "\(self.selectedLocale);q=0.9"),
+            .init(name: "Accept-Language", content: "\(YTM.selectedLocale);q=0.9"),
         ],
         addQueryAfterParts: [
             .init(index: 0, encode: true)
@@ -102,7 +103,7 @@ We imagine that the JSON is of the form:
 
 /// Struct representing a getNameAndSurname response.
 public struct NameAndSurnameResponse: YouTubeResponse {
-    public static var headersType: HeaderTypes = .customHeader("myHeadersID") //<- the myHeadersID has to be the same as the one you defined in step 1!
+    public static var headersType: HeaderTypes = .customHeaders("myHeadersID") //<- the myHeadersID has to be the same as the one you defined in step 1!
     
     /// String representing a name.
     public var name: String = ""
@@ -132,12 +133,12 @@ public struct NameAndSurnameResponse: YouTubeResponse {
 e.g,
 ```swift
 /// We continue with our example:
-sendRequest(responseType: NameAndSurnameResponse.self, data: [:], result: { result, error in
-        /// Process here the result.
-       print(result)
-
-       /// If the result is nil you should obtain an error explaining why there is one.
-       print(error)
+NameAndSurnameResponse.sendRequest(youtubeModel: YTM, data: [:], result: { result, error in
+    /// Process here the result.
+    print(result)
+    
+    /// If the result is nil you should obtain an error explaining why there is one.
+    print(error)
 })
 ```
 Note: you would include in the request the parameters if needed like: query, browseId or anything like this to put in the body of the request to send.

@@ -57,9 +57,10 @@ public class YouTubeModel {
             /// Check if the task worked and gave back data.
             if let data = data {
                 result(ResponseType.decodeData(data: data), error)
+            } else {
+                /// Exectued if the data was nil so there was probably an error.
+                result(nil, error)
             }
-            /// Exectued if the data was nil so there was probably an error.
-            result(nil, error)
         }
         
         /// Start it
