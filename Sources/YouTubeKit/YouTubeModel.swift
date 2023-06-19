@@ -70,7 +70,7 @@ public class YouTubeModel {
     public var customHeaders: [HeaderTypes : HeadersList] = [:]
     
     /// Custom headers functions that generate ``HeadersList``.
-    public var customHeadersFunctions: [String: () -> HeadersList] = [:]
+    public var customHeadersFunctions: [String : () -> HeadersList] = [:]
     
     /// Add or modify custom headers.
     /// - Parameters:

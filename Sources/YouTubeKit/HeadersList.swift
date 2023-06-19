@@ -138,17 +138,27 @@ public struct HeadersList: Codable {
     ) -> URLRequest {
         var url = content.url
         if content.parameters != nil {
-            var parametersToAppend = [URLQueryItem]()
+            var parametersToAppend: [URLQueryItem] = []
             for parameter in content.parameters! {
                 if parameter.specialContent != nil {
                     /// Check which specialContent to add
                     switch parameter.specialContent! {
                     case .query:
-                        parametersToAppend.append(URLQueryItem(name: parameter.name, value: "\(parameter.content)\(data[.query] ?? "")"))
+                        parametersToAppend.append(
+                            URLQueryItem(
+                                name: parameter.name,
+                                value: "\(parameter.content)\(data[.query] ?? "")"
+                            )
+                        )
                     }
                 } else {
                     /// No specialContent specified, adding normal value
-                    parametersToAppend.append(URLQueryItem(name: parameter.name, value: parameter.content))
+                    parametersToAppend.append(
+                        URLQueryItem(
+                            name: parameter.name,
+                            value: parameter.content
+                        )
+                    )
                 }
             }
             url.append(queryItems: parametersToAppend)
@@ -165,7 +175,10 @@ public struct HeadersList: Codable {
             var body = ""
             for (index, partToBreak) in content.httpBody!.enumerated() {
                 if content.addQueryAfterParts!.count > index {
+                    /// Bool indicating if the data should be URLencoded or not
                     let encodeData = content.addQueryAfterParts![index].encode
+                    
+                    /// Get the type of the data that will be added to 
                     let dataTypeToAdd: AddQueryInfo.ContentTypes = content.addQueryAfterParts![index].content ?? .query
                     var dataToAdd: String = data[dataTypeToAdd] ?? ""
                     

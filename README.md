@@ -13,6 +13,56 @@ YouTubeKit is a powerful Swift package to make requests to the YouTube API witho
 
 Please note that this is adapted from another iOS app and so is in constant developpement.
 
+## Make requests:
+With YouTubeKit you can make a large variety of requests to the YouTube API, new request types are added often and you can even create your own in [Custom requests/responses](custom-requests/responses).
+
+1. Make sure you have an instance of `YouTubeModel`, if not you can have it with
+  ```swift
+  let YTM = YouTubeModel()
+  ```
+2. Define the request's data parameters, to get the demanded headers you can look at the definition of your `YouTubeResponse.headersType`, it should describe which data to send, e.g. with a `SearchResponse`:
+   
+   a. Right click on the type of request and press `Jump to definition`, the `SearchResponse.headersType` is `HeaderTypes.search`.
+   
+   b. Its definition is
+   ```swift
+   /// Get search results.
+   /// - Parameter query: Search query
+   case search
+   ```
+
+   it means that you will have to provide a query for the request to work and give a relevant result.
+
+   c. You will define the data parameters like this:
+   ```swift
+   let textQuery: String = "my super query"
+   let dataParameters: [HeadersList.AddQueryInfo.ContentTypes : String] = [
+       .query: textQuery
+   ]
+   ```
+
+4. Execute the request with (e.g. a `SearchResponse` request)
+  ```swift
+  SearchResponse.sendRequest(youtubeModel: YTM, data: dataParameters, result: { result, error in
+       /// Process here the result.
+       print(result)
+
+       /// If the result is nil you should obtain an error explaining why there is one.
+       print(error)
+  })
+  ```
+  you could also send the request without explicitly declaring `dataParameters` like this
+  ```swift
+  SearchResponse.sendRequest(youtubeModel: YTM, data: [.query: textQuery], result: { result, error in
+       /// Process here the result.
+       print(result)
+
+       /// If the result is nil you should obtain an error explaining why there is one.
+       print(error)
+  })
+  ```
+
+
 ## Custom requests/responses:
 To create custom headers and so custom request/response function you have to:
 1. Append the function that is used to generate the `HeadersList` in `YouTubeModel.customHeadersFunctions`, e.g
@@ -83,8 +133,11 @@ e.g,
 ```swift
 /// We continue with our example:
 sendRequest(responseType: NameAndSurnameResponse.self, data: [:], result: { result, error in
-        print(result)
-        print(error)
+        /// Process here the result.
+       print(result)
+
+       /// If the result is nil you should obtain an error explaining why there is one.
+       print(error)
 })
 ```
 Note: you would include in the request the parameters if needed like: query, browseId or anything like this to put in the body of the request to send.

@@ -13,7 +13,7 @@ struct SwiftUIView: View {
     var body: some View {
         TextField("Search", text: $text)
         Button {
-            YTM.sendRequest(responseType: SearchResponse.self, data: [.query: text], result: { result, error in
+            SearchResponse.sendRequest(youtubeModel: YTM, data: [.query : text], result: { result, error in
                 print(result)
                 print(error)
             })

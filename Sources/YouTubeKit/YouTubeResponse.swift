@@ -1,5 +1,5 @@
 //
-//  YouTubeResponseProcess.swift
+//  YouTubeResponse.swift
 //
 //  Created by Antoine Bollengier (github.com/b5i) on 03.06.23.
 //  Copyright © 2023 Antoine Bollengier. All rights reserved.
@@ -31,4 +31,28 @@ public protocol YouTubeResponse {
     
     /// A function to decode the data and create an instance of the struct.
     static func decodeData(data: Data) -> Self
+    
+    /// A function to call the request of the given YouTubeResponse.
+    static func sendRequest(
+        youtubeModel: YouTubeModel,
+        data: [HeadersList.AddQueryInfo.ContentTypes : String],
+        result: @escaping (Self?, Error?) -> ()
+    )
+}
+
+public extension YouTubeResponse {
+    
+    static func sendRequest(
+        youtubeModel: YouTubeModel,
+        data: [HeadersList.AddQueryInfo.ContentTypes : String],
+        result: @escaping (Self?, Error?) -> ()
+    ) {
+        
+        /// Call YouTubeModel's `sendRequest` function to have a more readable use.
+        youtubeModel.sendRequest(
+            responseType: Self.self,
+            data: data,
+            result: result
+        )
+    }
 }
