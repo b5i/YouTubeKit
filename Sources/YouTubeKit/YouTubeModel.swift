@@ -13,17 +13,62 @@ import Foundation
 /// ```
 /// YoutTubeHeaders.shared
 /// ```
-public class YouTubeHeaders {
+public class YouTubeModel {
     
-    /// Shared instance of the class.
-    public static let shared = YouTubeHeaders()
+    /// Set the locale you want to receive the call responses in.
+    public var selectedLocale: String = Locale.preferredLanguages[0]
+    
+    /// Set Google account's cookies to perform user-related API calls.
+    ///
+    /// The required cookie fields are:
+    /// - SAPISID
+    /// - __Secure-1PAPISID
+    /// - __Secure-1PSID
+    ///
+    /// The shape of the string should be:
+    /// `"SAPISID=\(SAPISID); __Secure-1PAPISID=\(PAPISID); __Secure-1PSID=\(PSID1)"`
+    public var cookies: String?
+    
+    /// Send a request of type `ResponseType`to YouTube's API.
+    /// - Parameters:
+    ///   - responseType: Defines the request/response type, e.g.`SearchResponse.self`
+    ///   - data: a dictionnary of possible data to add in the request's body. Is keyed with ``HeadersList/AddQueryInfo/ContentTypes``.
+    ///   - result: Returns the optional ResponseType JSON processing and the optional error that could happen during the network request.
+    public func sendRequest<ResponseType: YouTubeResponse>(
+        responseType: ResponseType.Type,
+        data: [HeadersList.AddQueryInfo.ContentTypes : String],
+        result: @escaping (ResponseType?, Error?) -> ()
+    ) {
+        /// Get request headers.
+        let headers = self.getHeaders(forType: ResponseType.headersType)
+        
+        guard !headers.isEmpty else { result(nil, "The headers from ID: \(ResponseType.headersType) are empty! (probably an error in the name or they are not added in YouTubeModel.shared.customHeadersFunctions)"); return}
+        
+        /// Create request
+        let request = HeadersList.setHeadersAgentFor(
+            content: headers,
+            data: data
+        )
+        
+        /// Create task with the request
+        let task = URLSession.shared.dataTask(with: request) { data, _, error in
+            /// Check if the task worked and gave back data.
+            if let data = data {
+                result(ResponseType.decodeData(data: data), error)
+            }
+            /// Exectued if the data was nil so there was probably an error.
+            result(nil, error)
+        }
+        
+        /// Start it
+        task.resume()
+    }
     
     /// Custom headers that will be defined by the following methods.
     public var customHeaders: [HeaderTypes : HeadersList] = [:]
     
     /// Custom headers functions that generate ``HeadersList``.
     public var customHeadersFunctions: [String: () -> HeadersList] = [:]
-    
     
     /// Add or modify custom headers.
     /// - Parameters:
@@ -110,7 +155,7 @@ public class YouTubeHeaders {
                     .init(name: "Accept-Encoding", content: "gzip, deflate, br"),
                     .init(name: "Host", content: "www.youtube.com"),
                     .init(name: "User-Agent", content: "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.1 Safari/605.1.15"),
-                    .init(name: "Accept-Language", content: "\(HeadersModel.shared.selectedLocale);q=0.9"),
+                    .init(name: "Accept-Language", content: "\(self.selectedLocale);q=0.9"),
                     .init(name: "Origin", content: "https://www.youtube.com/"),
                     .init(name: "Referer", content: "https://www.youtube.com/"),
                     .init(name: "Connection", content: "keep-alive"),
@@ -146,7 +191,7 @@ public class YouTubeHeaders {
                     .init(name: "Accept-Encoding", content: "gzip, deflate, br"),
                     .init(name: "Host", content: "www.youtube.com"),
                     .init(name: "User-Agent", content: "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.1 Safari/605.1.15"),
-                    .init(name: "Accept-Language", content: "\(HeadersModel.shared.selectedLocale);q=0.9"),
+                    .init(name: "Accept-Language", content: "\(self.selectedLocale);q=0.9"),
                     .init(name: "Origin", content: "https://www.youtube.com/"),
                     .init(name: "Referer", content: "https://www.youtube.com/"),
                     .init(name: "Connection", content: "keep-alive"),
@@ -182,7 +227,7 @@ public class YouTubeHeaders {
                     .init(name: "Accept-Encoding", content: "gzip, deflate, br"),
                     .init(name: "Host", content: "www.youtube.com"),
                     .init(name: "User-Agent", content: "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.1 Safari/605.1.15"),
-                    .init(name: "Accept-Language", content: "\(HeadersModel.shared.selectedLocale);q=0.9"),
+                    .init(name: "Accept-Language", content: "\(self.selectedLocale);q=0.9"),
                     .init(name: "Origin", content: "https://www.youtube.com/"),
                     .init(name: "Connection", content: "keep-alive"),
                     .init(name: "Content-Type", content: "application/json"),
@@ -210,7 +255,7 @@ public class YouTubeHeaders {
                     .init(name: "Accept-Encoding", content: "gzip, deflate, br"),
                     .init(name: "Host", content: "www.youtube.com"),
                     .init(name: "User-Agent", content: "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.1 Safari/605.1.15"),
-                    .init(name: "Accept-Language", content: "\(HeadersModel.shared.selectedLocale);q=0.9"),
+                    .init(name: "Accept-Language", content: "\(self.selectedLocale);q=0.9"),
                     .init(name: "Origin", content: "https://www.youtube.com/"),
                     .init(name: "Referer", content: "https://www.youtube.com/"),
                     .init(name: "Content-Type", content: "application/json"),
@@ -243,7 +288,7 @@ public class YouTubeHeaders {
                     .init(name: "Accept-Encoding", content: "gzip, deflate, br"),
                     .init(name: "Host", content: "www.youtube.com"),
                     .init(name: "User-Agent", content: "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.1 Safari/605.1.15"),
-                    .init(name: "Accept-Language", content: "\(HeadersModel.shared.selectedLocale);q=0.9"),
+                    .init(name: "Accept-Language", content: "\(self.selectedLocale);q=0.9"),
                     .init(name: "Origin", content: "https://www.youtube.com/"),
                     .init(name: "Referer", content: "https://www.youtube.com/"),
                     .init(name: "Content-Type", content: "application/json"),
@@ -273,7 +318,7 @@ public class YouTubeHeaders {
                     .init(name: "Accept-Encoding", content: "gzip, deflate, br"),
                     .init(name: "Host", content: "www.youtube.com"),
                     .init(name: "User-Agent", content: "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.1 Safari/605.1.15"),
-                    .init(name: "Accept-Language", content: "\(HeadersModel.shared.selectedLocale);q=0.9"),
+                    .init(name: "Accept-Language", content: "\(self.selectedLocale);q=0.9"),
                     .init(name: "Origin", content: "https://www.youtube.com/"),
                     .init(name: "Referer", content: "https://www.youtube.com/"),
                     .init(name: "Content-Type", content: "application/json"),
@@ -281,8 +326,8 @@ public class YouTubeHeaders {
                 ],
                 parameters: [
                     .init(name: "client", content: "youtube"),
-                    .init(name: "hl", content: HeadersModel.shared.selectedLocale.lowercased().components(separatedBy: "-")[0]), //e.g.: "fr-FR" would become "fr"
-                    .init(name: "gl", content: HeadersModel.shared.selectedLocale.lowercased().components(separatedBy: "-")[0]),
+                    .init(name: "hl", content: self.selectedLocale.lowercased().components(separatedBy: "-")[0]), //e.g.: "fr-FR" would become "fr"
+                    .init(name: "gl", content: self.selectedLocale.lowercased().components(separatedBy: "-")[0]),
                     .init(name: "gs_ri", content: "youtube"),
                     .init(name: "ds", content: "yt"),
                     .init(name: "q", content: "", specialContent: .query)
@@ -305,7 +350,7 @@ public class YouTubeHeaders {
                     .init(name: "Accept-Encoding", content: "gzip, deflate, br"),
                     .init(name: "Host", content: "www.youtube.com"),
                     .init(name: "User-Agent", content: "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.1 Safari/605.1.15"),
-                    .init(name: "Accept-Language", content: "\(HeadersModel.shared.selectedLocale);q=0.9"),
+                    .init(name: "Accept-Language", content: "\(self.selectedLocale);q=0.9"),
                     .init(name: "Origin", content: "https://www.youtube.com/"),
                     .init(name: "Referer", content: "https://www.youtube.com/"),
                     .init(name: "Content-Type", content: "application/json"),
@@ -338,7 +383,7 @@ public class YouTubeHeaders {
                     .init(name: "Accept-Encoding", content: "gzip, deflate, br"),
                     .init(name: "Host", content: "www.youtube.com"),
                     .init(name: "User-Agent", content: "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.1 Safari/605.1.15"),
-                    .init(name: "Accept-Language", content: "\(HeadersModel.shared.selectedLocale);q=0.9"),
+                    .init(name: "Accept-Language", content: "\(self.selectedLocale);q=0.9"),
                     .init(name: "Origin", content: "https://www.youtube.com/"),
                     .init(name: "Referer", content: "https://www.youtube.com/"),
                     .init(name: "Content-Type", content: "application/json"),
@@ -369,7 +414,7 @@ public class YouTubeHeaders {
                     .init(name: "Accept-Encoding", content: "gzip, deflate, br"),
                     .init(name: "Host", content: "www.youtube.com"),
                     .init(name: "User-Agent", content: "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.1 Safari/605.1.15"),
-                    .init(name: "Accept-Language", content: "\(HeadersModel.shared.selectedLocale);q=0.9"),
+                    .init(name: "Accept-Language", content: "\(self.selectedLocale);q=0.9"),
                     .init(name: "Origin", content: "https://www.youtube.com/"),
                     .init(name: "Referer", content: "https://www.youtube.com/"),
                     .init(name: "Content-Type", content: "application/json"),
@@ -400,7 +445,7 @@ public class YouTubeHeaders {
                     .init(name: "Accept-Encoding", content: "gzip, deflate, br"),
                     .init(name: "Host", content: "www.youtube.com"),
                     .init(name: "User-Agent", content: "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.1 Safari/605.1.15"),
-                    .init(name: "Accept-Language", content: "\(HeadersModel.shared.selectedLocale);q=0.9"),
+                    .init(name: "Accept-Language", content: "\(self.selectedLocale);q=0.9"),
                     .init(name: "Origin", content: "https://www.youtube.com/"),
                     .init(name: "Referer", content: "https://www.youtube.com/"),
                     .init(name: "Content-Type", content: "application/json"),
@@ -443,7 +488,7 @@ public class YouTubeHeaders {
                     .init(name: "Accept-Encoding", content: "gzip, deflate, br"),
                     .init(name: "Host", content: "www.youtube.com"),
                     .init(name: "User-Agent", content: "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.1 Safari/605.1.15"),
-                    .init(name: "Accept-Language", content: "\(HeadersModel.shared.selectedLocale);q=0.9"),
+                    .init(name: "Accept-Language", content: "\(self.selectedLocale);q=0.9"),
                     .init(name: "Origin", content: "https://www.youtube.com/"),
                     .init(name: "Referer", content: "https://www.youtube.com/"),
                     .init(name: "Content-Type", content: "application/json"),
@@ -460,3 +505,5 @@ public class YouTubeHeaders {
         }
     }
 }
+
+extension String: Error {}

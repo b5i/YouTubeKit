@@ -15,7 +15,7 @@ Please note that this is adapted from another iOS app and so is in constant deve
 
 ## Custom requests/responses:
 To create custom headers and so custom request/response function you have to:
-1. Append the function that is used to generate the `HeadersList` in `YouTubeHeaders.customHeadersFunctions`, e.g
+1. Append the function that is used to generate the `HeadersList` in `YouTubeModel.customHeadersFunctions`, e.g
 
 ```swift
 let myCustomHeadersFunction: () -> HeadersList = {
@@ -25,7 +25,7 @@ let myCustomHeadersFunction: () -> HeadersList = {
         headers: [
             .init(name: "Accept", content: "*/*"),
             .init(name: "Accept-Encoding", content: "gzip, deflate, br"),
-            .init(name: "Accept-Language", content: "\(HeadersModel.shared.selectedLocale);q=0.9"),
+            .init(name: "Accept-Language", content: "\(self.selectedLocale);q=0.9"),
         ],
         addQueryAfterParts: [
             .init(index: 0, encode: true)
@@ -37,7 +37,7 @@ let myCustomHeadersFunction: () -> HeadersList = {
     )
 }
 
-YouTubeHeaders.shared.customHeadersFunctions["myHeadersID"] = myCustomHeadersFunction
+YouTubeModel.shared.customHeadersFunctions["myHeadersID"] = myCustomHeadersFunction
 ```
 2. Create the response that is conform to the YouTubeResponse protocol, e.g
 ```swift
@@ -76,20 +76,13 @@ public struct NameAndSurnameResponse: YouTubeResponse {
 ```
 3. And to exectute it you just have to call `func sendRequest<ResponseType: YouTubeResponse>(
     responseType: ResponseType.Type,
-    query: String = "",
-    browseId: String = "",
-    params: String = "",
-    continuation: String = "",
-    visitorData: String = "",
-    movingVideoID: String = "",
-    videoBeforeID: String = "",
-    playlistEditToken: String = "",
+    data: [HeadersList.AddQueryInfo.ContentTypes : String],
     result: @escaping (ResponseType?, Error?) -> ()
 )`
 e.g,
 ```swift
 /// We continue with our example:
-sendRequest(responseType: NameAndSurnameResponse.self, result: { result, error in
+sendRequest(responseType: NameAndSurnameResponse.self, data: [:], result: { result, error in
         print(result)
         print(error)
 })

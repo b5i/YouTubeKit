@@ -8,11 +8,12 @@
 import SwiftUI
 
 struct SwiftUIView: View {
+    private var YTM = YouTubeModel()
     @State private var text: String = ""
     var body: some View {
         TextField("Search", $text)
         Button {
-            sendRequest(responseType: SearchResponse.self, query: text, result: { result, error in
+            YTM.sendRequest(responseType: SearchResponse.self, data: [.query: text], result: { result, error in
                 print(result)
                 print(error)
             })

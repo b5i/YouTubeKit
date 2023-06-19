@@ -424,8 +424,9 @@ public struct SearchResponse: YouTubeResponse {
     ///   - results: the JSON results.
     ///   - searchResponse: the ``SearchResponse`` where the decoded results will be appended.
     static func decodeResults(results: [JSON], searchResponse: inout SearchResponse) {
-        for resultElement in results {
-            guard let castedElement = getCastedResultElement(element: resultElement) else { continue } //continue if element type is not handled
+        for (index, resultElement) in results.enumerated() {
+            guard var castedElement = getCastedResultElement(element: resultElement) else { continue } //continue if element type is not handled
+            castedElement.id = index
             searchResponse.results.append(castedElement)
         }
     }

@@ -7,7 +7,7 @@
 
 import Foundation
 
-/// Main structure used to define headers, and convert them to a valid ``URLRequest``
+/// Main structure used to define headers, and convert them to a valid ``/Foundation/URLRequest``
 public struct HeadersList: Codable {
     
     /// Used to check wether a custom headers is defined or not.
@@ -65,13 +65,14 @@ public struct HeadersList: Codable {
         /// Dynamic content of the parameter, is retrieved .
         var specialContent: ParameterToAddSpecialContent?
     }
-
+    
     /// Lists the dynamic parameters possiblities.
     public enum ParameterToAddSpecialContent: String, Codable {
         
-        /// Is defined with the `query` parameter of the function ``setHeadersAgentFor(content:query:browseId:params:continuation:visitorData:movingVideoID:videoBeforeID:playlistEditToken:)``.
+        /// Is defined with the `query` parameter of the function ``setHeadersAgentFor(content:data:)``.
         case query
     }
+
 
     /// Base structure of a HTTP header.
     ///
@@ -109,10 +110,11 @@ public struct HeadersList: Codable {
         /// Content of the part to be added after the `index-th` of the body.
         var content: ContentTypes?
         
-        /// All content of the posibilities are defined in their parameter of the function ``setHeadersAgentFor(content:query:browseId:params:continuation:visitorData:movingVideoID:videoBeforeID:playlistEditToken:)``
+        /// All content of the posibilities are defined in their parameter of the function ``setHeadersAgentFor(content:data:)``
         ///
         /// You can know wether to define them or not in ``HeaderTypes``
         public enum ContentTypes: Codable {
+            case query
             case browseId
             case continuation
             case params
@@ -123,5 +125,57 @@ public struct HeadersList: Codable {
             case videoBeforeID
             case playlistEditToken
         }
+    }
+    
+    /// Creates an instance of ``URLRequest`` with given headers and parameters.
+    /// - Parameters:
+    ///   - content: List of headers and other informations in order to make the request.
+    ///   - data: a dictionnary of possible data to add in the request's body. Is keyed with ``AddQueryInfo/ContentTypes``.
+    /// - Returns: An ``URLRequest``built with the provided parameters and headers.
+    public static func setHeadersAgentFor(
+        content: HeadersList,
+        data: [AddQueryInfo.ContentTypes : String]
+    ) -> URLRequest {
+        var url = content.url
+        if content.parameters != nil {
+            var parametersToAppend = [URLQueryItem]()
+            for parameter in content.parameters! {
+                if parameter.specialContent != nil {
+                    /// Check which specialContent to add
+                    switch parameter.specialContent! {
+                    case .query:
+                        parametersToAppend.append(URLQueryItem(name: parameter.name, value: "\(parameter.content)\(data[.query] ?? "")"))
+                    }
+                } else {
+                    /// No specialContent specified, adding normal value
+                    parametersToAppend.append(URLQueryItem(name: parameter.name, value: parameter.content))
+                }
+            }
+            url.append(queryItems: parametersToAppend)
+        }
+        var request = URLRequest(url: url)
+        
+        /// Looping each header and add it to the request
+        for header in content.headers {
+            request.setValue(header.content, forHTTPHeaderField: header.name)
+        }
+        
+        /// Adding the body if the request is of type POST.
+        if content.method == .POST {
+            var body = ""
+            for (index, partToBreak) in content.httpBody!.enumerated() {
+                let encodeData = content.addQueryAfterParts![index].encode
+                let dataTypeToAdd: AddQueryInfo.ContentTypes = content.addQueryAfterParts![index].content ?? .query
+                var dataToAdd: String = data[dataTypeToAdd] ?? ""
+                        
+                if encodeData {
+                    dataToAdd = dataToAdd.addingPercentEncoding(withAllowedCharacters: .urlHostAllowed)!
+                }
+                body = "\(body)\(partToBreak)\(dataToAdd)"
+            }
+            request.httpBody = body.data(using: .utf8)
+        }
+        request.httpMethod = content.method.rawValue
+        return request
     }
 }

@@ -32,8 +32,3 @@ public protocol YouTubeResponse {
     /// A function to decode the data and create an instance of the struct.
     static func decodeData(data: Data) -> Self
 }
-
-/// Process a JSON response with its data and the type it is conform to.
-public func processJSONResponse<ResponseType: YouTubeResponse>(data: Data, type: ResponseType) -> ResponseType {
-    return ResponseType.decodeData(data: data)
-}
