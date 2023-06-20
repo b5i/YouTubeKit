@@ -22,10 +22,10 @@ extension HeaderTypes: RawRepresentable {
             return "search"
         case .restrictedSearch:
             return "restrictedSearch"
-        case .format:
-            return "format"
-        case .formatAdaptative:
-            return "formatAdaptative"
+        case .videoInfos:
+            return "videoInfos"
+        case .videoInfosWithDownloadFormats:
+            return "videoInfosWithAdaptative"
         case .autoCompletion:
             return "autoCompletion"
         case .channelHeaders:

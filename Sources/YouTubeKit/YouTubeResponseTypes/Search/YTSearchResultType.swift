@@ -13,7 +13,6 @@ public enum YTSearchResultType: String, Codable, CaseIterable {
     case video = "videoRenderer"
     case channel = "channelRenderer"
     case playlist = "playlistRenderer"
-    //case visitorData
     
     /// Get the struct that has to be use to decode a particular item.
     static func getDecodingStruct(forType type: Self) -> (any YTSearchResult.Type) {
@@ -66,7 +65,7 @@ public enum YTSearchResultType: String, Codable, CaseIterable {
                 video.timeLength = "live"
             }
             
-            appendThumbnails(json: json, thumbnailList: &video.thumbnails)
+            YTThumbnail.appendThumbnails(json: json, thumbnailList: &video.thumbnails)
             
             return video
         }
@@ -75,17 +74,17 @@ public enum YTSearchResultType: String, Codable, CaseIterable {
         
         public var id: Int?
         
-        /// String identifier of the video, can be used to get the formats of the video.
+        /// String identifier of the video, can be used to get the infos of the video.
         ///
         /// For example:
-        ///
-        ///     let video: Video = ...
-        ///     if let videoId = video.videoId {
-        ///         sendRequest(responseType: FormatsResponse.self, query: video.videoId, result: { result, error in
-        ///             print(result)
-        ///             print(error)
-        ///         })
-        ///     }
+        /// ```swift
+        /// let YTM = YouTubeModel()
+        /// let videoId: String = ...
+        /// VideoInfosResponse.sendRequest(youtubeModel: YTM, data: [.query : videoId], result: { result, error in
+        ///      print(result)
+        ///      print(error)
+        /// })
+        /// ```
         public var videoId: String?
         
         /// Video's title.
@@ -94,7 +93,7 @@ public enum YTSearchResultType: String, Codable, CaseIterable {
         /// Channel informations.
         ///
         /// Possibly not defined when reading in ``YTSearchResultType/Playlist-swift.struct/frontVideos`` properties.
-        public var channel: Channel.LittleChannelInfos = .init()
+        public var channel: YTLittleChannelInfos = .init()
         
         /// Number of views of the video, in a shortened string.
         ///
@@ -118,7 +117,7 @@ public enum YTSearchResultType: String, Codable, CaseIterable {
         /// Usually sorted by resolution, from low to high.
         ///
         /// Possibly not defined when reading in ``YTSearchResultType/Playlist-swift.struct/frontVideos`` properties.
-        public var thumbnails: [Thumbnail] = []
+        public var thumbnails: [YTThumbnail] = []
         
         ///Not necessary here because of prepareJSON() method
         /*
@@ -143,7 +142,7 @@ public enum YTSearchResultType: String, Codable, CaseIterable {
             
             channel.browseId = json["channelId"].string
             
-            appendThumbnails(json: json, thumbnailList: &channel.thumbnails)
+            YTThumbnail.appendThumbnails(json: json, thumbnailList: &channel.thumbnails)
             
             /// There's an error in YouTube's API
             channel.subscriberCount = json["videoCountText"]["simpleText"].string
@@ -170,20 +169,19 @@ public enum YTSearchResultType: String, Codable, CaseIterable {
         ///
         /// For example:
         /// ```swift
-        /// let channel: Channel = ...
-        /// if let channelId = channel.browseId {
-        ///     sendRequest(responseType: ChannelInfos.self, browseId: channelId, params: ("Kind of the wanted informations // (TODO) need to create an enum with the possibilites"), result: { result, error in
-        ///         print(result)
-        ///         print(error)
-        ///     })
-        /// }
+        /// let YTM = YouTubeModel()
+        /// let channelBrowseId: String = ...
+        /// ChannelInfosResponse.sendRequest(youtubeModel: YTM, data: [.query : channelBrowseId], result: { result, error in
+        ///      print(result)
+        ///      print(error)
+        /// })
         /// ```
         public var browseId: String?
         
         /// Array of thumbnails representing the avatar of the channel.
         ///
         /// Usually sorted by resolution, from low to high.
-        public var thumbnails: [Thumbnail] = []
+        public var thumbnails: [YTThumbnail] = []
         
         /// Channel's subscribers count.
         ///
@@ -205,26 +203,6 @@ public enum YTSearchResultType: String, Codable, CaseIterable {
             case badges
         }
          */
-        
-        /// Structure found in search requests in **video** and **playlist** types.
-        public struct LittleChannelInfos: Codable {
-            /// Name of the owning channel.
-            public var name: String?
-            
-            /// Channel's identifier, can be used to get the informations about the channel.
-            ///
-            /// For example:
-            /// ```swift
-            /// let channel: Channel = ...
-            /// if let channelId = channel.browseId {
-            ///     sendRequest(responseType: ChannelInfos.self, browseId: channelId, params: ("Kind of the wanted informations // (TODO) need to create an enum with the possibilites"), result: { result, error in
-            ///         print(result)
-            ///         print(error)
-            ///     })
-            /// }
-            /// ```
-            public var browseId: String?
-        }
     }
 
     /// Struct representing a playlist.
@@ -241,7 +219,7 @@ public enum YTSearchResultType: String, Codable, CaseIterable {
             
             playlist.title = json["title"]["simpleText"].string
             
-            appendThumbnails(json: json["thumbnailRenderer"]["playlistVideoThumbnailRenderer"], thumbnailList: &playlist.thumbnails)
+            YTThumbnail.appendThumbnails(json: json["thumbnailRenderer"]["playlistVideoThumbnailRenderer"], thumbnailList: &playlist.thumbnails)
                         
             playlist.videoCount = ""
             for videoCountTextPart in json["videoCountText"]["runs"].array ?? [] {
@@ -274,13 +252,12 @@ public enum YTSearchResultType: String, Codable, CaseIterable {
         ///
         /// For example:
         /// ```swift
-        /// let playlist: Playlist = ...
-        /// if let playlistId = playlist.playlistId {
-        ///     sendRequest(responseType: PlaylistInfos.self, browseId: playlistId, result: { result, error in
-        ///         print(result)
-        ///         print(error)
-        ///     })
-        /// }
+        /// let YTM = YouTubeModel()
+        /// let playlistBrowseId: String = ...
+        /// PlaylistInfosResponse.sendRequest(youtubeModel: YTM, data: [.query : playlistBrowseId], result: { result, error in
+        ///      print(result)
+        ///      print(error)
+        /// })
         /// ```
         public var playlistId: String?
         
@@ -290,13 +267,13 @@ public enum YTSearchResultType: String, Codable, CaseIterable {
         /// Array of thumbnails.
         ///
         /// Usually sorted by resolution, from low to high.
-        public var thumbnails: [Thumbnail] = []
+        public var thumbnails: [YTThumbnail] = []
         
         /// A string representing the number of video in the playlist.
         public var videoCount: String?
 
         /// Channel informations.
-        public var channel: Channel.LittleChannelInfos = .init()
+        public var channel: YTLittleChannelInfos = .init()
         
         /// String representing the moment when the video was posted.
         ///
@@ -319,48 +296,5 @@ public enum YTSearchResultType: String, Codable, CaseIterable {
             case frontVideos
         }
          */
-    }
-    
-    /// Struct representing a thumbnail.
-    public struct Thumbnail: Codable, Equatable {
-        /// Width of the image.
-        public var width: Int?
-        
-        /// Height of the image.
-        public var height: Int?
-        
-        /// URL of the image.
-        public var url: URL
-    }
-    
-    
-    /// Append to  `[Thumbnail]` another `[Thumbnail]` from JSON.
-    /// - Parameters:
-    ///   - json: the JSON of the thumbnails.
-    ///   - thumbnailList: the array of `Thumbnail` where the ones in the given JSON have to be appended.
-    static func appendThumbnails(json: JSON, thumbnailList: inout [Thumbnail]) {
-        for thumbnail in json["thumbnail"]["thumbnails"].array ?? [] {
-            if var url = thumbnail["url"].url {
-                /// URL is of form "//yt3.googleusercontent.com/ytc"
-                if url.absoluteString.prefix(2) == "//" {
-                    url = URL(string: "https:\(url.absoluteString)") ?? url
-                    thumbnailList.append(
-                        Thumbnail(
-                            width: thumbnail["width"].int,
-                            height: thumbnail["height"].int,
-                            url: url
-                        )
-                    )
-                } else {
-                    thumbnailList.append(
-                        Thumbnail(
-                            width: thumbnail["width"].int,
-                            height: thumbnail["height"].int,
-                            url: url
-                        )
-                    )
-                }
-            }
-        }
     }
 }

@@ -250,4 +250,23 @@ final class YouTubeKitTests: XCTestCase {
             XCTFail(TEST_NAME + "Failed to get requestResult (SearchResponse request failed).")
         }
     }
+    
+    func testVideoInfosResponse() async {
+        let TEST_NAME = "Test: testVideoInfosResponse() -> "
+        
+        let (requestResult, _) = await VideoInfosResponse.sendRequest(youtubeModel: YTM, data: [.query: "90RLzVUuXe4"])
+        
+        guard let requestResult = requestResult else { XCTFail(TEST_NAME + "requestResult is not defined."); return }
+        
+        XCTAssertNotNil(requestResult.channel.name, TEST_NAME + "Checking if requestResult.channel.name is not nil.")
+        XCTAssertNotNil(requestResult.channel.browseId, TEST_NAME + "Checking if requestResult.channel.browseId is not nil.")
+        XCTAssertNotNil(requestResult.isLive, TEST_NAME + "Checking if requestResult.isLive is not nil.")
+        XCTAssertNotEqual(requestResult.keywords.count, 0, TEST_NAME + "Checking if requestResult.channel.name is not nil.")
+        XCTAssertNotNil(requestResult.streamingURL, TEST_NAME + "Checking if requestResult.streamingURL is not nil.")
+        XCTAssertNotNil(requestResult.title, TEST_NAME + "Checking if requestResult.title is not nil.")
+        XCTAssertNotNil(requestResult.videoDescription, TEST_NAME + "Checking if requestResult.videoDescription is not nil.")
+        XCTAssertNotNil(requestResult.videoId, TEST_NAME + "Checking if requestResult.videoId is not nil.")
+        XCTAssertNotNil(requestResult.videoURLsExpireAt, TEST_NAME + "Checking if requestResult.videoURLsExpireAt is not nil.")
+        XCTAssertNotNil(requestResult.viewCount, TEST_NAME + "Checking if requestResult.viewCount is not nil.")
+    }
 }

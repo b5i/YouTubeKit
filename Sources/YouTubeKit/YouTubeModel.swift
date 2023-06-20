@@ -118,9 +118,9 @@ public class YouTubeModel {
             return searchHeaders()
         case .restrictedSearch:
             return restrictedSearchHeaders()
-        case .format:
+        case .videoInfos:
             return getFormatsHeaders()
-        case .formatAdaptative:
+        case .videoInfosWithDownloadFormats:
             return getFormatAdaptatives()
         case .autoCompletion:
             return searchCompletionHeaders()
@@ -250,7 +250,7 @@ public class YouTubeModel {
     /// Get headers to get the video's main HLS stream link.
     /// - Returns: The headers for this request.
     func getFormatsHeaders() -> HeadersList {
-        if let headers = self.customHeaders[.format] {
+        if let headers = self.customHeaders[.videoInfos] {
             return headers
         } else {
             return HeadersList(
@@ -283,7 +283,7 @@ public class YouTubeModel {
     /// Get headers to get the video's download and stream formats, this version consumes more bandwidth but includes custom formats (more options).
     /// - Returns: The headers for this request.
     func getFormatAdaptatives() -> HeadersList {
-        if let headers = self.customHeaders[.formatAdaptative] {
+        if let headers = self.customHeaders[.videoInfosWithDownloadFormats] {
             return headers
         } else {
             return HeadersList(

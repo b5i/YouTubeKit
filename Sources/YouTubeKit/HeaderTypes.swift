@@ -25,11 +25,11 @@ public enum HeaderTypes {
     
     /// Get streaming infos for a video.
     /// - Parameter query: Video's ID
-    case format
+    case videoInfos
     
     /// Get streaming infos for a video, including adaptative formats.
     /// - Parameter query: Video's ID
-    case formatAdaptative
+    case videoInfosWithDownloadFormats
     
     /// Get autocompletion for query.
     /// - Parameter query: Search query
