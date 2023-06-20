@@ -433,13 +433,16 @@ extension JSON {
     
      Example:
     
-     ```
+     ```swift
      let json = JSON[data]
      let path = [9,"list","person","name"]
      let name = json[path]
      ```
     
-     The same as: let name = json[9]["list"]["person"]["name"]
+     The same as:
+     ```swift
+     let name = json[9]["list"]["person"]["name"]
+     ```
     
      - parameter path: The target json's path.
     
@@ -468,9 +471,14 @@ extension JSON {
 
      - parameter path: The target json's path. Example:
 
+     ```swift
      let name = json[9,"list","person","name"]
+     ```
 
-     The same as: let name = json[9]["list"]["person"]["name"]
+     The same as:
+     ```swift
+     let name = json[9]["list"]["person"]["name"]
+     ```
 
      - returns: Return a json found by the path or a null json with error
      */

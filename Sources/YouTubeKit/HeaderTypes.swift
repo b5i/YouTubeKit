@@ -54,7 +54,7 @@ public enum HeaderTypes {
     
     /// Get search's results (continuation).
     /// - Parameter visitorData: The visitorData token
-    /// - Parameter continuation: Search's continuation token
+    /// - Parameter continuation: Search's continuation token **(optional)**
     case searchContinuationHeaders
     
     /// Get channel's results (continuation).

@@ -17,13 +17,20 @@ public struct SearchResponse: YouTubeResponse {
     /// Results of the search.
     public var results: [any YTSearchResult] = []
     
+    /// String token that will be useful in case of a search continuation request (authenticate the continuation request).
+    public var visitorData: String = ""
+    
     public static func decodeData(data: Data) -> SearchResponse {
         var searchResponse = SearchResponse()
         let json = JSON(data)
+        
+        /// Getting visitorData
+        searchResponse.visitorData = json["responseContext"]["visitorData"].stringValue
+        
         ///Get the continuation token and actual search results among ads
-        if let continuationJSON = json["contents"]["twoColumnSearchResultsRenderer"]["primaryContents"]["sectionListRenderer"]["contents"].array {
+        if let relevantContentJSON = json["contents"]["twoColumnSearchResultsRenderer"]["primaryContents"]["sectionListRenderer"]["contents"].array {
             ///Check wether each "contents" entry is
-            for potentialContinuationRenderer in continuationJSON {
+            for potentialContinuationRenderer in relevantContentJSON {
                 if let continuationToken = potentialContinuationRenderer["continuationItemRenderer"]["continuationEndpoint"]["continuationCommand"]["token"].string {
                     ///1. A continuationItemRenderer that contains a continuation token
                     searchResponse.continuationToken = continuationToken
@@ -35,7 +42,7 @@ public struct SearchResponse: YouTubeResponse {
                     continue
                 } else if let resultsList = potentialContinuationRenderer["itemSectionRenderer"]["contents"].array {
                     ///3. The actual list of results
-                    decodeResults(results: resultsList, searchResponse: &searchResponse)
+                    searchResponse.results.append(contentsOf: decodedResults(results: resultsList))
                 }
             }
         }
@@ -43,16 +50,18 @@ public struct SearchResponse: YouTubeResponse {
         return searchResponse
     }
     
-    /// Decode each results in a JSON array and add them to a ``SearchResponse``.
+    /// Decode each results in a JSON array return them to, used to decode ``SearchResponse`` and ``SearchResponse/Continuation`` contents.
     /// - Parameters:
     ///   - results: the JSON results.
-    ///   - searchResponse: the ``SearchResponse`` where the decoded results will be appended.
-    static func decodeResults(results: [JSON], searchResponse: inout SearchResponse) {
+    ///   - Returns: an array of ``YTSearchResult``.
+    static func decodedResults(results: [JSON]) -> [any YTSearchResult] {
+        var toReturn: [any YTSearchResult] = []
         for (index, resultElement) in results.enumerated() {
             guard var castedElement = getCastedResultElement(element: resultElement) else { continue } //continue if element type is not handled
             castedElement.id = index
-            searchResponse.results.append(castedElement)
+            toReturn.append(castedElement)
         }
+        return toReturn
     }
     
     /// Get the structure of a JSON element that is a query result.
@@ -79,5 +88,43 @@ public struct SearchResponse: YouTubeResponse {
             }
         }
         return nil
+    }
+    
+    /// Struct representing the continuation response of a ``SearchResponse`` ("load more results" button)
+    public struct Continuation: YouTubeResponse {
+        public static var headersType: HeaderTypes = .searchContinuationHeaders
+        
+        /// String token that will be useful in case of a search continuation request ("load more" button).
+        public var continuationToken: String = ""
+        
+        /// Results of the continuation search.
+        public var results: [any YTSearchResult] = []
+        
+        public static func decodeData(data: Data) -> SearchResponse.Continuation {
+            var continuationResponse = SearchResponse.Continuation()
+            let json = JSON(data)
+            
+            ///Get the continuation token and actual search results among ads
+            if let relevantContentJSON = json["onResponseReceivedCommands"][0]["appendContinuationItemsAction"]["continuationItems"].array {
+                ///Check wether each "contents" entry is
+                for potentialContinuationRenderer in relevantContentJSON {
+                    if let continuationToken = potentialContinuationRenderer["continuationItemRenderer"]["continuationEndpoint"]["continuationCommand"]["token"].string {
+                        ///1. A continuationItemRenderer that contains a continuation token
+                        continuationResponse.continuationToken = continuationToken
+                    } else if
+                        let adArray = potentialContinuationRenderer["itemSectionRenderer"]["contents"].array,
+                            adArray.count == 1,
+                            adArray[0]["adSlotRenderer"]["enablePacfLoggingWeb"].bool != nil {
+                        ///2. An advertising entry
+                        continue
+                    } else if let resultsList = potentialContinuationRenderer["itemSectionRenderer"]["contents"].array {
+                        ///3. The actual list of results
+                        continuationResponse.results.append(contentsOf: decodedResults(results: resultsList))
+                    }
+                }
+            }
+            
+            return continuationResponse
+        }
     }
 }

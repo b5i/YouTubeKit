@@ -169,7 +169,7 @@ public enum YTSearchResultType: String, Codable, CaseIterable {
         /// Channel's identifier, can be used to get the informations about the channel.
         ///
         /// For example:
-        /// ```
+        /// ```swift
         /// let channel: Channel = ...
         /// if let channelId = channel.browseId {
         ///     sendRequest(responseType: ChannelInfos.self, browseId: channelId, params: ("Kind of the wanted informations // (TODO) need to create an enum with the possibilites"), result: { result, error in
@@ -214,7 +214,7 @@ public enum YTSearchResultType: String, Codable, CaseIterable {
             /// Channel's identifier, can be used to get the informations about the channel.
             ///
             /// For example:
-            /// ```
+            /// ```swift
             /// let channel: Channel = ...
             /// if let channelId = channel.browseId {
             ///     sendRequest(responseType: ChannelInfos.self, browseId: channelId, params: ("Kind of the wanted informations // (TODO) need to create an enum with the possibilites"), result: { result, error in
@@ -273,7 +273,7 @@ public enum YTSearchResultType: String, Codable, CaseIterable {
         /// Playlist's identifier, can be used to get the informations about the channel.
         ///
         /// For example:
-        /// ```
+        /// ```swift
         /// let playlist: Playlist = ...
         /// if let playlistId = playlist.playlistId {
         ///     sendRequest(responseType: PlaylistInfos.self, browseId: playlistId, result: { result, error in

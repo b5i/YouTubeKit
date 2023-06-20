@@ -13,7 +13,7 @@ import FoundationNetworking
 /// Define a particular YouTube response and how to process it.
 ///
 /// e.g.
-/// ```
+/// ```swift
 /// struct MyCustomResponse: YouTubeResponse {
 ///     static var headersType: HeaderTypes = .exampleHeadersType
 ///     static func decodeData(data: Data) -> MyCustomResponse {

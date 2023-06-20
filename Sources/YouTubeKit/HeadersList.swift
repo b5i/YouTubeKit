@@ -80,8 +80,11 @@ public struct HeadersList: Codable {
     /// Base structure of a HTTP header.
     ///
     /// e.g. the header **`Host:  www.youtube.com`** would be
-    /// ```
-    /// Header(name: "Host", content: "www.youtube.com")
+    /// ```swift
+    /// Header(
+    ///     name: "Host",
+    ///     content: "www.youtube.com"
+    /// )
     /// ```
     public struct Header: Codable {
         /// Name of the header.
@@ -93,7 +96,7 @@ public struct HeadersList: Codable {
 
     /// The body is usually splitted in multiple parts where a dynamic string has to be placed, adding a ``AddQueryInfo`` lets you specify what to place between those parts of body and if it should encode it or not.
     ///
-    /// ```
+    /// ```swift
     /// let body = ["you", "be"]
     /// AddQueryInfo(
     ///     index: 0,

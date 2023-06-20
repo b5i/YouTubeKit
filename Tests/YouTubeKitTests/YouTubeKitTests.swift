@@ -228,4 +228,26 @@ final class YouTubeKitTests: XCTestCase {
             XCTFail(TEST_NAME + "Couldn't encode testPlaylistData to Data.")
         }
     }
+    
+    func testSearchResponseContinuation() async {
+        let TEST_NAME = "Test: testSearchResponseContinuation() -> "
+        
+        let (requestResult, _) = await SearchResponse.sendRequest(youtubeModel: YTM, data: [.query: "fred again"])
+        XCTAssertNotEqual(requestResult?.continuationToken, "", TEST_NAME + "Checking if continuationToken is defined.")
+        XCTAssertNotEqual(requestResult?.visitorData, "", TEST_NAME + "Checking if visitorData is defined.")
+        if let requestResult = requestResult {
+            let (continuationResult, _) = await SearchResponse.Continuation.sendRequest(youtubeModel: YTM, data: [
+                .continuation: requestResult.continuationToken,
+                .visitorData: requestResult.visitorData
+            ])
+            if let continuationResult = continuationResult {
+                XCTAssertNotEqual(continuationResult.continuationToken, "", TEST_NAME + "Checking continuationToken for SearchResponse.Contination.")
+                XCTAssertNotEqual(continuationResult.results.count, 0, TEST_NAME + "Checking if continuation results aren't empty.")
+            } else {
+                XCTFail(TEST_NAME + "Failed to get continuationResult (SearchResponse.Continuation request failed).")
+            }
+        } else {
+            XCTFail(TEST_NAME + "Failed to get requestResult (SearchResponse request failed).")
+        }
+    }
 }
