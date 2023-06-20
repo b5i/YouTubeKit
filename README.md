@@ -17,9 +17,9 @@ Please note that this is adapted from another iOS app and so is in constant deve
 ## Default requests:
 Here is a list of the default requests supported by YouTubeKit, all the informations are 
 
-- `SearchResponse` -> get results for a text query.
-- `SearchResponse.Continuation` -> get more results for a text query ("load more" button).
-- `VideoInfosResponse` -> get the infos of a video by ID.
+- [SearchResponse](https://github.com/b5i/YouTubeKit/blob/55633edd56a5a0c2ec4d315422f2590d2348ae20/Sources/YouTubeKit/YouTubeResponseTypes/Search/SearchResponse.swift#LL11C46-L11C46) -> get results for a text query.
+- [SearchResponse.Continuation](https://github.com/b5i/YouTubeKit/blob/55633edd56a5a0c2ec4d315422f2590d2348ae20/Sources/YouTubeKit/YouTubeResponseTypes/Search/SearchResponse.swift#L94) -> get more results for a text query ("load more" button).
+- [VideoInfosResponse](https://github.com/b5i/YouTubeKit/blob/1aed7cf4ef662b3ba689ce28f05a8b0f496ed7e6/Sources/YouTubeKit/YouTubeResponseTypes/VideoInfos/VideoInfosResponse.swift#L11) -> get the infos of a video by ID.
 
 ## Make requests:
 With YouTubeKit you can make a large variety of requests to the YouTube API, new request types are added often and you can even create your own in [Custom requests/responses](#custom-requests-and-responses).
