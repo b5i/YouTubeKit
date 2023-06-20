@@ -14,6 +14,13 @@ YouTubeKit is a powerful Swift package to make requests to the YouTube API witho
 
 Please note that this is adapted from another iOS app and so is in constant developpement.
 
+## Default requests:
+Here is a list of the default requests supported by YouTubeKit, all the informations are 
+
+- `SearchResponse` -> get results for a text query.
+- `SearchResponse.Continuation` -> get more results for a text query ("load more" button).
+- `VideoInfosResponse` -> get the infos of a video by ID.
+
 ## Make requests:
 With YouTubeKit you can make a large variety of requests to the YouTube API, new request types are added often and you can even create your own in [Custom requests/responses](#custom-requests-and-responses).
 
