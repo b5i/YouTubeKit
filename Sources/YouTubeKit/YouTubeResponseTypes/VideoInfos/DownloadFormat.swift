@@ -13,20 +13,21 @@ public protocol DownloadFormat {
     static var type: MediaType { get }
     
     /// Average birate of the media.
-    var averageBitrate: Int { get }
+    var averageBitrate: Int? { get }
     
     /// Content length of the media, in bytes.
-    var contentLength: Int { get }
+    var contentLength: Int? { get }
     
     /// Duration of the media in milliseconds.
-    var contentDuration: Int { get }
+    var contentDuration: Int? { get }
     
     /// Boolean indicating if the media is protected by YouTube from downloading.
     ///
     /// **Warning**:
     /// This property doesn't tell you if the media is copyright-free!
-    var isCopyrightedMedia: Bool { get }
+    var isCopyrightedMedia: Bool? { get }
     
     /// Download URL of the format.
-    var url: URL { get set }
+    var url: URL? { get set }
+    
 }

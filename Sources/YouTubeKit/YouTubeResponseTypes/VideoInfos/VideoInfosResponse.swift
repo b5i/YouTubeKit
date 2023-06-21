@@ -70,7 +70,14 @@ public struct VideoInfosResponse: YouTubeResponse {
     
     public static func decodeData(data: Data) -> VideoInfosResponse {
         let json = JSON(data)
-        
+
+        return decodeJSON(json)
+    }
+    
+    /// Decode json to give an instance of ``VideoInfosResponse``.
+    /// - Parameter json: the json to be decoded.
+    /// - Returns: an instance of ``VideoInfosResponse``.
+    public static func decodeJSON(_ json: JSON) -> VideoInfosResponse {
         /// Extract the dictionnaries that contains the video details and streaming data.
         let videoDetailsJSON = json["videoDetails"]
         let streamingJSON = json["streamingData"]
@@ -100,5 +107,9 @@ public struct VideoInfosResponse: YouTubeResponse {
             }(),
             viewCount: videoDetailsJSON["viewCount"].string
         )
+    }
+    
+    public static func createEmpty() -> VideoInfosResponse {
+        return VideoInfosResponse(channel: .init(), keywords: [], thumbnails: [])
     }
 }

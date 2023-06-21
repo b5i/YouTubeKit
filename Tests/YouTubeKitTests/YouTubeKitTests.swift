@@ -269,4 +269,14 @@ final class YouTubeKitTests: XCTestCase {
         XCTAssertNotNil(requestResult.videoURLsExpireAt, TEST_NAME + "Checking if requestResult.videoURLsExpireAt is not nil.")
         XCTAssertNotNil(requestResult.viewCount, TEST_NAME + "Checking if requestResult.viewCount is not nil.")
     }
+    
+    func testVideoInfosWithDownloadFormatsResponse() async {
+        let TEST_NAME = "Test: testVideoInfosWithDownloadFormatsResponse() -> "
+        
+        VideoInfosWithDownloadFormatsResponse.removePlayersFromDisk()
+        
+        let (requestResult, _) = await VideoInfosWithDownloadFormatsResponse.sendRequest(youtubeModel: YTM, data: [.query: "90RLzVUuXe4"])
+        
+        guard let requestResult = requestResult else { XCTFail(TEST_NAME + "requestResult is not defined."); return }
+    }
 }
