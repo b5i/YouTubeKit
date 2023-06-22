@@ -23,10 +23,16 @@ public class YouTubeModel {
     /// Set the locale you want to receive the call responses in.
     public var selectedLocale: String = Locale.preferredLanguages[0]
     
+    /// Get the language code for ``YouTubeModel/selectedLocale``.
+    ///
+    /// e.g. fr-CH (where fr is the langague code for "french" and CH represents Switzerland as a country), it would return "fr".
     public var selectedLocaleLanguageCode: String {
         selectedLocale.components(separatedBy: "-")[0].lowercased()
     }
     
+    /// Get the country code for ``YouTubeModel/selectedLocale``.
+    ///
+    /// e.g. fr-CH (where fr is the langague code for "french" and CH represents Switzerland as a country), it would return "ch".
     public var selectedLocaleCountryCode: String {
         let splittedLocale = selectedLocale.components(separatedBy: "-")
         guard splittedLocale.count > 1 else { return selectedLocaleLanguageCode }
