@@ -278,5 +278,21 @@ final class YouTubeKitTests: XCTestCase {
         let (requestResult, _) = await VideoInfosWithDownloadFormatsResponse.sendRequest(youtubeModel: YTM, data: [.query: "90RLzVUuXe4"])
         
         guard let requestResult = requestResult else { XCTFail(TEST_NAME + "requestResult is not defined."); return }
+        
+        XCTAssertNotEqual(requestResult.downloadFormats.count, 0, TEST_NAME + "Checking if requestResult.downloadFormats is empty")
+        XCTAssertNotEqual(requestResult.downloadFormats.count, 0, TEST_NAME + "Checking if requestResult.downloadFormats is empty")
+    }
+    
+    func testAutoCompletionResponse() async {
+        let TEST_NAME = "Test: testAutoCompletionResponse() -> "
+        
+        let query: String = "mrbe"
+        
+        let (requestResult, _) = await AutoCompletionResponse.sendRequest(youtubeModel: YTM, data: [.query: query])
+        
+        guard let requestResult = requestResult else { XCTFail(TEST_NAME + "requestResult is not defined."); return }
+        
+        XCTAssertEqual(requestResult.initialQuery, query, TEST_NAME + "Checking if query and initialQuery are equal")
+        XCTAssertNotEqual(requestResult.autoCompletionEntries.count, 0, TEST_NAME + "Checking if requestResult.autoCompletionEntries is empty")
     }
 }

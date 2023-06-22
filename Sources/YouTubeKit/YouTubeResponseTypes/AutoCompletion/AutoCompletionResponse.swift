@@ -7,16 +7,22 @@
 
 import Foundation
 
+/// Struct representing an search AutoCompletion response.
+///
+/// Note: by using this request you consent to YouTube's cookie policy (even if no cookies are kept wiht YouTubeKit).
 public struct AutoCompletionResponse: YouTubeResponse {
     public static var headersType: HeaderTypes = .autoCompletion
     
+    /// Text query used to get the search suggestions.
     public var initialQuery: String = ""
     
+    /// An array of string representing the search suggestion, usually sorted by relevance from most to least.
     public var autoCompletionEntries: [String] = []
     
     public static func decodeData(data: Data) -> AutoCompletionResponse {
         var response = AutoCompletionResponse()
-        var dataString = String(data: data, encoding: .utf8)!.replacingOccurrences(of: "window.google.ac.h(", with: "")
+        var dataString = String(decoding: data, as: UTF8.self)
+            .replacingOccurrences(of: "window.google.ac.h(", with: "")
         dataString = String(dataString.dropLast())
         guard let dataFromDataString = dataString.data(using: .utf8) else { return response }
         let json = JSON(dataFromDataString)
@@ -49,10 +55,15 @@ public struct AutoCompletionResponse: YouTubeResponse {
         for jsonElement in jsonArray {
             if let initialQuery = jsonElement.string {
                 response.initialQuery = initialQuery
-            } else if let autoCompletionEntryArray = jsonElement.array {
-                for autoCompletionEntry in autoCompletionEntryArray {
-                    if let autoCompletionString = autoCompletionEntry.string {
-                        response.autoCompletionEntries.append(autoCompletionString)
+            } else if let autoCompletionEntriesArray = jsonElement.array {
+                for autoCompletionEntry in autoCompletionEntriesArray {
+                    if let autoCompletionEntry = autoCompletionEntry.array {
+                        for entryPartsOfArray in autoCompletionEntry {
+                            if let autoCompletionString = entryPartsOfArray.string {
+                                response.autoCompletionEntries.append(autoCompletionString)
+                                break
+                            }
+                        }
                     }
                 }
             }

@@ -23,6 +23,16 @@ public class YouTubeModel {
     /// Set the locale you want to receive the call responses in.
     public var selectedLocale: String = Locale.preferredLanguages[0]
     
+    public var selectedLocaleLanguageCode: String {
+        selectedLocale.components(separatedBy: "-")[0].lowercased()
+    }
+    
+    public var selectedLocaleCountryCode: String {
+        let splittedLocale = selectedLocale.components(separatedBy: "-")
+        guard splittedLocale.count > 1 else { return selectedLocaleLanguageCode }
+        return splittedLocale[1].lowercased()
+    }
+    
     /// Set Google account's cookies to perform user-related API calls.
     ///
     /// The required cookie fields are:
@@ -317,24 +327,26 @@ public class YouTubeModel {
             return headers
         } else {
             return HeadersList(
-                url: URL(string: "https://suggestqueries-clients6.youtube.com/complete/search?client=youtube&hl=fr&gl=fr&gs_ri=youtube&ds=yt")!,
+                url: URL(string: "https://suggestqueries-clients6.youtube.com/complete/search")!,
                 method: .GET,
                 headers: [
-                    .init(name: "Accept", content: "*/*"),
-                    .init(name: "Accept-Encoding", content: "gzip, deflate, br"),
-                    .init(name: "Host", content: "www.youtube.com"),
-                    .init(name: "User-Agent", content: "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.1 Safari/605.1.15"),
-                    .init(name: "Accept-Language", content: "\(self.selectedLocale);q=0.9"),
-                    .init(name: "Origin", content: "https://www.youtube.com/"),
-                    .init(name: "Referer", content: "https://www.youtube.com/"),
-                    .init(name: "Content-Type", content: "application/json"),
-                    .init(name: "Priority", content: "u=1, i")
+                    //.init(name: "Accept", content: "*/*"),
+                    //.init(name: "Accept-Encoding", content: "gzip, deflate, br"),
+                    //.init(name: "Host", content: "www.youtube.com"),
+                    //.init(name: "User-Agent", content: "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.1 Safari/605.1.15"),
+                    //.init(name: "Accept-Language", content: "\(self.selectedLocale);q=0.9"),
+                    //.init(name: "Origin", content: "https://www.youtube.com/"),
+                    //.init(name: "Referer", content: "https://www.youtube.com/"),
+                    //.init(name: "Content-Type", content: "application/json"),
+                    //.init(name: "Priority", content: "u=1, i"),
+                    //.init(name: "Cookie", content: "CONSENT=YES+cb.20230622-17-p0.en+FX+841")
                 ],
                 parameters: [
                     .init(name: "client", content: "youtube"),
-                    .init(name: "hl", content: self.selectedLocale.lowercased().components(separatedBy: "-")[0]), //e.g.: "fr-FR" would become "fr"
-                    .init(name: "gl", content: self.selectedLocale.lowercased().components(separatedBy: "-")[0]),
+                    .init(name: "hl", content: self.selectedLocaleLanguageCode),
+                    .init(name: "gl", content: self.selectedLocaleCountryCode),
                     .init(name: "gs_ri", content: "youtube"),
+                    .init(name: "gs_rn", content: "64"),
                     .init(name: "ds", content: "yt"),
                     .init(name: "q", content: "", specialContent: .query)
                 ]
