@@ -25,6 +25,9 @@ Here is a list of the default requests supported by YouTubeKit, all the informat
 
 - [AutoCompletionResponse](https://github.com/b5i/YouTubeKit/blob/1458b48d66d7cfc3b095186ca7f1e5d561188506/Sources/YouTubeKit/YouTubeResponseTypes/AutoCompletion/AutoCompletionResponse.swift#L13) -> get autoCompletion suggestions from a text query.
 
+- [ChannelInfosResponse](https://github.com/b5i/YouTubeKit/blob/be3ff98f57856ab8f75e00c07d8b49c2281004b3/Sources/YouTubeKit/YouTubeResponseTypes/ChannelInfos/ChannelInfosResponse.swift#L10C15-L10C35) -> get infos of a YouTube channel by its id.
+    - Possiblity to fetch more infos about the channels like its [Videos](https://github.com/b5i/YouTubeKit/blob/be3ff98f57856ab8f75e00c07d8b49c2281004b3/Sources/YouTubeKit/YouTubeResponseTypes/ChannelInfos/ChannelInfosResponse.swift#L278), [Shorts](https://github.com/b5i/YouTubeKit/blob/be3ff98f57856ab8f75e00c07d8b49c2281004b3/Sources/YouTubeKit/YouTubeResponseTypes/ChannelInfos/ChannelInfosResponse.swift#L309), [Directs](https://github.com/b5i/YouTubeKit/blob/be3ff98f57856ab8f75e00c07d8b49c2281004b3/Sources/YouTubeKit/YouTubeResponseTypes/ChannelInfos/ChannelInfosResponse.swift#L340) and [Playlists](https://github.com/b5i/YouTubeKit/blob/be3ff98f57856ab8f75e00c07d8b49c2281004b3/Sources/YouTubeKit/YouTubeResponseTypes/ChannelInfos/ChannelInfosResponse.swift#L371).
+
 
 ## Make requests:
 With YouTubeKit you can make a large variety of requests to the YouTube API, new request types are added often and you can even create your own in [Custom requests/responses](#custom-requests-and-responses).
