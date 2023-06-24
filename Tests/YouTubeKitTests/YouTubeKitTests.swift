@@ -161,10 +161,10 @@ final class YouTubeKitTests: XCTestCase {
         """
         
         /// Testing video decoding
-        let testVideoShouldBe = YTSearchResultType.Video(
+        let testVideoShouldBe = YTVideo(
             videoId: "3jS_yEK8qVI",
             title: "L'Escape Game Le Plus Dangereux Au Monde",
-            channel: .init(name: "MrBeast", browseId: "UCX6OQ3DkcsbYNE6H8uQQuVA"),
+            channel: .init(name: "MrBeast", channelId: "UCX6OQ3DkcsbYNE6H8uQQuVA"),
             viewCount: "208 M de vues",
             timePosted: "il y a 1 an",
             timeLength: "8:01",
@@ -175,16 +175,16 @@ final class YouTubeKitTests: XCTestCase {
         )
         
         if let testVideoData = testVideo.data(using: .utf8, allowLossyConversion: false) {
-            let testResponseVideo = YTSearchResultType.Video.decodeJSON(data: testVideoData)
+            let testResponseVideo = YTVideo.decodeJSON(data: testVideoData)
             XCTAssertEqual(testResponseVideo, testVideoShouldBe, TEST_NAME + "Checking video decoding")
         } else {
             XCTFail(TEST_NAME + "Couldn't encode testVideoData to Data.")
         }
         
         /// Testing channel decoding
-        let testChannelShouldBe = YTSearchResultType.Channel(
+        let testChannelShouldBe = YTChannel(
             name: "MrBeast",
-            browseId: "UCX6OQ3DkcsbYNE6H8uQQuVA",
+            channelId: "UCX6OQ3DkcsbYNE6H8uQQuVA",
             thumbnails: [
                 .init(width: 88, height: 88, url: URL(string: "https://yt3.googleusercontent.com/ytc/AGIKgqNRr7IEdQ7TplsO8BG-KjG19aCcCpVjiV9l36-9lQ=s88-c-k-c0x00ffffff-no-rj-mo")!),
                 .init(width: 176, height: 176, url: URL(string: "https://yt3.googleusercontent.com/ytc/AGIKgqNRr7IEdQ7TplsO8BG-KjG19aCcCpVjiV9l36-9lQ=s176-c-k-c0x00ffffff-no-rj-mo")!)
@@ -196,14 +196,14 @@ final class YouTubeKitTests: XCTestCase {
         )
         
         if let testChannelData = testChannel.data(using: .utf8, allowLossyConversion: false) {
-            let testResponseChannel = YTSearchResultType.Channel.decodeJSON(data: testChannelData)
+            let testResponseChannel = YTChannel.decodeJSON(data: testChannelData)
             XCTAssertEqual(testResponseChannel, testChannelShouldBe, TEST_NAME + "Checking channel decoding")
         } else {
             XCTFail(TEST_NAME + "Couldn't encode testChannelData to Data.")
         }
         
         /// Testing playlist decoding
-        let testPlaylistShouldBe = YTSearchResultType.Playlist(
+        let testPlaylistShouldBe = YTPlaylist(
             playlistId: "PLJ-qODNIUEEtPdKZNLfbx7JOuRA_JjUxI",
             title: "MrBeast Video Playlist",
             thumbnails: [
@@ -213,7 +213,7 @@ final class YouTubeKitTests: XCTestCase {
                 .init(width: 336, height: 188, url: URL(string: "https://i.ytimg.com/vi/TQHEJj68Jew/hqdefault.jpg?sqp=-oaymwEXCNACELwBSFryq4qpAwkIARUAAIhCGAE=&rs=AOn4CLCYL9AEl5xWqrQ5oNNFywEj5Emnrw")!)
             ],
             videoCount: "206 vidéos",
-            channel: .init(name: "anjobanjo", browseId: "UCz-K9goyvbPIZq29lLJvrSA"),
+            channel: .init(name: "anjobanjo", channelId: "UCz-K9goyvbPIZq29lLJvrSA"),
             timePosted: "Mise à jour hier",
             frontVideos: [
                 .init(videoId: "TQHEJj68Jew", title: "I Got Hunted By A Real Bounty Hunter", viewCount: "", timeLength: "14:21"),
@@ -222,7 +222,7 @@ final class YouTubeKitTests: XCTestCase {
         )
         
         if let testPlaylistData = testPlaylist.data(using: .utf8, allowLossyConversion: false) {
-            let testResponsePlaylist = YTSearchResultType.Playlist.decodeJSON(data: testPlaylistData)
+            let testResponsePlaylist = YTPlaylist.decodeJSON(data: testPlaylistData)
             XCTAssertEqual(testResponsePlaylist, testPlaylistShouldBe, TEST_NAME + "Checking playlist decoding")
         } else {
             XCTFail(TEST_NAME + "Couldn't encode testPlaylistData to Data.")
@@ -259,7 +259,7 @@ final class YouTubeKitTests: XCTestCase {
         guard let requestResult = requestResult else { XCTFail(TEST_NAME + "requestResult is not defined."); return }
         
         XCTAssertNotNil(requestResult.channel.name, TEST_NAME + "Checking if requestResult.channel.name is not nil.")
-        XCTAssertNotNil(requestResult.channel.browseId, TEST_NAME + "Checking if requestResult.channel.browseId is not nil.")
+        XCTAssertNotNil(requestResult.channel.channelId, TEST_NAME + "Checking if requestResult.channel.browseId is not nil.")
         XCTAssertNotNil(requestResult.isLive, TEST_NAME + "Checking if requestResult.isLive is not nil.")
         XCTAssertNotEqual(requestResult.keywords.count, 0, TEST_NAME + "Checking if requestResult.channel.name is not nil.")
         XCTAssertNotNil(requestResult.streamingURL, TEST_NAME + "Checking if requestResult.streamingURL is not nil.")
@@ -294,5 +294,55 @@ final class YouTubeKitTests: XCTestCase {
         
         XCTAssertEqual(requestResult.initialQuery, query, TEST_NAME + "Checking if query and initialQuery are equal")
         XCTAssertNotEqual(requestResult.autoCompletionEntries.count, 0, TEST_NAME + "Checking if requestResult.autoCompletionEntries is empty")
+    }
+    
+    func testChannelInfosResponse() async {
+        let TEST_NAME = "Test: testChannelInfosResponse() -> "
+        
+        let (videoResult, videoResultError) = await VideoInfosResponse.sendRequest(youtubeModel: YTM, data: [.query: "WcwGleN38zE"])
+        
+        guard let videoResult = videoResult else { XCTFail(TEST_NAME + "Couldn't get video infos, error: \(String(describing: videoResultError))"); return }
+        
+        guard let channelId = videoResult.channel.channelId, channelId != "" else { XCTFail(TEST_NAME + "The channelId in the retrieved video is not defined (nil or empty)."); return }
+        
+        let (mainRequestResult, mainRequestResultError) = await ChannelInfosResponse.sendRequest(youtubeModel: YTM, data: [.browseId: channelId])
+        
+        guard var mainRequestResult = mainRequestResult else { XCTFail(TEST_NAME + "Couldn't get channel base infos, error: \(String(describing: mainRequestResultError))"); return }
+        
+        XCTAssertNotNil(mainRequestResult.videosCount, TEST_NAME + "Checking if mainRequestResult.videosCount is not nil")
+        
+        /// Testing ChannelContent fetching, Videos, Shorts, Directs and Playlists
+        
+        ///Videos
+        let (videoRequestResult, videoRequestResultError) = await mainRequestResult.getChannelContent(type: .videos, youtubeModel: YTM)
+        
+        guard let videoRequestResult = videoRequestResult else { XCTFail(TEST_NAME + "Couldn't get channel Video special content, error: \(String(describing: videoRequestResultError))"); return }
+        
+        XCTAssertEqual(videoRequestResult.name, videoResult.channel.name, TEST_NAME + "Checking if videoRequestResult.name is equal to videoResult.channel.name")
+        XCTAssertEqual(videoRequestResult.channelId, videoResult.channel.channelId, TEST_NAME + "Checking if videoRequestResult.channelId is equal to videoResult.channel.channelId")
+        
+        /// Shorts
+        let (shortsRequestResult, shortsRequestResultError) = await mainRequestResult.getChannelContent(type: .shorts, youtubeModel: YTM)
+        
+        guard let shortsRequestResult = shortsRequestResult else { XCTFail(TEST_NAME + "Couldn't get channel Shorts special content, error: \(String(describing: shortsRequestResultError))"); return }
+        
+        XCTAssertEqual(shortsRequestResult.name, videoResult.channel.name, TEST_NAME + "Checking if shortsRequestResult.name is equal to videoResult.channel.name")
+        XCTAssertEqual(shortsRequestResult.channelId, videoResult.channel.channelId, TEST_NAME + "Checking if shortsRequestResult.channelId is equal to videoResult.channel.channelId")
+        
+        /// Directs
+        let (directsRequestResult, directsRequestResultError) = await mainRequestResult.getChannelContent(type: .directs, youtubeModel: YTM)
+        
+        guard let directsRequestResult = directsRequestResult else { XCTFail(TEST_NAME + "Couldn't get channel Directs special content, error: \(String(describing: directsRequestResultError))"); return }
+        
+        XCTAssertEqual(directsRequestResult.name, videoResult.channel.name, TEST_NAME + "Checking if directsRequestResult.name is equal to videoResult.channel.name")
+        XCTAssertEqual(directsRequestResult.channelId, videoResult.channel.channelId, TEST_NAME + "Checking if directsRequestResult.channelId is equal to videoResult.channel.channelId")
+        
+        /// Playlists
+        let (playlistsRequestResult, playlistsRequestResultError) = await mainRequestResult.getChannelContent(type: .playlists, youtubeModel: YTM)
+        
+        guard let playlistsRequestResult = playlistsRequestResult else { XCTFail(TEST_NAME + "Couldn't get channel Directs special content, error: \(String(describing: playlistsRequestResultError))"); return }
+        
+        XCTAssertEqual(playlistsRequestResult.name, videoResult.channel.name, TEST_NAME + "Checking if playlistsRequestResult.name is equal to videoResult.channel.name")
+        XCTAssertEqual(playlistsRequestResult.channelId, videoResult.channel.channelId, TEST_NAME + "Checking if playlistsRequestResult.channelId is equal to videoResult.channel.channelId")
     }
 }

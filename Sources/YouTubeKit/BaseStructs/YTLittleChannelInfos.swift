@@ -17,11 +17,11 @@ public struct YTLittleChannelInfos: Codable {
     /// For example:
     /// ```swift
     /// let YTM = YouTubeModel()
-    /// let channelBrowseId: String = ...
-    /// ChannelInfosResponse.sendRequest(youtubeModel: YTM, data: [.query : channelBrowseId], result: { result, error in
+    /// let channelId: String = ...
+    /// ChannelInfosResponse.sendRequest(youtubeModel: YTM, data: [.browseId : channelId], result: { result, error in
     ///      print(result)
     ///      print(error)
     /// })
     /// ```
-    public var browseId: String?
+    public var channelId: String?
 }

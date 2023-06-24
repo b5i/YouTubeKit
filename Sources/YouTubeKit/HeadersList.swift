@@ -121,6 +121,8 @@ public struct HeadersList: Codable {
         /// You can know wether to define them or not in ``HeaderTypes``
         public enum ContentTypes: String, Codable, CaseIterable, RawRepresentable {
             case query
+            
+            /// Can be for example videoId, channelId, playlistId etc...
             case browseId
             case continuation
             case params

@@ -9,6 +9,7 @@ import Foundation
 
 /// Struct representing a search response.
 public struct VideoInfosResponse: YouTubeResponse {
+    
     public static var headersType: HeaderTypes = .videoInfos
         
     /// Name of the channel that posted the video.
@@ -85,7 +86,7 @@ public struct VideoInfosResponse: YouTubeResponse {
         return VideoInfosResponse(
             channel: YTLittleChannelInfos(
                 name: videoDetailsJSON["author"].string,
-                browseId: videoDetailsJSON["channelId"].string
+                channelId: videoDetailsJSON["channelId"].string
             ),
             isLive: videoDetailsJSON["isLiveContent"].bool,
             keywords: videoDetailsJSON["keywords"].arrayObject as? [String] ?? [],

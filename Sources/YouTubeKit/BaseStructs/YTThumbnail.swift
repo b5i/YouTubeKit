@@ -20,9 +20,15 @@ public struct YTThumbnail: Codable, Equatable {
     
     /// Append to  `[Thumbnail]` another `[Thumbnail]` from JSON.
     /// - Parameters:
-    ///   - json: the JSON of the thumbnails.
+    ///   - json: the JSON of the thumbnails, of form
+    ///    {
+    ///     "thumbnail":
+    ///         {
+    ///             "thumbnails": [thumbnailsHere]
+    ///         }
+    ///    }
     ///   - thumbnailList: the array of `Thumbnail` where the ones in the given JSON have to be appended.
-    static func appendThumbnails(json: JSON, thumbnailList: inout [YTThumbnail]) {
+    public static func appendThumbnails(json: JSON, thumbnailList: inout [YTThumbnail]) {
         for thumbnail in json["thumbnail"]["thumbnails"].array ?? [] {
             if var url = thumbnail["url"].url {
                 /// URL is of form "//yt3.googleusercontent.com/ytc"

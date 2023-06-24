@@ -11,7 +11,7 @@ public extension YTSearchResult {
     /// Decode JSON from raw data.
     /// - Parameter data: raw data to be decoded.
     /// - Returns: An instance of the YTSearchResult.
-    static func decodeJSON(data: Data) -> Self {
+    static func decodeJSON(data: Data) -> Self? {
         return decodeJSON(json: JSON(data))
     }
 }

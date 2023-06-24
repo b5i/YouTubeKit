@@ -37,7 +37,7 @@ public enum HeaderTypes {
     
     /// Get channel infos.
     /// - Parameter browseId: Channel's ID
-    /// - Parameter params: The operation param (videos, shorts, directs, playlists)
+    /// - Parameter params: The operation param (videos, shorts, directs, playlists) (optional)
     case channelHeaders
     
     /// Get playlist's videos.

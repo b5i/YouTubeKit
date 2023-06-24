@@ -21,13 +21,24 @@ public protocol YTSearchResult: Codable, Equatable {
     
     /// Decode and process the JSON from Data, and give a decoded version of it..
     /// - Parameter data: the JSON encoded in Data.
-    /// - Returns: an instance of the decoded JSON object.
-    static func decodeJSON(data: Data) -> Self
+    /// - Returns: an instance of the decoded JSON object or nil if the item can't be decoded, can be checked before with ``YTSearchResult/canBeDecoded(data:)``.
+    static func decodeJSON(data: Data) -> Self?
     
     /// Process the JSON and give a decoded version of it.
     /// - Parameter json: the JSON that has to be decoded.
-    /// - Returns: an instance of the decoded JSON object.
-    static func decodeJSON(json: JSON) -> Self
+    /// - Returns: an instance of the decoded JSON object or nil if the item can't be decoded, can be checked before with ``YTSearchResult/canBeDecoded(json:)``.
+    static func decodeJSON(json: JSON) -> Self?
+    
+    /// Method indicating wether some Data can be converted to this type of ``YTSearchResult``.
+    /// - Parameter data: the data to be checked.
+    /// - Returns: a boolean indicating if the conversion is possible.
+    static func canBeDecoded(data: Data) -> Bool
+    
+    
+    /// Method indicating wether some JSON can be converted to this type of ``YTSearchResult``.
+    /// - Parameter json: the json to be checked.
+    /// - Returns: a boolean indicating if the conversion is possible.
+    static func canBeDecoded(json: JSON) -> Bool
     
     /// Identifier of the item in the request result array, useful when you want to display all your results in the right order.
     /// Has to be defined during the array push operation.
