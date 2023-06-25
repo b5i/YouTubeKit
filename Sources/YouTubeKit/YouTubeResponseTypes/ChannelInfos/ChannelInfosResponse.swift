@@ -25,7 +25,7 @@ public struct ChannelInfosResponse: YouTubeResponse {
     /// Usually like "BADGE_STYLE_TYPE_VERIFIED"
     public var badges: [String] = []
     
-    /// Dictionnary associating a ``RequestTypes`` with some content, used to store multiple different ``ChannelContent`` for different types. It can be seen as some cache for every type of ``RequestTypes``.
+    /// Dictionnary associating a ``ChannelInfosResponse/RequestTypes-swift.enum`` with some content, used to store multiple different ``ChannelContent`` for different types. It can be seen as some cache for every type of ``ChannelInfosResponse/RequestTypes-swift.enum``.
     ///
     /// You can also merge the content that contains by using:
     /// ```swift
@@ -37,7 +37,18 @@ public struct ChannelInfosResponse: YouTubeResponse {
     ///     }
     /// }
     /// ```
-    public var channelContentStore: [RequestTypes : ChannelContent] = [:]
+    public var channelContentStore: [RequestTypes : any ChannelContent] = [:]
+    
+    /// Dictionnary associating a ``ChannelInfosResponse/RequestTypes-swift.enum`` with an optional continuation token, it is nil if the results reached the end of the list, (e.g: all the videos of a channel have been fetched).
+    ///
+    /// You can use this token like this:
+    /// ```swift
+    /// let YTM = YouTubeModel()
+    /// if let myVideosContinuation = channelContentContinuationStore[.videos] {
+    ///     get
+    /// }
+    /// ```
+    public var channelContentContinuationStore: [RequestTypes : String?] = [:]
     
     /// Channel's identifier, can be used to get the informations about the channel.
     ///
@@ -53,7 +64,7 @@ public struct ChannelInfosResponse: YouTubeResponse {
     public var channelId: String?
     
     /// ChannelContent that is displayed, by default if no params were precised is the default content, the requested content in case some params were given.
-    public var currentContent: ChannelContent?
+    public var currentContent: (any ChannelContent)?
     
     /// Dictionnary that lets you create your own ChannelContent processing.
     ///
@@ -175,6 +186,7 @@ public struct ChannelInfosResponse: YouTubeResponse {
                             )
                         )
                         toReturn.channelContentStore[requestType] = decodedContent
+                        toReturn.channelContentContinuationStore[requestType] = requestClass.getContinuationFromTab(json: tab)
                         toReturn.currentContent = decodedContent
                     }
                     /// We now get the params for the type.
@@ -203,7 +215,7 @@ public struct ChannelInfosResponse: YouTubeResponse {
     /// Get a content from a channel, the content represents one of the tabs you see when browsing on YouTube's website in a channel's webpage. For example: Home, Videos, Shorts, Playlists etc...
     /// - Parameters:
     ///   - type: Type of content requested, (the tab of the wanted content).
-    ///   - youtubeModel: the YouTubeModel that will be used to get the request headers.
+    ///   - youtubeModel: the ``YouTubeModel`` that will be used to get the request headers.
     ///   - result: An instance of ``ChannelInfosResponse`` containing the result and updated channel properties or/and an error.
     ///
     /// You can update your instance of ``ChannelInfosResponse``with the new one by using ``ChannelInfosResponse/copyProperties(of:)`` with the new instance ``ChannelInfosResponse`` that this method returns.
@@ -227,7 +239,7 @@ public struct ChannelInfosResponse: YouTubeResponse {
     ///     }
     /// }
     /// ```
-    public mutating func getChannelContent(type: RequestTypes, youtubeModel: YouTubeModel, result: @escaping (ChannelInfosResponse?, Error?) -> ()) {
+    public func getChannelContent(type: RequestTypes, youtubeModel: YouTubeModel, result: @escaping (ChannelInfosResponse?, Error?) -> ()) {
         guard
             let params = requestParams[type]
         else { result(nil, "Something between returnType or params haven't been added where it should, returnType in ChannelInfosResponse.requestTypes and params in ChannelInfosResponse.requestParams"); return }
@@ -241,7 +253,7 @@ public struct ChannelInfosResponse: YouTubeResponse {
     /// Get a content from a channel, the content represents one of the tabs you see when browsing on YouTube's website in a channel's webpage. For example: Home, Videos, Shorts, Playlists etc...
     /// - Parameters:
     ///   - type: Type of content requested, (the tab of the wanted content).
-    ///   - youtubeModel: the YouTubeModel that will be used to get the request headers.
+    ///   - youtubeModel: the ``YouTubeModel`` that will be used to get the request headers.
     /// - Returns: An instance of ``ChannelInfosResponse`` containing the result and updated channel properties or/and an error.
     ///
     /// You can update your instance of ``ChannelInfosResponse``with the new one by using ``ChannelInfosResponse/copyProperties(of:)`` with the new instance ``ChannelInfosResponse`` that this method returns.
@@ -266,7 +278,7 @@ public struct ChannelInfosResponse: YouTubeResponse {
     /// }
     /// ```
     @available(macOS 10.15, iOS 13.0, watchOS 6.0, tvOS 13.0, *)
-    public mutating func getChannelContent(type: RequestTypes, youtubeModel: YouTubeModel) async -> (ChannelInfosResponse?, Error?) {
+    public func getChannelContent(type: RequestTypes, youtubeModel: YouTubeModel) async -> (ChannelInfosResponse?, Error?) {
         return await withCheckedContinuation({ (continuation: CheckedContinuation<(ChannelInfosResponse?, Error?), Never>) in
             getChannelContent(type: type, youtubeModel: youtubeModel, result: { channelContent, error in
                 continuation.resume(returning: (channelContent, error))
@@ -274,10 +286,68 @@ public struct ChannelInfosResponse: YouTubeResponse {
         })
     }
     
+    /// Get the continuation results for a certain ChannelContent.
+    /// - Parameters:
+    ///   - youtubeModel: the ``YouTubeModel`` that will be used to get the request headers.
+    ///   - result: a ``ChannelInfosResponse/ContentContinuation`` representing the result (see definition) or/and an Error indicating why it failed.
+    public func getChannelContentContinuation<T: ChannelContent>(
+        _: T.Type,
+        youtubeModel: YouTubeModel,
+        result: @escaping (ContentContinuation<T>?, Error?
+        ) -> ()) {
+        guard
+            /// Get requestType from the given ChannelContent (T)
+            let requestType = channelContentStore.first(where: { element in
+                type(of: element.value) == T.self
+            })?.key,
+            /// Get the continuation token from this requestType
+            let continuationToken = channelContentContinuationStore.first(where: {$0.key == requestType})?.value
+        else { result(nil, "There is no continuation token for this type (\(T.self)"); return }
+        ContentContinuation.sendRequest(
+            youtubeModel: youtubeModel,
+            data: [.continuation: continuationToken], result: result
+        )
+    }
+    
+    @available(macOS 10.15, iOS 13.0, watchOS 6.0, tvOS 13.0, *)
+    /// Get the continuation results for a certain ChannelContent.
+    /// - Parameter youtubeModel: the ``YouTubeModel`` that will be used to get the request headers.
+    /// - Returns: a ``ChannelInfosResponse/ContentContinuation`` representing the result (see definition) or/and an Error indicating why it failed.
+    public func getChannelContentContinuation<T: ChannelContent>(
+        _: T.Type,
+        youtubeModel: YouTubeModel
+    ) async -> (ContentContinuation<T>?, Error?) {
+        return await withCheckedContinuation({ (continuation: CheckedContinuation<(ContentContinuation<T>?, Error?), Never>) in
+            getChannelContentContinuation(T.self, youtubeModel: youtubeModel, result: { result, error in
+                continuation.resume(returning: (result, error))
+            })
+        })
+    }
+    
+    
+    /// Struct representing the continuation of a certain ``ChannelContent``.
+    public struct ContentContinuation<T: ChannelContent>: YouTubeResponse {
+        static public var headersType: HeaderTypes {
+            return .channelContinuationHeaders
+        }
+        
+        /// Content of the continuation.
+        public var contents: T?
+    
+        /// Token that you will be able to use to continue the continuation, nil if there isn't
+        public var newContinuationToken: String?
+        
+        public static func decodeData(data: Data) -> ContentContinuation {
+            let json = JSON(data)
+            return T.decodeContinuation(json: json)
+        }
+    }
+        
     /// Struct representing the "Videos" tab in a channel's webpage on YouTube's website.
     public struct Videos: ChannelContent {
-        public static var type: ChannelInfosResponse.RequestTypes = .videos
         
+        public static var type: ChannelInfosResponse.RequestTypes = .videos
+                
         public var videos: [YTVideo] = []
         
         public static func canDecode(json: JSON) -> Bool {
@@ -299,6 +369,30 @@ public struct ChannelInfosResponse: YouTubeResponse {
             return toReturn
         }
         
+        public static func decodeContinuation(json: JSON) -> ContentContinuation<Videos> {
+            var toReturn = ContentContinuation<Videos>()
+            guard
+                let itemsArray = json["onResponseReceivedActions"].array,
+                    itemsArray.count > 0,
+                    let itemsArray = itemsArray[0]["appendContinuationItemsAction"]["continuationItems"].array
+            else { return toReturn }
+            
+            var result = Videos()
+            
+            for continuationItem in itemsArray {
+                let videoJSON = continuationItem["richItemRenderer"]["content"]["videoRenderer"]
+                if let decodedVideo = YTVideo.decodeJSON(json: videoJSON) {
+                    result.videos.append(decodedVideo)
+                } else if let continuationToken = continuationItem["continuationItemRenderer"]["continuationEndpoint"]["continuationCommand"]["token"].string {
+                    toReturn.newContinuationToken = continuationToken
+                }
+            }
+            
+            toReturn.contents = result
+            
+            return toReturn
+        }
+        
         public static func isTabOfSelfType(json: JSON) -> Bool {
             guard let tabURL = json["tabRenderer"]["endpoint"]["commandMetadata"]["webCommandMetadata"]["url"].string else { return false }
             return tabURL.components(separatedBy: "/").last == "videos"
@@ -313,6 +407,30 @@ public struct ChannelInfosResponse: YouTubeResponse {
         
         public static func canDecode(json: JSON) -> Bool {
             return isTabOfSelfType(json: json)
+        }
+        
+        public static func decodeContinuation(json: JSON) -> ContentContinuation<Shorts> {
+            var toReturn = ContentContinuation<Shorts>()
+            guard
+                let itemsArray = json["onResponseReceivedActions"].array,
+                    itemsArray.count > 0,
+                    let itemsArray = itemsArray[0]["appendContinuationItemsAction"]["continuationItems"].array
+            else { return toReturn }
+            
+            var result = Shorts()
+            
+            for continuationItem in itemsArray {
+                let shortJSON = continuationItem["richItemRenderer"]["content"]["reelItemRenderer"]
+                if let decodedShort = YTVideo.decodeShortFromJSON(json: shortJSON) {
+                    result.shorts.append(decodedShort)
+                } else if let continuationToken = continuationItem["continuationItemRenderer"]["continuationEndpoint"]["continuationCommand"]["token"].string {
+                    toReturn.newContinuationToken = continuationToken
+                }
+            }
+            
+            toReturn.contents = result
+            
+            return toReturn
         }
         
         public static func decodeJSONFromTab(_ tab: JSON, channelInfos: YTLittleChannelInfos?) -> Shorts? {
@@ -346,6 +464,30 @@ public struct ChannelInfosResponse: YouTubeResponse {
             return isTabOfSelfType(json: json)
         }
         
+        public static func decodeContinuation(json: JSON) -> ContentContinuation<Directs> {
+            var toReturn = ContentContinuation<Directs>()
+            guard
+                let itemsArray = json["onResponseReceivedActions"].array,
+                    itemsArray.count > 0,
+                    let itemsArray = itemsArray[0]["appendContinuationItemsAction"]["continuationItems"].array
+            else { return toReturn }
+            
+            var result = Directs()
+            
+            for continuationItem in itemsArray {
+                let videoJSON = continuationItem["richItemRenderer"]["content"]["videoRenderer"]
+                if let decodedVideo = YTVideo.decodeJSON(json: videoJSON) {
+                    result.directs.append(decodedVideo)
+                } else if let continuationToken = continuationItem["continuationItemRenderer"]["continuationEndpoint"]["continuationCommand"]["token"].string {
+                    toReturn.newContinuationToken = continuationToken
+                }
+            }
+            
+            toReturn.contents = result
+            
+            return toReturn
+        }
+        
         public static func decodeJSONFromTab(_ tab: JSON, channelInfos: YTLittleChannelInfos?) -> Directs? {
             guard let videosArray = tab["tabRenderer"]["content"]["richGridRenderer"]["contents"].array else { return nil }
             var toReturn = Directs()
@@ -377,6 +519,32 @@ public struct ChannelInfosResponse: YouTubeResponse {
             return isTabOfSelfType(json: json)
         }
         
+        public static func decodeContinuation(json: JSON) -> ContentContinuation<Playlists> {
+            var toReturn = ContentContinuation<Playlists>()
+            guard
+                let itemsArray = json["onResponseReceivedActions"].array,
+                    itemsArray.count > 0,
+                    let itemsArray = itemsArray[0]["appendContinuationItemsAction"]["continuationItems"].array
+            else { return toReturn }
+            
+            var result = Playlists()
+            
+            for continuationItem in itemsArray {
+                if YTPlaylist.canShowBeDecoded(json: continuationItem["gridShowRenderer"]), let decodedShow = YTPlaylist.decodeShowFromJSON(json: continuationItem["gridShowRenderer"]) {
+                    result.playlists.append(decodedShow)
+                } else if let decodedPlaylist = YTPlaylist.decodeJSON(json: continuationItem["gridPlaylistRenderer"]) {
+                    /// Decoding normal playlist
+                    result.playlists.append(decodedPlaylist)
+                } else if let continuationToken = continuationItem["continuationItemRenderer"]["continuationEndpoint"]["continuationCommand"]["token"].string {
+                    toReturn.newContinuationToken = continuationToken
+                }
+            }
+            
+            toReturn.contents = result
+            
+            return toReturn
+        }
+        
         public static func decodeJSONFromTab(_ tab: JSON, channelInfos: YTLittleChannelInfos?) -> Playlists? {
             guard let playlistGroupsArray = tab["tabRenderer"]["content"]["sectionListRenderer"]["contents"].array else { return nil }
             var toReturn = Playlists()
@@ -396,6 +564,22 @@ public struct ChannelInfosResponse: YouTubeResponse {
                 }
             }
             return toReturn
+        }
+        
+        public static func getContinuationFromTab(json: JSON) -> String? {
+            guard let playlistGroupsArray = json["tabRenderer"]["content"]["sectionListRenderer"]["contents"].array else { return nil }
+            for playlistGroup in playlistGroupsArray {
+                guard let secondPlaylistGroupArray = playlistGroup["itemSectionRenderer"]["contents"].array else { continue }
+                for secondPlaylistGroup in secondPlaylistGroupArray {
+                    guard let playlistArray = secondPlaylistGroup["gridRenderer"]["items"].array else { continue }
+                    for potentialContinuation in playlistArray.reversed() {
+                        if let token = potentialContinuation["continuationItemRenderer"]["continuationEndpoint"]["continuationCommand"]["token"].string {
+                            return token
+                        }
+                    }
+                }
+            }
+            return nil
         }
         
         public static func isTabOfSelfType(json: JSON) -> Bool {

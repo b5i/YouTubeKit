@@ -299,7 +299,7 @@ final class YouTubeKitTests: XCTestCase {
     func testChannelInfosResponse() async {
         let TEST_NAME = "Test: testChannelInfosResponse() -> "
         
-        let (videoResult, videoResultError) = await VideoInfosResponse.sendRequest(youtubeModel: YTM, data: [.query: "WcwGleN38zE"])
+        let (videoResult, videoResultError) = await VideoInfosResponse.sendRequest(youtubeModel: YTM, data: [.query: "bvUNXch3rdI"]) /// T-Series' video because they have continuation in every category
         
         guard let videoResult = videoResult else { XCTFail(TEST_NAME + "Couldn't get video infos, error: \(String(describing: videoResultError))"); return }
         
@@ -307,7 +307,7 @@ final class YouTubeKitTests: XCTestCase {
         
         let (mainRequestResult, mainRequestResultError) = await ChannelInfosResponse.sendRequest(youtubeModel: YTM, data: [.browseId: channelId])
         
-        guard var mainRequestResult = mainRequestResult else { XCTFail(TEST_NAME + "Couldn't get channel base infos, error: \(String(describing: mainRequestResultError))"); return }
+        guard let mainRequestResult = mainRequestResult else { XCTFail(TEST_NAME + "Couldn't get channel base infos, error: \(String(describing: mainRequestResultError))"); return }
         
         XCTAssertNotNil(mainRequestResult.videosCount, TEST_NAME + "Checking if mainRequestResult.videosCount is not nil")
         
@@ -316,10 +316,15 @@ final class YouTubeKitTests: XCTestCase {
         ///Videos
         let (videoRequestResult, videoRequestResultError) = await mainRequestResult.getChannelContent(type: .videos, youtubeModel: YTM)
         
-        guard let videoRequestResult = videoRequestResult else { XCTFail(TEST_NAME + "Couldn't get channel Video special content, error: \(String(describing: videoRequestResultError))"); return }
+        guard let videoRequestResult = videoRequestResult else { XCTFail(TEST_NAME + "Couldn't get channel Videos special content, error: \(String(describing: videoRequestResultError))"); return }
         
         XCTAssertEqual(videoRequestResult.name, videoResult.channel.name, TEST_NAME + "Checking if videoRequestResult.name is equal to videoResult.channel.name")
         XCTAssertEqual(videoRequestResult.channelId, videoResult.channel.channelId, TEST_NAME + "Checking if videoRequestResult.channelId is equal to videoResult.channel.channelId")
+        
+        /// Test continuation
+        let (videoRequestContinuationResult, videoRequestContinuationResultError) = await videoRequestResult.getChannelContentContinuation(ChannelInfosResponse.Videos.self, youtubeModel: YTM)
+        
+        guard let videoRequestContinuationResult = videoRequestContinuationResult else { XCTFail(TEST_NAME + "Couldn't get continuation for Videos special content, error: \(String(describing: videoRequestContinuationResultError))"); return }
         
         /// Shorts
         let (shortsRequestResult, shortsRequestResultError) = await mainRequestResult.getChannelContent(type: .shorts, youtubeModel: YTM)
@@ -328,6 +333,11 @@ final class YouTubeKitTests: XCTestCase {
         
         XCTAssertEqual(shortsRequestResult.name, videoResult.channel.name, TEST_NAME + "Checking if shortsRequestResult.name is equal to videoResult.channel.name")
         XCTAssertEqual(shortsRequestResult.channelId, videoResult.channel.channelId, TEST_NAME + "Checking if shortsRequestResult.channelId is equal to videoResult.channel.channelId")
+                
+        /// Test continuation
+        let (shortsRequestContinuationResult, shortsRequestContinuationResultError) = await shortsRequestResult.getChannelContentContinuation(ChannelInfosResponse.Shorts.self, youtubeModel: YTM)
+        
+        guard let shortsRequestContinuationResult = shortsRequestContinuationResult else { XCTFail(TEST_NAME + "Couldn't get continuation for Shorts special content, error: \(String(describing: shortsRequestContinuationResultError))"); return }
         
         /// Directs
         let (directsRequestResult, directsRequestResultError) = await mainRequestResult.getChannelContent(type: .directs, youtubeModel: YTM)
@@ -337,6 +347,11 @@ final class YouTubeKitTests: XCTestCase {
         XCTAssertEqual(directsRequestResult.name, videoResult.channel.name, TEST_NAME + "Checking if directsRequestResult.name is equal to videoResult.channel.name")
         XCTAssertEqual(directsRequestResult.channelId, videoResult.channel.channelId, TEST_NAME + "Checking if directsRequestResult.channelId is equal to videoResult.channel.channelId")
         
+        /// Test continuation
+        let (directsRequestContinuationResult, directsRequestContinuationResultError) = await directsRequestResult.getChannelContentContinuation(ChannelInfosResponse.Directs.self, youtubeModel: YTM)
+        
+        guard let directsRequestContinuationResult = directsRequestContinuationResult else { XCTFail(TEST_NAME + "Couldn't get continuation for Directs special content, error: \(String(describing: directsRequestContinuationResultError))"); return }
+        
         /// Playlists
         let (playlistsRequestResult, playlistsRequestResultError) = await mainRequestResult.getChannelContent(type: .playlists, youtubeModel: YTM)
         
@@ -344,5 +359,10 @@ final class YouTubeKitTests: XCTestCase {
         
         XCTAssertEqual(playlistsRequestResult.name, videoResult.channel.name, TEST_NAME + "Checking if playlistsRequestResult.name is equal to videoResult.channel.name")
         XCTAssertEqual(playlistsRequestResult.channelId, videoResult.channel.channelId, TEST_NAME + "Checking if playlistsRequestResult.channelId is equal to videoResult.channel.channelId")
+        
+        /// Test continuation
+        let (playlistRequestContinuationResult, playlistRequestContinuationResultError) = await playlistsRequestResult.getChannelContentContinuation(ChannelInfosResponse.Playlists.self, youtubeModel: YTM)
+        
+        guard let playlistRequestContinuationResult = playlistRequestContinuationResult else { XCTFail(TEST_NAME + "Couldn't get continuation for Playlists special content, error: \(String(describing: playlistRequestContinuationResultError))"); return }
     }
 }

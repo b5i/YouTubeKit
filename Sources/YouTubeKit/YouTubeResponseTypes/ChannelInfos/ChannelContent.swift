@@ -32,6 +32,16 @@ public protocol ChannelContent {
     /// - Returns: the boolean that indicate if a decoding would be possible.
     static func canDecode(json: JSON) -> Bool
     
+    /// Takes some JSON and decode it to give a continuation result.
+    /// - Parameter json: the JSON to be decoded.
+    /// - Returns: a continuation result.
+    static func decodeContinuation(json: JSON) -> ChannelInfosResponse.ContentContinuation<Self>
+    
+    /// Method that extracts the continuation token in case there is one.
+    /// - Parameter json: the JSON that will be used to extract the token.
+    /// - Returns: an optional string (nil if there is no continuation token), representing the continuation token.
+    static func getContinuationFromTab(json: JSON) -> String?
+    
     /// To check wether a part of JSON is a tab of the concerned ``ChannelContent`` type.
     /// - Parameter json: the JSON to be checked.
     /// - Returns: a boolean indicating if the tab is of the concerned ``ChannelContent`` type.
