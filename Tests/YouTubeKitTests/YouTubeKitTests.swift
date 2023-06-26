@@ -146,6 +146,16 @@ final class YouTubeKitTests: XCTestCase {
         XCTAssertEqual(request.value(forHTTPHeaderField: "MyCustomHTTPHeader"), "Ahahahah", TEST_NAME + "Checking equality of header \"MyCustomHTTPHeader\".")
     }
     
+    func testRestrictedSearch() async {
+        let TEST_NAME = "Test: testRestrictedSearch() -> "
+        
+        let (requestResult, error) = await SearchResponse.Restricted.sendRequest(youtubeModel: YTM, data: [.query: "mrbeast"])
+        
+        guard let requestResult = requestResult else { XCTFail(TEST_NAME + "Checking if requestResult is defined., error -> \(String(describing: error))"); return}
+        
+        XCTAssertNotEqual(requestResult.results.count, 0, TEST_NAME + "Checking if there is actual results in requestResult.results")
+    }
+    
     func testSearchResponse() async throws {
         let TEST_NAME = "Test: testSearchResponse() -> "
         
