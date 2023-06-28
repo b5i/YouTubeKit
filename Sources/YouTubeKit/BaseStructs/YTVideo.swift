@@ -26,8 +26,12 @@ public struct YTVideo: YTSearchResult, YouTubeVideo, Codable {
                     
         if json["title"]["simpleText"].string != nil {
             video.title = json["title"]["simpleText"].string
-        } else {
-            video.title = json["title"]["runs"][0]["text"].string
+        } else if let titleArray = json["title"]["runs"].array {
+            var title: String = ""
+            for titlePart in titleArray {
+                title += titlePart["text"].stringValue
+            }
+            video.title = title
         }
         
         video.channel.name = json["ownerText"]["runs"][0]["text"].string

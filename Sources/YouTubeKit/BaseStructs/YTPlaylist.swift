@@ -21,7 +21,7 @@ public struct YTPlaylist: YTSearchResult {
         /// Check if the JSON can be decoded as a Playlist.
         guard let playlistId = json["playlistId"].string else { return nil }
         /// Inititalize a new ``YTSearchResultType/Playlist-swift.struct`` instance to put the informations in it.
-        var playlist = YTPlaylist(playlistId: playlistId)
+        var playlist = YTPlaylist(playlistId: playlistId.prefix(2) == "VL" ? playlistId : "VL" + playlistId)
                     
         if let playlistTitle = json["title"]["simpleText"].string {
             playlist.title = playlistTitle

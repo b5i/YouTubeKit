@@ -134,7 +134,21 @@ public struct SearchResponse: YouTubeResponse {
         }
     }
     
-    /// Struct representing the continuation response of a ``SearchResponse`` ("load more results" button)
+    /// Merge a ``SearchResponse/Continuation`` to this instance of ``SearchResponse``.
+    /// - Parameter continuation: the ``SearchResponse/Continuation`` that will be merged.
+    public mutating func mergeContinuation(_ continuation: Continuation) {
+        self.continuationToken = continuation.continuationToken
+        self.results.append(contentsOf: continuation.results)
+    }
+    
+    /// Struct representing the continuation response of a ``SearchResponse`` ("load more results" button).
+    ///
+    /// You could for example merge the continuation results with the base ``SearchResponse`` ones like this:
+    /// ```swift
+    /// let mySearchResponse: SearchResponse = ...
+    /// let mySearchResponseContinuation: SearchResponse.Continuation = ...
+    /// mySearchResponse.mergeContinuation(mySearchResponseContinuation)
+    /// ```
     public struct Continuation: YouTubeResponse {
         public static var headersType: HeaderTypes = .searchContinuationHeaders
         

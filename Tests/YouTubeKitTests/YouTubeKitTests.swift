@@ -214,7 +214,7 @@ final class YouTubeKitTests: XCTestCase {
         
         /// Testing playlist decoding
         let testPlaylistShouldBe = YTPlaylist(
-            playlistId: "PLJ-qODNIUEEtPdKZNLfbx7JOuRA_JjUxI",
+            playlistId: "VLPLJ-qODNIUEEtPdKZNLfbx7JOuRA_JjUxI",
             title: "MrBeast Video Playlist",
             thumbnails: [
                 .init(width: 168, height: 94, url: URL(string: "https://i.ytimg.com/vi/TQHEJj68Jew/hqdefault.jpg?sqp=-oaymwEWCKgBEF5IWvKriqkDCQgBFQAAiEIYAQ==&rs=AOn4CLDLCwZyZYIwScbdC5NMt6fWWiq6_A")!),
@@ -374,5 +374,22 @@ final class YouTubeKitTests: XCTestCase {
         let (playlistRequestContinuationResult, playlistRequestContinuationResultError) = await playlistsRequestResult.getChannelContentContinuation(ChannelInfosResponse.Playlists.self, youtubeModel: YTM)
         
         guard let playlistRequestContinuationResult = playlistRequestContinuationResult else { XCTFail(TEST_NAME + "Couldn't get continuation for Playlists special content, error: \(String(describing: playlistRequestContinuationResultError))"); return }
+    }
+    
+    func testGetPlaylistInfos() async {
+        let TEST_NAME = "Test: testGetPlaylistInfos() -> "
+        
+        let (playlistInfosResult, playlistInfosError) = await PlaylistInfosResponse.sendRequest(youtubeModel: YTM, data: [.browseId: "VLPLw-VjHDlEOgs658kAHR_LAaILBXb-s6Q5"])
+        
+        guard var playlistInfosResult = playlistInfosResult, let continuationToken = playlistInfosResult.continuationToken else { XCTFail(TEST_NAME + "Checking if playlistInfosResult and playlistInfosResult.continuationToken are defined (error: \(String(describing: playlistInfosError)))."); return }
+        
+        let (playlistContinuation, playlistContinuationError) = await PlaylistInfosResponse.Continuation.sendRequest(youtubeModel: YTM, data: [.continuation: continuationToken])
+        
+        guard let playlistContinuation = playlistContinuation else { XCTFail(TEST_NAME + "Checking if the continuation is defined (error: \(String(describing: playlistContinuationError))."); return }
+        
+        let videoCount = playlistInfosResult.videos.count + playlistContinuation.videos.count
+        playlistInfosResult.mergeWithContinuation(playlistContinuation)
+        XCTAssertEqual(playlistInfosResult.videos.count, videoCount, TEST_NAME + "Checking if the merge operation was successful. (videos count)")
+        XCTAssertEqual(playlistInfosResult.continuationToken, playlistContinuation.continuationToken, TEST_NAME + "Checking if the merge operation was successful. (continuation token)")
     }
 }
