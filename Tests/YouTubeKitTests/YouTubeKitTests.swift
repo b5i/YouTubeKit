@@ -392,4 +392,33 @@ final class YouTubeKitTests: XCTestCase {
         XCTAssertEqual(playlistInfosResult.videos.count, videoCount, TEST_NAME + "Checking if the merge operation was successful. (videos count)")
         XCTAssertEqual(playlistInfosResult.continuationToken, playlistContinuation.continuationToken, TEST_NAME + "Checking if the merge operation was successful. (continuation token)")
     }
+    
+    func testHomeResponse() async {
+        let TEST_NAME = "Test: testHomeResponse() -> "
+        
+        let (homeMenuResult, homeMenuResultError) = await HomeScreenResponse.sendRequest(youtubeModel: YTM, data: [:])
+        
+        guard var homeMenuResult = homeMenuResult else { XCTFail(TEST_NAME + "Checking if homeMenuResult is defined (error: \(String(describing: homeMenuResultError)))."); return }
+        guard let continuationToken = homeMenuResult.continuationToken else { XCTFail(TEST_NAME + "Checking if homeMenuResult.continuationToken is defined (error: \(String(describing: homeMenuResultError)))."); return }
+        
+        guard let visitorData = homeMenuResult.visitorData else { XCTFail(TEST_NAME + "Checking if homeMenuResult.visitorData is defined (error: \(String(describing: homeMenuResultError)))."); return }
+        
+        let (homeMenuContinuationResult, homeMenuContinuationError) = await HomeScreenResponse.Continuation.sendRequest(
+            youtubeModel: YTM,
+            data: [
+                .continuation: continuationToken,
+                .visitorData: visitorData
+            ]
+        )
+                
+        guard let homeMenuContinuationResult = homeMenuContinuationResult else { XCTFail(TEST_NAME + "Checking if homeMenuContinuationResult is defined (error: \(String(describing: homeMenuContinuationError)))."); return }
+        guard homeMenuContinuationResult.continuationToken != nil else { XCTFail(TEST_NAME + "Checking if homeMenuContinuationResult.continuationToken is defined (error: \(String(describing: homeMenuContinuationError)))."); return }
+        
+        let videosCount = homeMenuResult.results.count + homeMenuContinuationResult.results.count
+        
+        homeMenuResult.mergeContinuation(homeMenuContinuationResult)
+        
+        XCTAssertEqual(homeMenuResult.results.count, videosCount, TEST_NAME + "Checking if the merge operation was successful (videos count).")
+        XCTAssertEqual(homeMenuResult.continuationToken, homeMenuContinuationResult.continuationToken, TEST_NAME + "Checking if the merge operation was successful (continuationToken).")
+    }
 }

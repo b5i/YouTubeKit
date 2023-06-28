@@ -50,11 +50,12 @@ public enum HeaderTypes {
     
     /// Get home menu's videos (continuation).
     /// - Parameter continuation: Home menu's continuation token
+    /// - Parameter visitorData: The visitorData token.
     case homeVideosContinuationHeader
     
     /// Get search's results (continuation).
-    /// - Parameter visitorData: The visitorData token
-    /// - Parameter continuation: Search's continuation token **(optional)**
+    /// - Parameter continuation: Search's continuation token
+    /// - Parameter visitorData: The visitorData token **(optional)**
     case searchContinuationHeaders
     
     /// Get channel's results (continuation).
