@@ -32,8 +32,12 @@ Here is a list of the default requests supported by YouTubeKit, all the informat
  
 - [PlaylistInfosResponse](https://github.com/b5i/YouTubeKit/blob/721120db20cdd00cf6b586fb3accc02345cb205a/Sources/YouTubeKit/YouTubeResponseTypes/PlaylistInfos/PlaylistInfosResponse.swift#L11) -> get a playlist's informations and the videos it contains. Its [Continuation](https://github.com/b5i/YouTubeKit/blob/721120db20cdd00cf6b586fb3accc02345cb205a/Sources/YouTubeKit/YouTubeResponseTypes/PlaylistInfos/PlaylistInfosResponse.swift#L130) is also available. 
 
-
 ## Make requests:
+Every possible request within YouTubeKit conforms to the protocol [YouTubeResponse](https://github.com/b5i/YouTubeKit/blob/c858d62d49946658df7c00f9380b04f3f78e32d0/Sources/YouTubeKit/YouTubeResponse.swift#L31), it contains a few useful methods: 
+- `static var headersType` is a static variable indicating the types of headers used to make the request, its documentation indicate which paramter to provide in order to make the request work.
+- `static func decodeData(data: Data) -> Self` is a static method used to decode some Data and give back in instance of the `YouTubeResponse`, if the Data does not represent a proper response it will return an empty response (only nils and empty arrays).
+- `static func sendRequest()` is a static method that allows you to make request, by using async await system or closures. Its usage will be precised in the following tutorial.
+
 With YouTubeKit you can make a large variety of requests to the YouTube API, new request types are added often and you can even create your own in [Custom requests/responses](#custom-requests-and-responses).
 
 1. Make sure you have an instance of `YouTubeModel`, if not you can have it with
