@@ -17,6 +17,7 @@ Please note that this is adapted from another iOS app and so is in constant deve
 ## Default requests:
 Here is a list of the default requests supported by YouTubeKit, all the informations are 
 
+- [HomeScreenResponse](https://github.com/b5i/YouTubeKit/blob/8b418c4c59f68b3b1c00a71744e2626efef8f629/Sources/YouTubeKit/YouTubeResponseTypes/Home/HomeScreenResponse.swift#L11) -> get videos from the main page of YouTube, its [Continuation](https://github.com/b5i/YouTubeKit/blob/8b418c4c59f68b3b1c00a71744e2626efef8f629/Sources/YouTubeKit/YouTubeResponseTypes/Home/HomeScreenResponse.swift#L57) is also available.
 - [SearchResponse](https://github.com/b5i/YouTubeKit/blob/55633edd56a5a0c2ec4d315422f2590d2348ae20/Sources/YouTubeKit/YouTubeResponseTypes/Search/SearchResponse.swift#LL11C46-L11C46) -> get results for a text query.
 - [SearchResponse.Continuation](https://github.com/b5i/YouTubeKit/blob/55633edd56a5a0c2ec4d315422f2590d2348ae20/Sources/YouTubeKit/YouTubeResponseTypes/Search/SearchResponse.swift#L94) -> get more results for a text query ("load more" button).
 - [SearchResponse.Restricted](https://github.com/b5i/YouTubeKit/blob/d5db7e61cf017af4969669cfee5c075e185a771a/Sources/YouTubeKit/YouTubeResponseTypes/Search/SearchResponse.swift#L94) -> get Creative Commons copyrighted results for a text query.
