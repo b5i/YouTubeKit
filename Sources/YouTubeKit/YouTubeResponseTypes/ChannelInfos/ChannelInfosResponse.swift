@@ -181,8 +181,8 @@ public struct ChannelInfosResponse: YouTubeResponse {
                         let decodedContent = requestClass.decodeJSONFromTab(
                             tab,
                             channelInfos: .init(
-                                name: toReturn.name,
-                                channelId: toReturn.channelId
+                                channelId: toReturn.channelId,
+                                name: toReturn.name
                             )
                         )
                         toReturn.channelContentStore[requestType] = decodedContent

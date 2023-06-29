@@ -85,8 +85,8 @@ public struct VideoInfosResponse: YouTubeResponse {
         
         return VideoInfosResponse(
             channel: YTLittleChannelInfos(
-                name: videoDetailsJSON["author"].string,
-                channelId: videoDetailsJSON["channelId"].string
+                channelId: videoDetailsJSON["channelId"].string,
+                name: videoDetailsJSON["author"].string
             ),
             isLive: videoDetailsJSON["isLiveContent"].bool,
             keywords: videoDetailsJSON["keywords"].arrayObject as? [String] ?? [],

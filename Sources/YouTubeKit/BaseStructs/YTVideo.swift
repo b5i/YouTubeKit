@@ -37,6 +37,8 @@ public struct YTVideo: YTSearchResult, YouTubeVideo, Codable {
         video.channel.name = json["ownerText"]["runs"][0]["text"].string
         video.channel.channelId = json["ownerText"]["runs"][0]["navigationEndpoint"]["browseEndpoint"]["browseId"].string
         
+        YTThumbnail.appendThumbnails(json: json["channelThumbnailSupportedRenderers"]["channelThumbnailWithLinkRenderer"], thumbnailList: &video.channel.thumbnails)
+        
         if let viewCount = json["shortViewCountText"]["simpleText"].string {
             video.viewCount = viewCount
         } else {

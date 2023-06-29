@@ -174,7 +174,7 @@ final class YouTubeKitTests: XCTestCase {
         let testVideoShouldBe = YTVideo(
             videoId: "3jS_yEK8qVI",
             title: "L'Escape Game Le Plus Dangereux Au Monde",
-            channel: .init(name: "MrBeast", channelId: "UCX6OQ3DkcsbYNE6H8uQQuVA"),
+            channel: .init(channelId: "UCX6OQ3DkcsbYNE6H8uQQuVA", name: "MrBeast"),
             viewCount: "208 M de vues",
             timePosted: "il y a 1 an",
             timeLength: "8:01",
@@ -223,7 +223,7 @@ final class YouTubeKitTests: XCTestCase {
                 .init(width: 336, height: 188, url: URL(string: "https://i.ytimg.com/vi/TQHEJj68Jew/hqdefault.jpg?sqp=-oaymwEXCNACELwBSFryq4qpAwkIARUAAIhCGAE=&rs=AOn4CLCYL9AEl5xWqrQ5oNNFywEj5Emnrw")!)
             ],
             videoCount: "206 vidéos",
-            channel: .init(name: "anjobanjo", channelId: "UCz-K9goyvbPIZq29lLJvrSA"),
+            channel: .init(channelId: "UCz-K9goyvbPIZq29lLJvrSA", name: "anjobanjo"),
             timePosted: "Mise à jour hier",
             frontVideos: [
                 .init(videoId: "TQHEJj68Jew", title: "I Got Hunted By A Real Bounty Hunter", viewCount: "", timeLength: "14:21"),

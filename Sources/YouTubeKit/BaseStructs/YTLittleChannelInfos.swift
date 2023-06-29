@@ -9,9 +9,6 @@ import Foundation
 
 /// Structure representing the base informations about a YouTube channel, including its name and ID.
 public struct YTLittleChannelInfos: Codable {
-    /// Name of the owning channel.
-    public var name: String?
-    
     /// Channel's identifier, can be used to get the informations about the channel.
     ///
     /// For example:
@@ -24,4 +21,13 @@ public struct YTLittleChannelInfos: Codable {
     /// })
     /// ```
     public var channelId: String?
+    
+    /// Name of the owning channel.
+    public var name: String?
+    
+    /// Array of thumbnails representing the avatar of the channel.
+    ///
+    /// Usually sorted by resolution from low to high.
+    /// Only found in ``YTVideo``items in ``SearchResponse`` and ``HomeScreenResponse`` and their continuation.
+    public var thumbnails: [YTThumbnail] = []
 }
