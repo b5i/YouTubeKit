@@ -243,12 +243,12 @@ final class YouTubeKitTests: XCTestCase {
         let TEST_NAME = "Test: testSearchResponseContinuation() -> "
         
         let (requestResult, _) = await SearchResponse.sendRequest(youtubeModel: YTM, data: [.query: "fred again"])
-        XCTAssertNotEqual(requestResult?.continuationToken, "", TEST_NAME + "Checking if continuationToken is defined.")
-        XCTAssertNotEqual(requestResult?.visitorData, "", TEST_NAME + "Checking if visitorData is defined.")
+        guard let continuationToken = requestResult?.continuationToken else { XCTFail(TEST_NAME + "continuationToken is not defined"); return }
+        guard let visitorData = requestResult?.visitorData else { XCTFail(TEST_NAME + "visitorData is not defined"); return }
         if let requestResult = requestResult {
             let (continuationResult, _) = await SearchResponse.Continuation.sendRequest(youtubeModel: YTM, data: [
-                .continuation: requestResult.continuationToken,
-                .visitorData: requestResult.visitorData
+                .continuation: continuationToken,
+                .visitorData: visitorData
             ])
             if let continuationResult = continuationResult {
                 XCTAssertNotEqual(continuationResult.continuationToken, "", TEST_NAME + "Checking continuationToken for SearchResponse.Contination.")

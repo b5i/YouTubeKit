@@ -8,7 +8,7 @@
 import Foundation
 
 /// Struct representing the request/response of the main YouTube webpage.
-public struct HomeScreenResponse: YouTubeResponse {
+public struct HomeScreenResponse: ResultsResponse {
     public static var headersType: HeaderTypes = .home
         
     /// Continuation token used to fetch more videos, nil if there is no more videos to fetch.
@@ -16,8 +16,10 @@ public struct HomeScreenResponse: YouTubeResponse {
     /// It should normally never be nil because this is the main webpage with infinite results
     public var continuationToken: String?
     
-    /// Videos array representing the results of the request.
-    public var results: [YTVideo] = []
+    /// ``YTSearchResult`` array representing the results of the request.
+    ///
+    /// There's normally only ``YTVideo`` in the home screen.
+    public var results: [any YTSearchResult] = []
     
     /// String token that is necessary to give to the continuation request in order to make it to work (it sorts of authenticate the continuation).
     public var visitorData: String?
@@ -54,7 +56,7 @@ public struct HomeScreenResponse: YouTubeResponse {
     }
     
     /// Struct representing the continuation ("load more videos" button)
-    public struct Continuation: YouTubeResponse {
+    public struct Continuation: ResultsContinuationResponse {
         public static var headersType: HeaderTypes = .homeVideosContinuationHeader
                 
         /// Continuation token used to fetch more videos, nil if there is no more videos to fetch.
@@ -63,7 +65,7 @@ public struct HomeScreenResponse: YouTubeResponse {
         public var continuationToken: String?
         
         /// Videos array representing the results of the request.
-        public var results: [YTVideo] = []
+        public var results: [any YTSearchResult] = []
         
         public static func decodeData(data: Data) -> HomeScreenResponse.Continuation {
             let json = JSON(data)

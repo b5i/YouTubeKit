@@ -11,11 +11,6 @@ import FoundationNetworking
 #endif
 
 /// Class managing headers.
-///
-/// Instead of initialize an instance of it everytime, use
-/// ```swift
-/// YoutTubeHeaders.shared
-/// ```
 public class YouTubeModel {
     
     public init() {}

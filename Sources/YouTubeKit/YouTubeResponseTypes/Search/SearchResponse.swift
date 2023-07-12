@@ -8,17 +8,17 @@
 import Foundation
 
 /// Struct representing a search response.
-public struct SearchResponse: YouTubeResponse {
+public struct SearchResponse: ResultsResponse {
     public static var headersType: HeaderTypes = .search
     
     /// String token that will be useful in case of a search continuation request ("load more" button).
-    public var continuationToken: String = ""
+    public var continuationToken: String?
     
     /// Results of the search.
     public var results: [any YTSearchResult] = []
     
     /// String token that will be useful in case of a search continuation request (authenticate the continuation request).
-    public var visitorData: String = ""
+    public var visitorData: String?
     
     public static func decodeData(data: Data) -> SearchResponse {
         var searchResponse = SearchResponse()
@@ -149,11 +149,11 @@ public struct SearchResponse: YouTubeResponse {
     /// let mySearchResponseContinuation: SearchResponse.Continuation = ...
     /// mySearchResponse.mergeContinuation(mySearchResponseContinuation)
     /// ```
-    public struct Continuation: YouTubeResponse {
+    public struct Continuation: ResultsContinuationResponse {
         public static var headersType: HeaderTypes = .searchContinuationHeaders
         
         /// String token that will be useful in case of a search continuation request ("load more" button).
-        public var continuationToken: String = ""
+        public var continuationToken: String? = nil
         
         /// Results of the continuation search.
         public var results: [any YTSearchResult] = []
