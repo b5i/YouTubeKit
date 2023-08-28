@@ -18,9 +18,11 @@ Please note that this is adapted from another iOS app and so is in constant deve
 Here is a list of the default requests supported by YouTubeKit, all the informations you can get are:
 
 - [HomeScreenResponse](https://github.com/b5i/YouTubeKit/blob/8b418c4c59f68b3b1c00a71744e2626efef8f629/Sources/YouTubeKit/YouTubeResponseTypes/Home/HomeScreenResponse.swift#L11) -> get videos from the main page of YouTube, its [Continuation](https://github.com/b5i/YouTubeKit/blob/8b418c4c59f68b3b1c00a71744e2626efef8f629/Sources/YouTubeKit/YouTubeResponseTypes/Home/HomeScreenResponse.swift#L57) is also available.
-- [SearchResponse](https://github.com/b5i/YouTubeKit/blob/55633edd56a5a0c2ec4d315422f2590d2348ae20/Sources/YouTubeKit/YouTubeResponseTypes/Search/SearchResponse.swift#LL11C46-L11C46) -> get results for a text query.
-- [SearchResponse.Continuation](https://github.com/b5i/YouTubeKit/blob/55633edd56a5a0c2ec4d315422f2590d2348ae20/Sources/YouTubeKit/YouTubeResponseTypes/Search/SearchResponse.swift#L94) -> get more results for a text query ("load more" button).
+
+- [SearchResponse](https://github.com/b5i/YouTubeKit/blob/55633edd56a5a0c2ec4d315422f2590d2348ae20/Sources/YouTubeKit/YouTubeResponseTypes/Search/SearchResponse.swift#LL11C46-L11C46) -> get results for a text query, its [Continuation](https://github.com/b5i/YouTubeKit/blob/55633edd56a5a0c2ec4d315422f2590d2348ae20/Sources/YouTubeKit/YouTubeResponseTypes/Search/SearchResponse.swift#L94) is also available.
+
 - [SearchResponse.Restricted](https://github.com/b5i/YouTubeKit/blob/d5db7e61cf017af4969669cfee5c075e185a771a/Sources/YouTubeKit/YouTubeResponseTypes/Search/SearchResponse.swift#L94) -> get Creative Commons copyrighted results for a text query.
+
 - [VideoInfosResponse](https://github.com/b5i/YouTubeKit/blob/1aed7cf4ef662b3ba689ce28f05a8b0f496ed7e6/Sources/YouTubeKit/YouTubeResponseTypes/VideoInfos/VideoInfosResponse.swift#L11) -> get the infos of a video by ID.
 
 - [VideoInfosWithDownloadFormatsResponse](https://github.com/b5i/YouTubeKit/blob/3023f4468429f77d57f0e786f0c5b08b9a8dd51b/Sources/YouTubeKit/YouTubeResponseTypes/VideoInfos/VideoInfosWithDownloadFormatsResponse.swift#L18) -> get the infos of a video by ID and the DownloadFormats, consumes more bandwidth than [VideoInfosResponse](https://github.com/b5i/YouTubeKit/blob/1aed7cf4ef662b3ba689ce28f05a8b0f496ed7e6/Sources/YouTubeKit/YouTubeResponseTypes/VideoInfos/VideoInfosResponse.swift#L11) but has an array of DownloadFormat.
@@ -34,7 +36,7 @@ Here is a list of the default requests supported by YouTubeKit, all the informat
 
 ## Make requests:
 Every possible request within YouTubeKit conforms to the protocol [YouTubeResponse](https://github.com/b5i/YouTubeKit/blob/c858d62d49946658df7c00f9380b04f3f78e32d0/Sources/YouTubeKit/YouTubeResponse.swift#L31), it contains a few useful methods: 
-- `static var headersType` is a static variable indicating the types of headers used to make the request, its documentation indicate which paramter to provide in order to make the request work.
+- `static var headersType` is a static variable indicating the type of headers used to make the request, its documentation indicates which parameter to provide in order to make the request work.
 - `static func decodeData(data: Data) -> Self` is a static method used to decode some Data and give back in instance of the `YouTubeResponse`, if the Data does not represent a proper response it will return an empty response (only nils and empty arrays).
 - `static func sendRequest()` is a static method that allows you to make request, by using async await system or closures. Its usage will be precised in the following tutorial.
 
@@ -44,7 +46,8 @@ With YouTubeKit you can make a large variety of requests to the YouTube API, new
   ```swift
   let YTM = YouTubeModel()
   ```
-2. Define the request's data parameters, to get the demanded headers you can look at the definition of your `YouTubeResponse.headersType`, it should describe which data to send, e.g. with a `SearchResponse`:
+2. Define the request's data parameters, to get the demanded headers you can look at the definition of your `YouTubeResponse.headersType` it should describe which data to send. 
+   An example with a `SearchResponse`:
    
    a. Right click on the type of request and press `Jump to definition`, the `SearchResponse.headersType` is `HeaderTypes.search`.
    
@@ -75,7 +78,7 @@ With YouTubeKit you can make a large variety of requests to the YouTube API, new
        print(error)
   })
   ```
-  you could also send the request without explicitly declaring `dataParameters` like this
+  you can also send the request without explicitly declaring `dataParameters` like this
   ```swift
   SearchResponse.sendRequest(youtubeModel: YTM, data: [.query: textQuery], result: { result, error in
        /// Process here the result.
@@ -175,5 +178,7 @@ This category lists solutions to problems you might encounter with YouTubeKit.
 - ```Error Domain=NSURLErrorDomain Code=-1003 "A server with the specified hostname could not be found."```
 
   This issue can be resolved by enabling the `Outgoing Connections (Client)` in the `Signing & Capabilities` category of your project's target in Xcode.
+
+- The download speed is very low when downloading an audio-only `DownloadFormat`: this issue can be resolved by adding the `range: bytes=0-(CONTENT_LENGHT_BYTES)` HTTP header to your `URLRequest` (e.g. `request.addValue("bytes=0-\(myDownloadFormat.contentLength ?? "")", forHTTPHeaderField: "range")`).
 
 
