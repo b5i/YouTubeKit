@@ -321,8 +321,7 @@ public class YouTubeModel {
                     .init(name: "Origin", content: "https://www.youtube.com/"),
                     .init(name: "Referer", content: "https://www.youtube.com/"),
                     .init(name: "Content-Type", content: "application/json"),
-                    .init(name: "X-Origin", content: "https://www.youtube.com"),
-                    .init(name: "Cookie", content: "CONSENT=YES+cb.20210328-17-p0.en+FX+841")
+                    .init(name: "X-Origin", content: "https://www.youtube.com")
                 ],
                 parameters: [
                     .init(name: "v", content: "", specialContent: .query),
