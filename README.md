@@ -183,4 +183,5 @@ This category lists solutions to problems you might encounter with YouTubeKit.
 
 - The download speed is very low when downloading an audio-only `DownloadFormat`: this issue can be resolved by adding the `range: bytes=0-(CONTENT_LENGHT_BYTES)` HTTP header to your `URLRequest` (e.g. `request.addValue("bytes=0-\(myDownloadFormat.contentLength ?? "")", forHTTPHeaderField: "range")`).
 
-
+### Request results problems
+- The result of a request is empty: this issue could be caused by the locale that could be in the wrong format. Make sure that your `YouTubeModel.selectedLocale` is like `en-US`.

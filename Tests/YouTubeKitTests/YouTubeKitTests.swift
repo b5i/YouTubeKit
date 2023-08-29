@@ -294,7 +294,7 @@ final class YouTubeKitTests: XCTestCase {
     }
     
     func testAutoCompletionResponse() async {
-        print("Current locale: \(YTM.selectedLocale)")
+        YTM.selectedLocale = "en-US"
         
         let TEST_NAME = "Test: testAutoCompletionResponse() -> "
         
