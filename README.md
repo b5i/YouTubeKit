@@ -4,6 +4,8 @@ YouTubeKit is a powerful Swift package to make requests to the YouTube API witho
 
 [![](https://img.shields.io/endpoint?url=https%3A%2F%2Fswiftpackageindex.com%2Fapi%2Fpackages%2Fb5i%2FYouTubeKit%2Fbadge%3Ftype%3Dplatforms)](https://swiftpackageindex.com/b5i/YouTubeKit) [![](https://img.shields.io/endpoint?url=https%3A%2F%2Fswiftpackageindex.com%2Fapi%2Fpackages%2Fb5i%2FYouTubeKit%2Fbadge%3Ftype%3Dswift-versions)](https://swiftpackageindex.com/b5i/YouTubeKit)
 
+DocC is available [here](https://swiftpackageindex.com/b5i/YouTubeKit/main/documentation/youtubekit).
+
 ## Installation: 
 
 1. Install the package to your Xcode project:
