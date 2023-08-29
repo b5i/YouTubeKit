@@ -241,6 +241,7 @@ final class YouTubeKitTests: XCTestCase {
     
     func testSearchResponseContinuation() async {
         let TEST_NAME = "Test: testSearchResponseContinuation() -> "
+        YTM.selectedLocale = "en-US"
         
         let (requestResult, _) = await SearchResponse.sendRequest(youtubeModel: YTM, data: [.query: "fred again"])
         guard let continuationToken = requestResult?.continuationToken else { XCTFail(TEST_NAME + "continuationToken is not defined"); return }
