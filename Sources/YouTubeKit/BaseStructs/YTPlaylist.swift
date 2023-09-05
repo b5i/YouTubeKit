@@ -9,6 +9,17 @@ import Foundation
 
 /// Struct representing a playlist.
 public struct YTPlaylist: YTSearchResult {
+    public init(id: Int? = nil, playlistId: String, title: String? = nil, thumbnails: [YTThumbnail] = [], videoCount: String? = nil, channel: YTLittleChannelInfos = .init(), timePosted: String? = nil, frontVideos: [YTVideo] = []) {
+        self.id = id
+        self.playlistId = playlistId
+        self.title = title
+        self.thumbnails = thumbnails
+        self.videoCount = videoCount
+        self.channel = channel
+        self.timePosted = timePosted
+        self.frontVideos = frontVideos
+    }
+    
     public static func == (lhs: YTPlaylist, rhs: YTPlaylist) -> Bool {
         return lhs.channel.channelId == rhs.channel.channelId && lhs.channel.name == rhs.channel.name && lhs.playlistId == rhs.playlistId && lhs.timePosted == rhs.timePosted && lhs.videoCount == rhs.videoCount && lhs.title == rhs.title && lhs.frontVideos == rhs.frontVideos
     }

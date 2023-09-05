@@ -460,6 +460,18 @@ public struct VideoInfosWithDownloadFormatsResponse: YouTubeResponse {
     
     /// Struct representing a download format that contains the video and audio.
     public struct VideoDownloadFormat: DownloadFormat {
+        public init(averageBitrate: Int? = nil, contentDuration: Int? = nil, contentLength: Int? = nil, isCopyrightedMedia: Bool? = nil, url: URL? = nil, width: Int? = nil, height: Int? = nil, quality: String? = nil, fps: Int? = nil) {
+            self.averageBitrate = averageBitrate
+            self.contentDuration = contentDuration
+            self.contentLength = contentLength
+            self.isCopyrightedMedia = isCopyrightedMedia
+            self.url = url
+            self.width = width
+            self.height = height
+            self.quality = quality
+            self.fps = fps
+        }
+        
         /// Protocol properties
         public static let type: MediaType = .video
         
@@ -494,6 +506,16 @@ public struct VideoInfosWithDownloadFormatsResponse: YouTubeResponse {
     }
     
     public struct AudioOnlyFormat: DownloadFormat {
+        public init(averageBitrate: Int? = nil, contentLength: Int? = nil, contentDuration: Int? = nil, isCopyrightedMedia: Bool? = nil, url: URL? = nil, audioSampleRate: Int? = nil, loudness: Double? = nil) {
+            self.averageBitrate = averageBitrate
+            self.contentLength = contentLength
+            self.contentDuration = contentDuration
+            self.isCopyrightedMedia = isCopyrightedMedia
+            self.url = url
+            self.audioSampleRate = audioSampleRate
+            self.loudness = loudness
+        }
+        
         /// Protocol properties
         public static let type: MediaType = .audio
         

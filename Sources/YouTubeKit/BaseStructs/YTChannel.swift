@@ -10,6 +10,15 @@ import Foundation
 
 /// Struct representing a channel.
 public struct YTChannel: YTSearchResult {
+    public init(id: Int? = nil, name: String? = nil, channelId: String, thumbnails: [YTThumbnail] = [], subscriberCount: String? = nil, badges: [String] = []) {
+        self.id = id
+        self.name = name
+        self.channelId = channelId
+        self.thumbnails = thumbnails
+        self.subscriberCount = subscriberCount
+        self.badges = badges
+    }
+    
     public static func canBeDecoded(json: JSON) -> Bool {
         return json["channelId"].string != nil
     }

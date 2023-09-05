@@ -9,6 +9,17 @@ import Foundation
 
 /// Struct representing a video.
 public struct YTVideo: YTSearchResult, YouTubeVideo, Codable {
+    public init(id: Int? = nil, videoId: String, title: String? = nil, channel: YTLittleChannelInfos = .init(), viewCount: String? = nil, timePosted: String? = nil, timeLength: String? = nil, thumbnails: [YTThumbnail] = []) {
+        self.id = id
+        self.videoId = videoId
+        self.title = title
+        self.channel = channel
+        self.viewCount = viewCount
+        self.timePosted = timePosted
+        self.timeLength = timeLength
+        self.thumbnails = thumbnails
+    }
+    
     public static func == (lhs: YTVideo, rhs: YTVideo) -> Bool {
         return lhs.channel.channelId == rhs.channel.channelId && lhs.channel.name == rhs.channel.name && lhs.thumbnails == rhs.thumbnails && lhs.timeLength == rhs.timeLength && lhs.timePosted == rhs.timePosted && lhs.title == rhs.title && lhs.videoId == rhs.videoId && lhs.viewCount == rhs.viewCount
     }

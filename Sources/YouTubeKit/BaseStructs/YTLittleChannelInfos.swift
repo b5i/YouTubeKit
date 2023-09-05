@@ -9,6 +9,12 @@ import Foundation
 
 /// Structure representing the base informations about a YouTube channel, including its name and ID.
 public struct YTLittleChannelInfos: Codable {
+    public init(channelId: String? = nil, name: String? = nil, thumbnails: [YTThumbnail] = []) {
+        self.channelId = channelId
+        self.name = name
+        self.thumbnails = thumbnails
+    }
+    
     /// Channel's identifier, can be used to get the informations about the channel.
     ///
     /// For example:
