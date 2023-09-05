@@ -9,6 +9,12 @@ import Foundation
 
 /// Struct representing a thumbnail.
 public struct YTThumbnail: Codable, Equatable {
+    public init(width: Int? = nil, height: Int? = nil, url: URL) {
+        self.width = width
+        self.height = height
+        self.url = url
+    }
+    
     /// Width of the image.
     public var width: Int?
     

@@ -13,6 +13,16 @@ import FoundationNetworking
 /// Main structure used to define headers, and convert them to a valid ``/Foundation/URLRequest``
 public struct HeadersList: Codable {
     
+    public init(isEmpty: Bool = false, url: URL, method: HTTPMethod, headers: [Header], addQueryAfterParts: [AddQueryInfo]? = nil, httpBody: [String]? = nil, parameters: [ParameterToAdd]? = nil) {
+        self.isEmpty = isEmpty
+        self.url = url
+        self.method = method
+        self.headers = headers
+        self.addQueryAfterParts = addQueryAfterParts
+        self.httpBody = httpBody
+        self.parameters = parameters
+    }
+    
     /// Used to check wether a custom headers is defined or not.
     public private(set) var isEmpty: Bool = false
     
@@ -55,6 +65,12 @@ public struct HeadersList: Codable {
     
     /// Parameter to add to the call's URL.
     public struct ParameterToAdd: Codable {
+        public init(name: String, content: String, specialContent: ParameterToAddSpecialContent? = nil) {
+            self.name = name
+            self.content = content
+            self.specialContent = specialContent
+        }
+        
         /// Name of the parameter.
         ///
         /// e.g. the parameter of name **v** would be added like this youtube.com?**v**=
@@ -87,6 +103,11 @@ public struct HeadersList: Codable {
     /// )
     /// ```
     public struct Header: Codable {
+        public init(name: String, content: String) {
+            self.name = name
+            self.content = content
+        }
+        
         /// Name of the header.
         var name: String
         
@@ -107,6 +128,13 @@ public struct HeadersList: Codable {
     /// ```
     /// would unify the body to `"youtube"`
     public struct AddQueryInfo: Codable {
+        
+        public init(index: Int, encode: Bool, content: ContentTypes? = nil) {
+            self.index = index
+            self.encode = encode
+            self.content = content
+        }
+        
         /// Index of the part body that will be before the content of the ``AddQueryInfo``.
         var index: Int
         
