@@ -74,15 +74,15 @@ public struct HeadersList: Codable {
         /// Name of the parameter.
         ///
         /// e.g. the parameter of name **v** would be added like this youtube.com?**v**=
-        var name: String
+        public var name: String
         
         /// Content of the parameter, should be empty if a specialContent is specified.
         ///
         /// e.g. the parameter of content **example**  and name **v** would be added like this youtube.com?**v**=**example**
-        var content: String
+        public var content: String
         
         /// Dynamic content of the parameter, is retrieved .
-        var specialContent: ParameterToAddSpecialContent?
+        public var specialContent: ParameterToAddSpecialContent?
     }
     
     /// Lists the dynamic parameters possiblities.
@@ -136,13 +136,13 @@ public struct HeadersList: Codable {
         }
         
         /// Index of the part body that will be before the content of the ``AddQueryInfo``.
-        var index: Int
+        public var index: Int
         
         /// Boolean specifying wether the content should be encoded in a url-safe way or not.
-        var encode: Bool
+        public var encode: Bool
         
         /// Content of the part to be added after the `index-th` of the body.
-        var content: ContentTypes?
+        public var content: ContentTypes?
         
         /// All content of the posibilities are defined in their parameter of the function ``setHeadersAgentFor(content:data:)``
         ///
