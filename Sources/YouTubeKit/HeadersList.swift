@@ -109,10 +109,10 @@ public struct HeadersList: Codable {
         }
         
         /// Name of the header.
-        var name: String
+        public var name: String
         
         /// Content of the header.
-        var content: String
+        public var content: String
     }
 
     /// The body is usually splitted in multiple parts where a dynamic string has to be placed, adding a ``AddQueryInfo`` lets you specify what to place between those parts of body and if it should encode it or not.
