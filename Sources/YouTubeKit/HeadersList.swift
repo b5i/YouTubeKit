@@ -184,7 +184,6 @@ public struct HeadersList: Codable {
                             URLQueryItem(
                                 name: parameter.name,
                                 value: "\(parameter.content)\(data[.query] ?? "")"
-                                    .addingPercentEncoding(withAllowedCharacters: .urlHostAllowed)!
                             )
                         )
                     }
@@ -194,7 +193,6 @@ public struct HeadersList: Codable {
                         URLQueryItem(
                             name: parameter.name,
                             value: parameter.content
-                                .addingPercentEncoding(withAllowedCharacters: .urlHostAllowed)!
                         )
                     )
                 }

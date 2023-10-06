@@ -135,7 +135,7 @@ final class YouTubeKitTests: XCTestCase {
         guard let wrappedURL = request.url else { XCTFail(TEST_NAME + "request.url is nil"); return }
         
         let decodedURL = wrappedURL.absoluteString
-        let decodedURLShouldBe = "https://raw.githubusercontent.com/b5i/antoinebollengier/main/YouTubeKitTests/CreateCustomHeadersGET.json?q=testquery%252F%2540&t=query%2540%252F"
+        let decodedURLShouldBe = "https://raw.githubusercontent.com/b5i/antoinebollengier/main/YouTubeKitTests/CreateCustomHeadersGET.json?q=testquery/@&t=query@/"
         XCTAssertEqual(decodedURL, decodedURLShouldBe, TEST_NAME + "Checking equality of URLs.")
         
         /// Checking actual headers
