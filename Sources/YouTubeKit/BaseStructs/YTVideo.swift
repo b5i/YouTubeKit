@@ -9,6 +9,7 @@ import Foundation
 
 /// Struct representing a video.
 public struct YTVideo: YTSearchResult, YouTubeVideo, Codable {
+
     public init(id: Int? = nil, videoId: String, title: String? = nil, channel: YTLittleChannelInfos = .init(), viewCount: String? = nil, timePosted: String? = nil, timeLength: String? = nil, thumbnails: [YTThumbnail] = []) {
         self.id = id
         self.videoId = videoId
