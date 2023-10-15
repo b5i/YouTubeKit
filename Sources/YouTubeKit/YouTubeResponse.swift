@@ -35,18 +35,20 @@ public protocol YouTubeResponse {
     /// A function to decode the data and create an instance of the struct.
     static func decodeData(data: Data) -> Self
     
-    /// A function to call the request of the given YouTubeResponse.
+    /// A function to call the request of the given YouTubeResponse. For more informations see ``YouTubeModel/sendRequest(responseType:data:useCookies:result:)``.
     static func sendRequest(
         youtubeModel: YouTubeModel,
         data: [HeadersList.AddQueryInfo.ContentTypes : String],
+        useCookies: Bool?,
         result: @escaping (Self?, Error?) -> ()
     )
 
-    /// A function to call the request of the given YouTubeResponse.
+    /// A function to call the request of the given YouTubeResponse. For more informations see ``YouTubeResponse/sendRequest(youtubeModel:data:useCookies:result:)-7p1m2``.
     @available(macOS 10.15, iOS 13.0, watchOS 6.0, tvOS 13.0, *)
     static func sendRequest(
         youtubeModel: YouTubeModel,
-        data: [HeadersList.AddQueryInfo.ContentTypes : String]
+        data: [HeadersList.AddQueryInfo.ContentTypes : String],
+        useCookies: Bool?
     ) async -> (Self?, Error?)
 
 }
@@ -56,12 +58,14 @@ public extension YouTubeResponse {
     static func sendRequest(
         youtubeModel: YouTubeModel,
         data: [HeadersList.AddQueryInfo.ContentTypes : String],
+        useCookies: Bool? = nil,
         result: @escaping (Self?, Error?) -> ()
     ) {
         /// Call YouTubeModel's `sendRequest` function to have a more readable use.
         youtubeModel.sendRequest(
             responseType: Self.self,
             data: data,
+            useCookies: useCookies,
             result: result
         )
     }
@@ -69,10 +73,11 @@ public extension YouTubeResponse {
     @available(macOS 10.15, iOS 13.0, watchOS 6.0, tvOS 13.0, *)
     static func sendRequest(
         youtubeModel: YouTubeModel,
-        data: [HeadersList.AddQueryInfo.ContentTypes : String]
+        data: [HeadersList.AddQueryInfo.ContentTypes : String],
+        useCookies: Bool? = nil
     ) async -> (Self?, Error?) {
         return await withCheckedContinuation({ (continuation: CheckedContinuation<(Self?, Error?), Never>) in
-            sendRequest(youtubeModel: youtubeModel, data: data, result: { result, error in
+            sendRequest(youtubeModel: youtubeModel, data: data, useCookies: useCookies, result: { result, error in
                 continuation.resume(returning: (result, error))
             })
         })

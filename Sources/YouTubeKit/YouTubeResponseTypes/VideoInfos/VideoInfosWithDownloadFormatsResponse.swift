@@ -6,9 +6,12 @@
 //  
 
 import Foundation
+#if canImport(JavaScriptCore)
 import JavaScriptCore
+#endif
 #if canImport(FoundationNetworking)
 import FoundationNetworking
+import JavaScriptCore
 #endif
 
 /// Struct representing the VideoInfosWithDownloadFormatsResponse.
@@ -24,11 +27,19 @@ public struct VideoInfosWithDownloadFormatsResponse: YouTubeResponse {
     /// Base video infos like if it did a ``VideoInfosResponse`` request.
     public var videoInfos: VideoInfosResponse
     
-    public static func sendRequest(youtubeModel: YouTubeModel, data: [HeadersList.AddQueryInfo.ContentTypes : String], result: @escaping (VideoInfosWithDownloadFormatsResponse?, Error?) -> ()) {
+    public static func sendRequest(youtubeModel: YouTubeModel, data: [HeadersList.AddQueryInfo.ContentTypes : String], useCookies: Bool? = nil, result: @escaping (VideoInfosWithDownloadFormatsResponse?, Error?) -> ()) {
         /// Get request headers.
-        let headers = youtubeModel.getHeaders(forType: headersType)
+        var headers = youtubeModel.getHeaders(forType: headersType)
         
         guard !headers.isEmpty else { result(nil, "The headers from ID: \(headersType) are empty! (probably an error in the name or they are not added in YouTubeModel.shared.customHeadersFunctions)"); return}
+        
+        if ((useCookies ?? false) || youtubeModel.alwaysUseCookies), let cookies = youtubeModel.cookies {
+            if let presentCookiesIndex = headers.headers.enumerated().first(where: {$0.element.name.lowercased() == "cookie"})?.offset {
+                headers.headers[presentCookiesIndex].content += "; \(cookies)"
+            } else {
+                headers.headers.append(HeadersList.Header(name: "Cookie", content: cookies))
+            }
+        }
         
         /// Create request
         let request = HeadersList.setHeadersAgentFor(
@@ -209,7 +220,7 @@ public struct VideoInfosWithDownloadFormatsResponse: YouTubeResponse {
                 }
                 
                 /// Process the n-parameter
-                
+#if canImport(JavaScriptCore)
                 guard let urlComponents = URLComponents(string: item.url?.absoluteString ?? "") else { return item }
                 
                 var queryItems: [URLQueryItem] = urlComponents.queryItems ??  []
@@ -246,6 +257,7 @@ public struct VideoInfosWithDownloadFormatsResponse: YouTubeResponse {
                         URLQueryItem(name: "n", value: result)
                     ])
                 } catch {}
+#endif
                 return item
             })
         } catch {

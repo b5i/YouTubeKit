@@ -90,7 +90,20 @@ With YouTubeKit you can make a large variety of requests to the YouTube API, new
        print(error)
   })
   ```
-
+### Cookies usage
+YouTubeKit allows you to add an account's cookies into the requests by following those steps:
+1. Define the cookies variable in your YouTubeModel:
+```swift
+let YTM = YouTubeModel()
+YTM.cookies = "myCookies"
+```
+2. If you want to always use cookies when making requests you can opt to set the `alwaysUseCookies` of the `YouTubeModel` like so:
+```swift
+let YTM = YouTubeModel()
+YTM.cookies = "myCookies"
+YTM.alwaysUseCookies = true
+```
+3. You can also choose to use cookies by request by specifying the `useCookies` parameter present in every request function.
 
 ## Custom requests and responses:
 To create custom headers and so custom request/response function, you have to:

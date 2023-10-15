@@ -45,20 +45,34 @@ public class YouTubeModel {
     /// `"SAPISID=\(SAPISID); __Secure-1PAPISID=\(PAPISID); __Secure-1PSID=\(PSID1)"`
     public var cookies: String?
     
-    /// Send a request of type `ResponseType`to YouTube's API.
+    /// Boolean indicating whether to include the ``YouTubeModel/cookies`` in the request or not, its value can be overwritten in ``YouTubeModel/sendRequest(responseType:data:useCookies:result:)`` with the `useCookies` parameter.
+    public var alwaysUseCookies: Bool = false
+    
+    /// Send a request of type `ResponseType` to YouTube's API.
     /// - Parameters:
     ///   - responseType: Defines the request/response type, e.g.`SearchResponse.self`
     ///   - data: a dictionnary of possible data to add in the request's body. Is keyed with ``HeadersList/AddQueryInfo/ContentTypes``.
+    ///   - useCookies: boolean that precises if the request should include the model's ``YouTubeModel/cookies``, if set to nil, the value will be taken from ``YouTubeModel/alwaysUseCookies``. The cookies will be added to the `Cookie` HTTP header if one is already present or a new one will be created if not.
     ///   - result: Returns the optional ResponseType JSON processing and the optional error that could happen during the network request.
     public func sendRequest<ResponseType: YouTubeResponse>(
         responseType: ResponseType.Type,
         data: [HeadersList.AddQueryInfo.ContentTypes : String],
+        useCookies: Bool? = nil,
         result: @escaping (ResponseType?, Error?) -> ()
     ) {
         /// Get request headers.
-        let headers = self.getHeaders(forType: ResponseType.headersType)
+        var headers = self.getHeaders(forType: ResponseType.headersType)
         
         guard !headers.isEmpty else { result(nil, "The headers from ID: \(ResponseType.headersType) are empty! (probably an error in the name or they are not added in YouTubeModel.shared.customHeadersFunctions)"); return}
+        
+        /// Check if it should append the cookies.
+        if ((useCookies ?? false) || alwaysUseCookies), let cookies = cookies {
+            if let presentCookiesIndex = headers.headers.enumerated().first(where: {$0.element.name.lowercased() == "cookie"})?.offset {
+                headers.headers[presentCookiesIndex].content += "; \(cookies)"
+            } else {
+                headers.headers.append(HeadersList.Header(name: "Cookie", content: cookies))
+            }
+        }
         
         /// Create request
         let request = HeadersList.setHeadersAgentFor(
