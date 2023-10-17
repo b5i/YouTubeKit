@@ -114,13 +114,13 @@ public struct ChannelInfosResponse: YouTubeResponse {
     /// Dictionnary of a string representing the params to send to get the RequestType from YouTube.
     public var requestParams: [RequestTypes : String] = [:]
     
-    /// Number of subscriber of the channel.
+    /// Count of subscriber of the channel.
     public var subscribersCount: String?
     
     /// Boolean indicating if the user from the provided cookies is subscribed to the channel -> only when cookies are given see ``YouTubeModel/cookies``.
     public var subscribeStatus: Bool?
     
-    /// Number of videos that the channel posted.
+    /// Count of videos that the channel posted.
     public var videosCount: String?
             
     public static func decodeData(data: Data) -> ChannelInfosResponse {
@@ -133,13 +133,9 @@ public struct ChannelInfosResponse: YouTubeResponse {
         toReturn.channelId = channelInfos["channelId"].string
         
         /// Create a new json to replace the "avatar" dictionnary key to the "thumbnail" for the extraction with ``YTThumbnail/appendThumbnails(json:thumbnailList:)`` to work.
-        var avatarJSON = JSON()
-        avatarJSON["thumbnail"] = channelInfos["avatar"]
-        YTThumbnail.appendThumbnails(json: avatarJSON, thumbnailList: &toReturn.avatarThumbnails)
+        YTThumbnail.appendThumbnails(json: channelInfos["avatar"], thumbnailList: &toReturn.avatarThumbnails)
         
-        var bannerJSON = JSON()
-        bannerJSON["thumbnail"] = channelInfos["banner"]
-        YTThumbnail.appendThumbnails(json: bannerJSON, thumbnailList: &toReturn.bannerThumbnails)
+        YTThumbnail.appendThumbnails(json: channelInfos["banner"], thumbnailList: &toReturn.bannerThumbnails)
         
         if let badgesList = channelInfos["badges"].array {
             for badge in badgesList {
@@ -159,13 +155,7 @@ public struct ChannelInfosResponse: YouTubeResponse {
         
         toReturn.subscribersCount = channelInfos["subscriberCountText"]["simpleText"].string
         
-        toReturn.videosCount = channelInfos["videosCountText"]["runs"].array.map({ jsonArray in
-            var stringToReturn: String = ""
-            for element in jsonArray {
-                stringToReturn += element["text"].stringValue
-            }
-            return stringToReturn
-        })
+        toReturn.videosCount = channelInfos["videosCountText"]["runs"].arrayValue.map({$0["text"].stringValue}).joined()
         
         /// Time to get the params to be able to make channel content requests.
         
@@ -178,16 +168,18 @@ public struct ChannelInfosResponse: YouTubeResponse {
                 if requestClass.isTabOfSelfType(json: tab) {
                     /// The request already given one of the ``ChannelContent`` so we decode it.
                     if tab["tabRenderer"]["selected"].bool ?? false, requestClass.canDecode(json: tab) {
-                        let decodedContent = requestClass.decodeJSONFromTab(
-                            tab,
-                            channelInfos: .init(
-                                channelId: toReturn.channelId,
-                                name: toReturn.name
+                        if let channelId = toReturn.channelId {
+                            let decodedContent = requestClass.decodeJSONFromTab(
+                                tab,
+                                channelInfos: .init(
+                                    channelId: channelId,
+                                    name: toReturn.name
+                                )
                             )
-                        )
-                        toReturn.channelContentStore[requestType] = decodedContent
-                        toReturn.channelContentContinuationStore[requestType] = requestClass.getContinuationFromTab(json: tab)
-                        toReturn.currentContent = decodedContent
+                            toReturn.channelContentStore[requestType] = decodedContent
+                            toReturn.channelContentContinuationStore[requestType] = requestClass.getContinuationFromTab(json: tab)
+                            toReturn.currentContent = decodedContent
+                        }
                     }
                     /// We now get the params for the type.
                     guard let params = getParams(json: tab) else { continue }

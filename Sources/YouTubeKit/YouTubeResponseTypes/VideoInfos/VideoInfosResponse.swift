@@ -13,7 +13,7 @@ public struct VideoInfosResponse: YouTubeResponse {
     public static var headersType: HeaderTypes = .videoInfos
         
     /// Name of the channel that posted the video.
-    public var channel: YTLittleChannelInfos
+    public var channel: YTLittleChannelInfos?
     
     /// Boolean indicating if the video is livestreamed.
     public var isLive: Bool?
@@ -66,7 +66,7 @@ public struct VideoInfosResponse: YouTubeResponse {
     /// Date when the video's main HLS (``VideoInfosResponse/VideoInfos-swift.struct/url``) and download formats expire.
     public var videoURLsExpireAt: Date?
     
-    /// Number of view of the video, usually an integer in the string.
+    /// Count of view of the video, usually an integer in the string.
     public var viewCount: String?
     
     public static func decodeData(data: Data) -> VideoInfosResponse {
@@ -83,17 +83,20 @@ public struct VideoInfosResponse: YouTubeResponse {
         let videoDetailsJSON = json["videoDetails"]
         let streamingJSON = json["streamingData"]
         
+        var channel: YTLittleChannelInfos? = nil
+        
+        if let channelId = videoDetailsJSON["channelId"].string {
+            channel = YTLittleChannelInfos(channelId: channelId, name: videoDetailsJSON["author"].string)
+        }
+        
         return VideoInfosResponse(
-            channel: YTLittleChannelInfos(
-                channelId: videoDetailsJSON["channelId"].string,
-                name: videoDetailsJSON["author"].string
-            ),
+            channel: channel,
             isLive: videoDetailsJSON["isLiveContent"].bool,
             keywords: videoDetailsJSON["keywords"].arrayObject as? [String] ?? [],
             streamingURL: streamingJSON["hlsManifestUrl"].url,
             thumbnails: {
                 var thumbnails: [YTThumbnail] = []
-                YTThumbnail.appendThumbnails(json: videoDetailsJSON, thumbnailList: &thumbnails)
+                YTThumbnail.appendThumbnails(json: videoDetailsJSON["thumbnail"], thumbnailList: &thumbnails)
                 return thumbnails
             }(),
             title: videoDetailsJSON["title"].string,
@@ -111,6 +114,6 @@ public struct VideoInfosResponse: YouTubeResponse {
     }
     
     public static func createEmpty() -> VideoInfosResponse {
-        return VideoInfosResponse(channel: .init(), keywords: [], thumbnails: [])
+        return VideoInfosResponse(keywords: [], thumbnails: [])
     }
 }

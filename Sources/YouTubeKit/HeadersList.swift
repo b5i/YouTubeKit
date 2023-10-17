@@ -23,7 +23,7 @@ public struct HeadersList: Codable {
         self.parameters = parameters
     }
     
-    /// Used to check wether a custom headers is defined or not.
+    /// Used to check whether a custom headers is defined or not.
     public private(set) var isEmpty: Bool = false
     
     /// Get an empty instance of ``HeadersList``.
@@ -138,7 +138,7 @@ public struct HeadersList: Codable {
         /// Index of the part body that will be before the content of the ``AddQueryInfo``.
         public var index: Int
         
-        /// Boolean specifying wether the content should be encoded in a url-safe way or not.
+        /// Boolean specifying whether the content should be encoded in a url-safe way or not.
         public var encode: Bool
         
         /// Content of the part to be added after the `index-th` of the body.
@@ -146,7 +146,7 @@ public struct HeadersList: Codable {
         
         /// All content of the posibilities are defined in their parameter of the function ``setHeadersAgentFor(content:data:)``
         ///
-        /// You can know wether to define them or not in ``HeaderTypes``
+        /// You can know whether to define them or not in ``HeaderTypes``
         public enum ContentTypes: String, Codable, CaseIterable, RawRepresentable {
             case query
             
@@ -157,8 +157,8 @@ public struct HeadersList: Codable {
             case visitorData
             
             ///Those are used during the modification of a playlist
-            case movingVideoID
-            case videoBeforeID
+            case movingVideoId
+            case videoBeforeId
             case playlistEditToken
         }
     }

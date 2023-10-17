@@ -1,0 +1,398 @@
+//
+//  MoreVideoInfosResponse.swift
+//
+//
+//  Created by Antoine Bollengier on 16.10.2023.
+//
+
+import Foundation
+
+public struct MoreVideoInfosResponse: YouTubeResponse {
+    public static var headersType: HeaderTypes = .moreVideoInfosHeaders
+    
+    /// Title of the video.
+    public var videoTitle: String?
+    
+    /// Two strings representing the views count.
+    ///
+    /// e.g: `shortViewsCount` could be "334 k views" and `fullViewsCount` could be "334 977 views".
+    public var viewsCount: (shortViewsCount: String?, fullViewsCount: String?)
+    
+    /// Two string representing the time the video was posted.
+    ///
+    /// e.g: `postedDate` could be "1 oct. 2023" and `relativePostedDate` could be "2 weeks ago".
+    public var timePosted: (postedDate: String?, relativePostedDate: String?)
+    
+    /// Channel that posted the video.
+    public var channel: YTChannel?
+    
+    /// Description of the video.
+    ///
+    /// To get the full text description you can do
+    /// ```swift
+    /// let myVideoResponse: MoreVideoInfosResponse
+    /// if let splittedVideoDescription = myVideoResponse.videoDescription {
+    ///     let myFullDescription = splittedVideoDescription.map({$0.text ?? ""}).joined()
+    /// }
+    /// ```
+    public var videoDescription: [YouTubeDescriptionPart]?
+    
+    /// Comment that YouTube chooses and that is supposed to introduce the comments section.
+    ///
+    /// On YouTube's desktop version it is the comment right after the channel at the bottom of the player.
+    /// The `avatar` represents the avatar of the user who published the comment and `teaserText` is a part of this comment (can be the entire comment if it is short enough).
+    public var teaserComment: (avatar: [YTThumbnail]?, teaserText: String?)
+    
+    /// Token that can be used to fetch the comments section.
+    public var commentsContinuationToken: String?
+    
+    /// String representing the count of comments on the video.
+    public var commentsCount: String?
+    
+    /// Videos recommended by YouTube that go along the one that is currently playing.
+    ///
+    /// On YouTube's desktop version they are the videos on the right.
+    public var recommendedVideos: [any YTSearchResult] = []
+    
+    /// Continuation token that can be used to fetch more recommended videos.
+    public var recommendedVideosContinuationToken: String?
+    
+    /// Chapters of the video.
+    public var chapters: [Chapter]?
+    
+    /// String representing the count of likes the video has.
+    ///
+    /// `defaultState` represents the count of like without the user's like (if he did like) and `clickedState` represents the new count of likes after the user clicked on the like button.
+    public var likesCount: (defaultState: String?, likeButtonClickedNewValue: String?)
+    
+    /// Data that is normally present if authentication cookies when the request was made.
+    public var authenticatedInfos: AuthenticatedData?
+    
+    public static func decodeData(data: Data) -> MoreVideoInfosResponse {
+        var toReturn = MoreVideoInfosResponse()
+        let json = JSON(data)
+        
+        var isAccountConnected: Bool = false
+        if !(json["responseContext"]["mainAppWebResponseContext"]["loggedOut"].bool ?? true) {
+            // Response was made with authentication cookies
+            isAccountConnected = true
+            toReturn.authenticatedInfos = AuthenticatedData()
+        }
+        
+        for contentPart in json["contents"]["twoColumnWatchNextResults"]["results"]["results"]["contents"].arrayValue {
+            if contentPart["videoPrimaryInfoRenderer"].exists() {
+                let videoPrimaryInfos = contentPart["videoPrimaryInfoRenderer"]
+                toReturn.videoTitle = videoPrimaryInfos["title"]["runs"].arrayValue.map({$0["text"].stringValue}).joined()
+                toReturn.viewsCount.fullViewsCount = videoPrimaryInfos["viewCount"]["videoViewCountRenderer"]["viewCount"]["simpleText"].string
+                toReturn.viewsCount.shortViewsCount = videoPrimaryInfos["viewCount"]["videoViewCountRenderer"]["shortViewCount"]["simpleText"].string
+                toReturn.timePosted.postedDate = videoPrimaryInfos["dateText"]["simpleText"].string
+                toReturn.timePosted.relativePostedDate = videoPrimaryInfos["relativeDateText"]["simpleText"].string
+                for button in videoPrimaryInfos["videoActions"]["menuRenderer"]["topLevelButtons"].arrayValue {
+                    if button["segmentedLikeDislikeButtonRenderer"].exists() {
+                        let likeButton = button["segmentedLikeDislikeButtonRenderer"]["likeButton"]["toggleButtonRenderer"]
+                        let dislikeButton = button["segmentedLikeDislikeButtonRenderer"]["dislikeButton"]["toggleButtonRenderer"]
+                        if isAccountConnected {
+                            if likeButton["isToggled"].boolValue {
+                                toReturn.authenticatedInfos?.likeStatus = .liked
+                            } else if dislikeButton["isToggled"].boolValue {
+                                toReturn.authenticatedInfos?.likeStatus = .disliked
+                            } else {
+                                toReturn.authenticatedInfos?.likeStatus = .nothing
+                            }
+                        }
+                        toReturn.likesCount.defaultState = button["segmentedLikeDislikeButtonRenderer"]["likeCount"].string
+                        if toReturn.likesCount.defaultState == nil {
+                            toReturn.likesCount.defaultState = button["segmentedLikeDislikeButtonRenderer"]["likeButton"]["toggleButtonRenderer"]["defaultText"]["simpleText"].string
+                        }
+                        toReturn.likesCount.likeButtonClickedNewValue = button["segmentedLikeDislikeButtonRenderer"]["likeButton"]["toggleButtonRenderer"]["toggledText"]["simpleText"].string
+                        break
+                    }
+                }
+            } else if contentPart["videoSecondaryInfoRenderer"].exists() {
+                let videoSecondaryInfos = contentPart["videoSecondaryInfoRenderer"]
+                if videoSecondaryInfos["owner"].exists() {
+                    let channel = videoSecondaryInfos["owner"]["videoOwnerRenderer"]
+                    if let channelId = channel["title"]["runs"].arrayValue.first?["navigationEndpoint"]["browseEndpoint"]["browseId"].string {
+                        var videoChannel = YTChannel(channelId: channelId)
+                        videoChannel.name = channel["title"]["runs"].arrayValue.first?["text"].string
+                        YTThumbnail.appendThumbnails(json: channel["thumbnail"], thumbnailList: &videoChannel.thumbnails)
+                        videoChannel.subscriberCount = channel["subscriberCountText"]["simpleText"].string
+                        toReturn.channel = videoChannel
+                    }
+                }
+                if isAccountConnected {
+                    toReturn.authenticatedInfos?.subscriptionStatus = videoSecondaryInfos["subscribeButton"]["subscribeButtonRenderer"]["subscribed"].bool
+                }
+                if videoSecondaryInfos["attributedDescription"].exists() {
+                    var videoDescription: [YouTubeDescriptionPart] = []
+                    var lastDecodedPartEndTextIndex: Int = 0
+                    let descriptionText = videoSecondaryInfos["attributedDescription"]["content"].stringValue
+                    for partRole in videoSecondaryInfos["attributedDescription"]["commandRuns"].arrayValue {
+                        var descriptionPart = YouTubeDescriptionPart()
+                        if let beginning = partRole["startIndex"].int, let lenght = partRole["length"].int {
+                            if beginning != lastDecodedPartEndTextIndex {
+                                /// There is a text with no links inside that we need to add here.
+                                var newPart = YouTubeDescriptionPart()
+                                if descriptionText.count > beginning {
+                                    let substringBeginning = descriptionText.index(descriptionText.startIndex, offsetBy: lastDecodedPartEndTextIndex)
+                                    let substringEnd = descriptionText.index(descriptionText.startIndex, offsetBy: beginning - 1)
+                                    newPart.text = String(descriptionText[substringBeginning...substringEnd])
+                                }
+                                videoDescription.append(newPart)
+                                lastDecodedPartEndTextIndex = beginning
+                            }
+                            if descriptionText.count >= beginning + lenght {
+                                let substringBeginning = descriptionText.index(descriptionText.startIndex, offsetBy: beginning)
+                                let substringEnd = descriptionText.index(descriptionText.startIndex, offsetBy: beginning + lenght)
+                                descriptionPart.text = String(descriptionText[substringBeginning..<substringEnd])
+                                lastDecodedPartEndTextIndex = beginning + lenght
+                            }
+                        }
+                        if let linkURL = partRole["onTap"]["innertubeCommand"]["urlEndpoint"]["url"].url {
+                            descriptionPart.role = .link(linkURL)
+                            descriptionPart.style = .blue
+                        } else if let videoId = partRole["onTap"]["innertubeCommand"]["watchEndpoint"]["videoId"].string {
+                            if partRole["onTap"]["innertubeCommand"]["watchEndpoint"]["continuePlayback"].boolValue {
+                                descriptionPart.role = .video(videoId)
+                                descriptionPart.style = .custom
+                            } else if let chapterTime = partRole["onTap"]["innertubeCommand"]["watchEndpoint"]["startTimeSeconds"].int {
+                                descriptionPart.role = .chapter(chapterTime)
+                                descriptionPart.style = .blue
+                            }
+                        } else if let channelOrPlaylistId = partRole["onTap"]["innertubeCommand"]["browseEndpoint"]["browseId"].string {
+                            if channelOrPlaylistId.hasPrefix("UC") {
+                                descriptionPart.role = .channel(channelOrPlaylistId)
+                                descriptionPart.style = .custom
+                            } else if channelOrPlaylistId.hasPrefix("VL") {
+                                descriptionPart.role = .playlist(channelOrPlaylistId)
+                                descriptionPart.style = .custom
+                            }
+                        }
+                        videoDescription.append(descriptionPart)
+                    }
+                    toReturn.videoDescription = videoDescription
+                }
+            } else if contentPart["itemSectionRenderer"].exists() {
+                for content in contentPart["itemSectionRenderer"]["contents"].arrayValue {
+                    if content["commentsEntryPointHeaderRenderer"].exists() {
+                        toReturn.commentsCount = content["commentsEntryPointHeaderRenderer"]["commentCount"]["simpleText"].string
+                        var teaserCommentAvatar: [YTThumbnail] = []
+                        YTThumbnail.appendThumbnails(json: content["commentsEntryPointHeaderRenderer"]["contentRenderer"]["commentsEntryPointTeaserRenderer"]["teaserAvatar"], thumbnailList: &teaserCommentAvatar)
+                        toReturn.teaserComment.avatar = teaserCommentAvatar
+                        toReturn.teaserComment.teaserText = content["commentsEntryPointHeaderRenderer"]["contentRenderer"]["commentsEntryPointTeaserRenderer"]["teaserContent"]["simpleText"].string
+                    } else if contentPart["itemSectionRenderer"]["targetId"].string == "comments-section" {
+                        toReturn.commentsContinuationToken = content["continuationItemRenderer"]["continuationEndpoint"]["continuationCommand"]["token"].string
+                    }
+                }
+            }
+        }
+        
+        for engagementPanel in json["engagementPanels"].arrayValue {
+            /// Chapters extraction.
+            if engagementPanel["engagementPanelSectionListRenderer"]["targetId"].string == "engagement-panel-macro-markers-auto-chapters" {
+                var chapterstoReturn: [Chapter] = []
+                for chapterJSON in engagementPanel["engagementPanelSectionListRenderer"]["content"]["macroMarkersListRenderer"]["contents"].arrayValue {
+                    var chapter = Chapter()
+                    chapter.title = chapterJSON["macroMarkersListItemRenderer"]["title"]["simpleText"].string
+                    
+                    YTThumbnail.appendThumbnails(json: chapterJSON["macroMarkersListItemRenderer"]["thumbnail"], thumbnailList: &chapter.thumbnail)
+                    
+                    chapter.startTimeSeconds = chapterJSON["macroMarkersListItemRenderer"]["onTap"]["watchEndpoint"]["startTimeSeconds"].int
+                    
+                    chapter.timeDescriptions.shortTimeDescription = chapterJSON["macroMarkersListItemRenderer"]["timeDescription"]["simpleText"].string
+                    
+                    chapter.timeDescriptions.textTimeDescription = chapterJSON["macroMarkersListItemRenderer"]["timeDescriptionA11yLabel"].string
+                    
+                    chapterstoReturn.append(chapter)
+                }
+                toReturn.chapters = chapterstoReturn
+                break
+            }
+        }
+        
+        for recommendation in json["contents"]["twoColumnWatchNextResults"]["secondaryResults"]["secondaryResults"]["results"].arrayValue {
+            if recommendation["itemSectionRenderer"]["contents"].exists() {
+                for element in recommendation["itemSectionRenderer"]["contents"].arrayValue {
+                    if element["compactVideoRenderer"]["videoId"].exists(), let decodedVideo = YTVideo.decodeJSON(json: element["compactVideoRenderer"]) {
+                        toReturn.recommendedVideos.append(decodedVideo)
+                    } else if let continuationToken = element["continuationItemRenderer"]["continuationEndpoint"]["continuationCommand"]["token"].string {
+                        toReturn.recommendedVideosContinuationToken = continuationToken
+                    }
+                }
+            } else if recommendation["compactVideoRenderer"]["videoId"].exists(), let decodedVideo = YTVideo.decodeJSON(json: recommendation["compactVideoRenderer"]) {
+                toReturn.recommendedVideos.append(decodedVideo)
+            } else if let continuationToken = recommendation["continuationItemRenderer"]["continuationEndpoint"]["continuationCommand"]["token"].string {
+                toReturn.recommendedVideosContinuationToken = continuationToken
+            }
+        }
+        
+        if toReturn.recommendedVideosContinuationToken == nil {
+            for continuation in json["contents"]["twoColumnWatchNextResults"]["secondaryResults"]["secondaryResults"]["continuations"].arrayValue {
+                if let continuationToken = continuation["nextContinuationData"]["continuation"].string {
+                    toReturn.recommendedVideosContinuationToken = continuationToken
+                    break
+                }
+            }
+        }
+        
+        return toReturn
+    }
+    
+    /// Merge the continuation results of the recommended videos.
+    ///
+    /// - Parameter continuation: The continuation to merge.
+    public mutating func mergeRecommendedVideosContination(_ continuation: RecommendedVideosContinuation) {
+        self.recommendedVideos.append(contentsOf: continuation.results)
+        self.recommendedVideosContinuationToken = continuation.continuationToken
+    }
+    
+    /// Get the continuation of the recommended videos.
+    ///
+    /// - Parameter youtubeModel: the model to use to execute the request.
+    /// - Parameter result: the closure to execute when the request is finished.
+    ///
+    /// - Note: using cookies with this request is generally not needed.
+    public func getRecommendedVideosContination(youtubeModel: YouTubeModel, result: @escaping (RecommendedVideosContinuation?, Error?) -> ()) {
+        if let recommendedVideosContinuationToken = recommendedVideosContinuationToken {
+            RecommendedVideosContinuation.sendRequest(youtubeModel: youtubeModel, data: [.continuation: recommendedVideosContinuationToken], result: result)
+        } else {
+            result(nil, "recommendedVideosContinuationToken of the MoreVideoInfosResponse is nil.")
+        }
+    }
+    
+    /// Get the continuation of the recommended videos.
+    ///
+    /// - Parameter youtubeModel: the model to use to execute the request.
+    /// - Returns: A ``MoreVideoInfosResponse/RecommendedVideosContinuation`` or an error.
+    ///
+    /// - Note: using cookies with this request is generally not needed.
+    @available(macOS 10.15, iOS 13.0, watchOS 6.0, tvOS 13.0, *)
+    public func getRecommendedVideosContination(youtubeModel: YouTubeModel) async -> (RecommendedVideosContinuation?, Error?) {
+        return await withCheckedContinuation({ (continuation: CheckedContinuation<(RecommendedVideosContinuation?, Error?), Never>) in
+            getRecommendedVideosContination(youtubeModel: youtubeModel, result: { result, error in
+                continuation.resume(returning: (result, error))
+            })
+        })
+    }
+    
+    
+    /// Struct representing the continuation of the recommended videos of the ``MoreVideoInfosResponse``.
+    public struct RecommendedVideosContinuation: ResultsContinuationResponse {
+        public static var headersType: HeaderTypes = .fetchMoreRecommendedVideosHeaders
+        
+        public var continuationToken: String?
+        
+        public var results: [any YTSearchResult] = []
+        
+        public static func decodeData(data: Data) -> RecommendedVideosContinuation {
+            let json = JSON(data)
+            var toReturn = RecommendedVideosContinuation()
+
+            for action in json["onResponseReceivedEndpoints"].arrayValue {
+                if action["appendContinuationItemsAction"].exists() {
+                    for element in action["appendContinuationItemsAction"]["continuationItems"].arrayValue {
+                        if element["compactVideoRenderer"]["videoId"].exists(), let decodedVideo = YTVideo.decodeJSON(json: element["compactVideoRenderer"]) {
+                            toReturn.results.append(decodedVideo)
+                        } else if let continuationToken = element["continuationItemRenderer"]["continuationEndpoint"]["continuationCommand"]["token"].string {
+                            toReturn.continuationToken = continuationToken
+                        }
+                    }
+                }
+            }
+            
+            return toReturn
+        }
+    }
+    
+    /// Struct representing the data about the video that concerns the account that was used to make the requests (the cookies).
+    public struct AuthenticatedData {
+        public init(likeStatus: LikeStatus? = nil, subscriptionStatus: Bool? = nil) {
+            self.likeStatus = likeStatus
+            self.subscriptionStatus = subscriptionStatus
+        }
+        
+        /// Like status for the video of the account.
+        public var likeStatus: LikeStatus?
+        
+        /// Boolean indicating whether the account is subscribed to the channel that posted the video or not.
+        public var subscriptionStatus: Bool?
+        
+        /// Enum representing the different "appreciation" status of the account for the video.
+        public enum LikeStatus {
+            case liked
+            case disliked
+            case nothing
+        }
+    }
+    
+    /// Struct representing a part of the video's description.
+    public struct YouTubeDescriptionPart {
+        public init(text: String? = nil, role: YouTubeDescriptionPartRole? = nil, style: YouTubeDescriptionPartStyle = .normalText) {
+            self.text = text
+            self.role = role
+            self.style = style
+        }
+        
+        /// Text of the part.
+        public var text: String?
+        
+        /// Role of the description part.
+        public var role: YouTubeDescriptionPartRole?
+        
+        /// Style of the description part.
+        public var style: YouTubeDescriptionPartStyle = .normalText
+        
+        /// Enum representing the different description part roles that the text could have.
+        public enum YouTubeDescriptionPartRole {
+            /// Contains the URL of the link.
+            case link(URL)
+            
+            /// Contains the start time in seconds of the chapter.
+            case chapter(Int)
+            
+            /// Contains the channel's id.
+            case channel(String)
+            
+            /// Contains the video's id.
+            case video(String)
+            
+            /// Contains the playlist's id.
+            case playlist(String)
+        }
+        
+        /// Style that this part adopts on YouTube's website.
+        public enum YouTubeDescriptionPartStyle {
+            case normalText
+            case blue
+            
+            /// YouTube provides a custom UI for links that point to other YouTube content.
+            case custom
+        }
+    }
+    
+    /// Struct representing a chapter of the video.
+    public struct Chapter {
+        public init(title: String? = nil, thumbnail: [YTThumbnail] = [], startTimeSeconds: Int? = nil, timeDescriptions: (shortTimeDescription: String?, textTimeDescription: String?) = (nil, nil)) {
+            self.title = title
+            self.thumbnail = thumbnail
+            self.startTimeSeconds = startTimeSeconds
+            self.timeDescriptions = timeDescriptions
+        }
+        
+        /// Title of the chapter.
+        public var title: String?
+        
+        /// Thumbnail representing the chapter.
+        ///
+        /// Generally a screenshot of the video at the beginning of the chapter.
+        public var thumbnail: [YTThumbnail] = []
+        
+        /// Start time in seconds of the chapter.
+        public var startTimeSeconds: Int?
+        
+        /// Two times descriptions of the chapter.
+        ///
+        /// `shortTimeDescription` could be "0:00" and `textTimeDescription` could be "0 second".
+        public var timeDescriptions: (shortTimeDescription: String?, textTimeDescription: String?)
+    }
+}

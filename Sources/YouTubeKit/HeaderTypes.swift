@@ -41,7 +41,7 @@ public enum HeaderTypes {
     case channelHeaders
     
     /// Get playlist's videos.
-    /// - Parameter browseId: Playlist's ID
+    /// - Parameter browseId: Playlist's ID (make sure it starts with "VL" if not, add it)
     case playlistHeaders
     
     /// Get playlist's videos (continuation).
@@ -61,6 +61,78 @@ public enum HeaderTypes {
     /// Get channel's results (continuation).
     /// - Parameter continuation: Channel query's continuation token
     case channelContinuationHeaders
+    
+    /// Get a user's account's infos.
+    case userAccountHeaders
+    
+    /// Get a user's library.
+    case usersLibraryHeaders
+    
+    /* already present in the usersLibraryHeaders response
+    /// Get all user's playlists.
+    /// - Parameter browseId: The getAllPlaylists token.
+    case usersAllPlaylistsHeaders
+     */
+    
+    /// Create a playlist containing a video.
+    /// - Parameter query: The playlist's name.
+    /// - Parameter params: The playlist's privacy (PRIVATE, UNLISTED, PUBLIC): ``YTPrivacy``.
+    /// - Parameter movingVideoId: The video's id.
+    case createPlaylistHeaders
+    
+    /// Move video in playlist.
+    /// - Parameter movingVideoId: The videoIdInPlaylist that is moved.
+    /// - Parameter videoBeforeId: The videoIdInPlaylist that is just before the place of the moved video, empty if the video is moved at the top of the playlist.
+    /// - Parameter browseId: The playlist's id.
+    case moveVideoInPlaylistHeaders
+    
+    /// Remove video from playlist.
+    /// - Parameter movingVideoId: The videoIdInPlaylist that is removed.
+    /// - Parameter playlistEditToken: The playlist's removal action token.
+    /// - Parameter browseId: The playlist's id.
+    case removeVideoFromPlaylistHeaders
+    
+    /// Remove video from playlist.
+    /// - Parameter movingVideoId: The video's id that is removed.
+    /// - Parameter browseId: The playlist's id.
+    case removeVideoByIdFromPlaylistHeaders
+    
+    /// Add video to playlist (append at the end of it).
+    /// - Parameter movingVideoId: The video's id that is added.
+    /// - Parameter browseId: The playlist's id.
+    case addVideoToPlaylistHeaders
+    
+    /// Delete a playlist from the account.
+    /// - Parameter browseId: The playlist's id.
+    case deletePlaylistHeaders
+    
+    /// Get more infos about a video (comment, recommanded videos, etc...).
+    /// - Parameter query: The video's id.
+    case moreVideoInfosHeaders
+    
+    /// Get more videos of the recommended section in ``MoreVideoInfosResponse``.
+    /// - Parameter continuation: The continuation token. (``MoreVideoInfosResponse/recommendedVideosContinuationToken``)
+    case fetchMoreRecommendedVideosHeaders
+    
+    /// Like video.
+    /// - Parameter query: The video's id.
+    case likeVideoHeaders
+    
+    /// Dislike video.
+    /// - Parameter query: The video's id.
+    case dislikeVideoHeaders
+    
+    /// Remove like/dislike from a video.
+    /// - Parameter query: The video's id.
+    case removeLikeStatusFromVideoHeaders
+        
+    /// Subscribe to a channel.
+    /// - Parameter browseId: The channel's id.
+    case subscribeToChannelHeaders
+    
+    /// Unsubscribe to a channel.
+    /// - Parameter browseId: The channel's id.
+    case unsubscribeFromChannelHeaders
     
     /// For custom headers
     case customHeaders(String)

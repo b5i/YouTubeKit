@@ -8,7 +8,7 @@
 import Foundation
 
 public extension YTSearchResult {
-    /// Method indicating wether some Data can be converted to this type of ``YTSearchResult``.
+    /// Method indicating whether some Data can be converted to this type of ``YTSearchResult``.
     /// - Parameter data: the data to be checked.
     /// - Returns: a boolean indicating if the conversion is possible.
     static func canBeDecoded(data: Data) -> Bool {

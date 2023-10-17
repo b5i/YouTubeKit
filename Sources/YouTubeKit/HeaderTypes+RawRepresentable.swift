@@ -15,7 +15,6 @@ extension HeaderTypes: RawRepresentable {
     
     public var rawValue: String {
         switch self {
-            
         case .home:
             return "home"
         case .search:
@@ -40,6 +39,40 @@ extension HeaderTypes: RawRepresentable {
             return "searchContinuationHeaders"
         case .channelContinuationHeaders:
             return "channelContinuationHeaders"
+        case .userAccountHeaders:
+            return "userAccountHeaders"
+        case .usersLibraryHeaders:
+            return "usersLibraryHeaders"
+            /*
+        case .usersAllPlaylistsHeaders:
+            return "usersAllPlaylistsHeaders"
+             */
+        case .createPlaylistHeaders:
+            return "createPlaylistHeaders"
+        case .moveVideoInPlaylistHeaders:
+            return "moveVideoInPlaylistHeaders"
+        case .removeVideoFromPlaylistHeaders:
+            return "removeVideoFromPlaylistHeaders"
+        case .removeVideoByIdFromPlaylistHeaders:
+            return "removeVideoByIdFromPlaylistHeaders"
+        case .addVideoToPlaylistHeaders:
+            return "addVideoToPlaylistHeaders"
+        case .deletePlaylistHeaders:
+            return "deletePlaylistHeaders"
+        case .moreVideoInfosHeaders:
+            return "moreVideoInfosHeaders"
+        case .fetchMoreRecommendedVideosHeaders:
+            return "fetchMoreRecommendedVideosHeaders"
+        case .likeVideoHeaders:
+            return "likeVideoHeaders"
+        case .dislikeVideoHeaders:
+            return "dislikeVideoHeaders"
+        case .removeLikeStatusFromVideoHeaders:
+            return "removeLikeStatusFromVideoHeaders"
+        case .subscribeToChannelHeaders:
+            return "subscribeToChannelHeaders"
+        case .unsubscribeFromChannelHeaders:
+            return "unsubscribeFromChannelHeaders"
         case .customHeaders(let stringIdentifier):
             return stringIdentifier
         }
