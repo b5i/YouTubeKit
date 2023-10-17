@@ -54,7 +54,7 @@ public extension YouTubeVideo {
     ///
     /// Requires a ``YouTubeModel`` where ``YouTubeModel/cookies`` is defined.
     func removeLikeFromVideo(youtubeModel: YouTubeModel, result: @escaping (Error?) -> Void) {
-        LikeVideoResponse.sendRequest(youtubeModel: youtubeModel, data: [.query: self.videoId], result: { _, error in
+        RemoveLikeFromVideoResponse.sendRequest(youtubeModel: youtubeModel, data: [.query: self.videoId], result: { _, error in
             result(error)
         })
     }
