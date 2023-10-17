@@ -48,13 +48,6 @@ public struct HomeScreenResponse: ResultsResponse {
         return toReturn
     }
     
-    /// Merge a ``HomeScreenResponse/Continuation`` to this instance of ``HomeScreenResponse``.
-    /// - Parameter continuation: the ``HomeScreenResponse/Continuation`` that will be merged.
-    public mutating func mergeContinuation(_ continuation: Continuation) {
-        self.continuationToken = continuation.continuationToken
-        self.results.append(contentsOf: continuation.results)
-    }
-    
     /// Struct representing the continuation ("load more videos" button)
     public struct Continuation: ResultsContinuationResponse {
         public static var headersType: HeaderTypes = .homeVideosContinuationHeader

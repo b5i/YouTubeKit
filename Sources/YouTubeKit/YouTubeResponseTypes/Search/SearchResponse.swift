@@ -29,7 +29,7 @@ public struct SearchResponse: ResultsResponse {
         
         ///Get the continuation token and actual search results among ads
         if let relevantContentJSON = json["contents"]["twoColumnSearchResultsRenderer"]["primaryContents"]["sectionListRenderer"]["contents"].array {
-            ///Check wether each "contents" entry is
+            ///Check whether each "contents" entry is
             for potentialContinuationRenderer in relevantContentJSON {
                 if let continuationToken = potentialContinuationRenderer["continuationItemRenderer"]["continuationEndpoint"]["continuationCommand"]["token"].string {
                     ///1. A continuationItemRenderer that contains a continuation token
@@ -91,17 +91,19 @@ public struct SearchResponse: ResultsResponse {
     }
     
     /// Struct representing the ``SearchResponse`` but restricted to Creative Commons copyrighted videos.
-    public struct Restricted: YouTubeResponse {
+    public struct Restricted: ResultsResponse {    
+        public typealias Continuation = SearchResponse.Continuation
+        
         public static var headersType: HeaderTypes = .restrictedSearch
         
         /// String token that will be useful in case of a search continuation request ("load more" button).
-        public var continuationToken: String = ""
+        public var continuationToken: String?
         
         /// Results of the search.
         public var results: [any YTSearchResult] = []
         
         /// String token that will be useful in case of a search continuation request (authenticate the continuation request).
-        public var visitorData: String = ""
+        public var visitorData: String?
         
         public static func decodeData(data: Data) -> SearchResponse.Restricted {
             var searchResponse = SearchResponse.Restricted()
@@ -112,7 +114,7 @@ public struct SearchResponse: ResultsResponse {
             
             ///Get the continuation token and actual search results among ads
             if let relevantContentJSON = json["contents"]["twoColumnSearchResultsRenderer"]["primaryContents"]["sectionListRenderer"]["contents"].array {
-                ///Check wether each "contents" entry is
+                ///Check whether each "contents" entry is
                 for potentialContinuationRenderer in relevantContentJSON {
                     if let continuationToken = potentialContinuationRenderer["continuationItemRenderer"]["continuationEndpoint"]["continuationCommand"]["token"].string {
                         ///1. A continuationItemRenderer that contains a continuation token
@@ -132,13 +134,6 @@ public struct SearchResponse: ResultsResponse {
             
             return searchResponse
         }
-    }
-    
-    /// Merge a ``SearchResponse/Continuation`` to this instance of ``SearchResponse``.
-    /// - Parameter continuation: the ``SearchResponse/Continuation`` that will be merged.
-    public mutating func mergeContinuation(_ continuation: Continuation) {
-        self.continuationToken = continuation.continuationToken
-        self.results.append(contentsOf: continuation.results)
     }
     
     /// Struct representing the continuation response of a ``SearchResponse`` ("load more results" button).
@@ -164,7 +159,7 @@ public struct SearchResponse: ResultsResponse {
             
             ///Get the continuation token and actual search results among ads
             if let relevantContentJSON = json["onResponseReceivedCommands"][0]["appendContinuationItemsAction"]["continuationItems"].array {
-                ///Check wether each "contents" entry is
+                ///Check whether each "contents" entry is
                 for potentialContinuationRenderer in relevantContentJSON {
                     if let continuationToken = potentialContinuationRenderer["continuationItemRenderer"]["continuationEndpoint"]["continuationCommand"]["token"].string {
                         ///1. A continuationItemRenderer that contains a continuation token

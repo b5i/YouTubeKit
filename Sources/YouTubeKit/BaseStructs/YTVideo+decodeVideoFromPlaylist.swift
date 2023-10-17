@@ -21,15 +21,13 @@ public extension YTVideo {
         if json["title"]["simpleText"].string != nil {
             video.title = json["title"]["simpleText"].string
         } else if let titleArray = json["title"]["runs"].array {
-            var title: String = ""
-            for titlePart in titleArray {
-                title += titlePart["text"].stringValue
-            }
-            video.title = title
+            video.title = titleArray.map({$0["text"].stringValue}).joined()
         }
         
-        video.channel.name = json["shortBylineText"]["runs"][0]["text"].string
-        video.channel.channelId = json["shortBylineText"]["runs"][0]["navigationEndpoint"]["browseEndpoint"]["browseId"].string
+        if let channelId = json["shortBylineText"]["runs"][0]["navigationEndpoint"]["browseEndpoint"]["browseId"].string {
+            
+            video.channel = YTLittleChannelInfos(channelId: channelId, name: json["shortBylineText"]["runs"][0]["text"].string)
+        }
         
         video.viewCount = json["videoInfo"]["runs"][0]["text"].string
         
@@ -41,7 +39,7 @@ public extension YTVideo {
             video.timeLength = "live"
         }
         
-        YTThumbnail.appendThumbnails(json: json, thumbnailList: &video.thumbnails)
+        YTThumbnail.appendThumbnails(json: json["thumbnail"], thumbnailList: &video.thumbnails)
         
         return video
     }

@@ -42,7 +42,7 @@ public protocol ChannelContent {
     /// - Returns: an optional string (nil if there is no continuation token), representing the continuation token.
     static func getContinuationFromTab(json: JSON) -> String?
     
-    /// To check wether a part of JSON is a tab of the concerned ``ChannelContent`` type.
+    /// To check whether a part of JSON is a tab of the concerned ``ChannelContent`` type.
     /// - Parameter json: the JSON to be checked.
     /// - Returns: a boolean indicating if the tab is of the concerned ``ChannelContent`` type.
     ///

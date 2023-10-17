@@ -10,7 +10,7 @@ import Foundation
 /// Struct representing a video.
 public struct YTVideo: YTSearchResult, YouTubeVideo, Codable {
 
-    public init(id: Int? = nil, videoId: String, title: String? = nil, channel: YTLittleChannelInfos = .init(), viewCount: String? = nil, timePosted: String? = nil, timeLength: String? = nil, thumbnails: [YTThumbnail] = []) {
+    public init(id: Int? = nil, videoId: String, title: String? = nil, channel: YTLittleChannelInfos? = nil, viewCount: String? = nil, timePosted: String? = nil, timeLength: String? = nil, thumbnails: [YTThumbnail] = []) {
         self.id = id
         self.videoId = videoId
         self.title = title
@@ -22,7 +22,7 @@ public struct YTVideo: YTSearchResult, YouTubeVideo, Codable {
     }
     
     public static func == (lhs: YTVideo, rhs: YTVideo) -> Bool {
-        return lhs.channel.channelId == rhs.channel.channelId && lhs.channel.name == rhs.channel.name && lhs.thumbnails == rhs.thumbnails && lhs.timeLength == rhs.timeLength && lhs.timePosted == rhs.timePosted && lhs.title == rhs.title && lhs.videoId == rhs.videoId && lhs.viewCount == rhs.viewCount
+        return lhs.channel?.channelId == rhs.channel?.channelId && lhs.channel?.name == rhs.channel?.name && lhs.thumbnails == rhs.thumbnails && lhs.timeLength == rhs.timeLength && lhs.timePosted == rhs.timePosted && lhs.title == rhs.title && lhs.videoId == rhs.videoId && lhs.viewCount == rhs.viewCount
     }
     
     public static func canBeDecoded(json: JSON) -> Bool {
@@ -39,26 +39,20 @@ public struct YTVideo: YTSearchResult, YouTubeVideo, Codable {
         if json["title"]["simpleText"].string != nil {
             video.title = json["title"]["simpleText"].string
         } else if let titleArray = json["title"]["runs"].array {
-            var title: String = ""
-            for titlePart in titleArray {
-                title += titlePart["text"].stringValue
-            }
-            video.title = title
+            video.title = titleArray.map({$0["text"].stringValue}).joined()
         }
         
-        video.channel.name = json["ownerText"]["runs"][0]["text"].string
-        video.channel.channelId = json["ownerText"]["runs"][0]["navigationEndpoint"]["browseEndpoint"]["browseId"].string
-        
-        YTThumbnail.appendThumbnails(json: json["channelThumbnailSupportedRenderers"]["channelThumbnailWithLinkRenderer"], thumbnailList: &video.channel.thumbnails)
+        if let channelId = json["ownerText"]["runs"][0]["navigationEndpoint"]["browseEndpoint"]["browseId"].string {
+            var channel = YTLittleChannelInfos(channelId: channelId, name: json["ownerText"]["runs"][0]["text"].string)
+            YTThumbnail.appendThumbnails(json: json["channelThumbnailSupportedRenderers"]["channelThumbnailWithLinkRenderer"]["thumbnail"], thumbnailList: &channel.thumbnails)
+            
+            video.channel = channel
+        }
         
         if let viewCount = json["shortViewCountText"]["simpleText"].string {
             video.viewCount = viewCount
         } else {
-            var viewCount: String = ""
-            for viewCountTextPart in json["shortViewCountText"]["runs"].array ?? [] {
-                viewCount += viewCountTextPart["text"].string ?? ""
-            }
-            video.viewCount = viewCount
+            video.viewCount = json["shortViewCountText"]["runs"].arrayValue.map({$0["text"].stringValue}).joined()
         }
         
         video.timePosted = json["publishedTimeText"]["simpleText"].string
@@ -69,7 +63,7 @@ public struct YTVideo: YTSearchResult, YouTubeVideo, Codable {
             video.timeLength = "live"
         }
         
-        YTThumbnail.appendThumbnails(json: json, thumbnailList: &video.thumbnails)
+        YTThumbnail.appendThumbnails(json: json["thumbnail"], thumbnailList: &video.thumbnails)
         
         return video
     }
@@ -87,9 +81,9 @@ public struct YTVideo: YTSearchResult, YouTubeVideo, Codable {
     /// Channel informations.
     ///
     /// Possibly not defined when reading in ``YTSearchResultType/Playlist-swift.struct/frontVideos`` properties.
-    public var channel: YTLittleChannelInfos = .init()
+    public var channel: YTLittleChannelInfos?
     
-    /// Number of views of the video, in a shortened string.
+    /// Count of views of the video, in a shortened string.
     ///
     /// Possibly not defined when reading in ``YTSearchResultType/Playlist-swift.struct/frontVideos`` properties.
     public var viewCount: String?

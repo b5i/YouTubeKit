@@ -9,7 +9,7 @@ import Foundation
 
 public protocol ResultsContinuationResponse: YouTubeResponse {
     /// Continuation token used to fetch more results, nil if there is no more results to fetch.
-    var continuationToken: String? { get }
+    var continuationToken: String? { get set }
     
     /// Results of the continuation search.
     var results: [any YTSearchResult] { get set }

@@ -29,13 +29,13 @@ public protocol YTSearchResult: Codable, Equatable {
     /// - Returns: an instance of the decoded JSON object or nil if the item can't be decoded, can be checked before with ``YTSearchResult/canBeDecoded(json:)``.
     static func decodeJSON(json: JSON) -> Self?
     
-    /// Method indicating wether some Data can be converted to this type of ``YTSearchResult``.
+    /// Method indicating whether some Data can be converted to this type of ``YTSearchResult``.
     /// - Parameter data: the data to be checked.
     /// - Returns: a boolean indicating if the conversion is possible.
     static func canBeDecoded(data: Data) -> Bool
     
     
-    /// Method indicating wether some JSON can be converted to this type of ``YTSearchResult``.
+    /// Method indicating whether some JSON can be converted to this type of ``YTSearchResult``.
     /// - Parameter json: the json to be checked.
     /// - Returns: a boolean indicating if the conversion is possible.
     static func canBeDecoded(json: JSON) -> Bool

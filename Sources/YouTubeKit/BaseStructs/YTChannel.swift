@@ -9,7 +9,7 @@ import Foundation
 
 
 /// Struct representing a channel.
-public struct YTChannel: YTSearchResult {
+public struct YTChannel: YTSearchResult, YouTubeChannel {
     public init(id: Int? = nil, name: String? = nil, channelId: String, thumbnails: [YTThumbnail] = [], subscriberCount: String? = nil, badges: [String] = []) {
         self.id = id
         self.name = name
@@ -31,7 +31,7 @@ public struct YTChannel: YTSearchResult {
         var channel = YTChannel(channelId: channelId)
         channel.name = json["title"]["simpleText"].string
                     
-        YTThumbnail.appendThumbnails(json: json, thumbnailList: &channel.thumbnails)
+        YTThumbnail.appendThumbnails(json: json["thumbnail"], thumbnailList: &channel.thumbnails)
         
         /// There's an error in YouTube's API
         channel.subscriberCount = json["videoCountText"]["simpleText"].string

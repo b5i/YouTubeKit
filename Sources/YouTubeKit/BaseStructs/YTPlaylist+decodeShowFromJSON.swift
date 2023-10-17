@@ -17,7 +17,7 @@ public extension YTPlaylist {
         var playlist = YTPlaylist(playlistId: playlistId.prefix(2) == "VL" ? playlistId : "VL" + playlistId)
         playlist.title = json["title"]["simpleText"].string
         
-        YTThumbnail.appendThumbnails(json: json["thumbnailRenderer"]["showCustomThumbnailRenderer"], thumbnailList: &playlist.thumbnails)
+        YTThumbnail.appendThumbnails(json: json["thumbnailRenderer"]["showCustomThumbnailRenderer"]["thumbnail"], thumbnailList: &playlist.thumbnails)
         
         guard let videoCountArray = json["thumbnailOverlays"].array else { return playlist }
         
@@ -25,13 +25,7 @@ public extension YTPlaylist {
             if let videoCount = videoCountPotential["thumbnailOverlayBottomPanelRenderer"]["text"]["simpleText"].string {
                 playlist.videoCount = videoCount
             } else if let videoCountTextArray = videoCountPotential["thumbnailOverlayBottomPanelRenderer"]["text"]["runs"].array {
-                var videoCount: String = ""
-                for videoCountTextElement in videoCountTextArray {
-                    if let videoCountTextElementString = videoCountTextElement["text"].string {
-                        videoCount += videoCountTextElementString
-                    }
-                }
-                playlist.videoCount = videoCount
+                playlist.videoCount = videoCountTextArray.map({$0["text"].stringValue}).joined()
             }
         }
         

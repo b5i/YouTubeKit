@@ -33,11 +33,11 @@ public struct VideoInfosWithDownloadFormatsResponse: YouTubeResponse {
         
         guard !headers.isEmpty else { result(nil, "The headers from ID: \(headersType) are empty! (probably an error in the name or they are not added in YouTubeModel.shared.customHeadersFunctions)"); return}
         
-        if ((useCookies ?? false) || youtubeModel.alwaysUseCookies), let cookies = youtubeModel.cookies {
+        if ((useCookies ?? false) || youtubeModel.alwaysUseCookies), youtubeModel.cookies != "" {
             if let presentCookiesIndex = headers.headers.enumerated().first(where: {$0.element.name.lowercased() == "cookie"})?.offset {
-                headers.headers[presentCookiesIndex].content += "; \(cookies)"
+                headers.headers[presentCookiesIndex].content += "; \(youtubeModel.cookies)"
             } else {
-                headers.headers.append(HeadersList.Header(name: "Cookie", content: cookies))
+                headers.headers.append(HeadersList.Header(name: "Cookie", content: youtubeModel.cookies))
             }
         }
         

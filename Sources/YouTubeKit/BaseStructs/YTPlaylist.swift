@@ -9,7 +9,7 @@ import Foundation
 
 /// Struct representing a playlist.
 public struct YTPlaylist: YTSearchResult {
-    public init(id: Int? = nil, playlistId: String, title: String? = nil, thumbnails: [YTThumbnail] = [], videoCount: String? = nil, channel: YTLittleChannelInfos = .init(), timePosted: String? = nil, frontVideos: [YTVideo] = []) {
+    public init(id: Int? = nil, playlistId: String, title: String? = nil, thumbnails: [YTThumbnail] = [], videoCount: String? = nil, channel: YTLittleChannelInfos? = nil, timePosted: String? = nil, frontVideos: [YTVideo] = []) {
         self.id = id
         self.playlistId = playlistId
         self.title = title
@@ -21,7 +21,7 @@ public struct YTPlaylist: YTSearchResult {
     }
     
     public static func == (lhs: YTPlaylist, rhs: YTPlaylist) -> Bool {
-        return lhs.channel.channelId == rhs.channel.channelId && lhs.channel.name == rhs.channel.name && lhs.playlistId == rhs.playlistId && lhs.timePosted == rhs.timePosted && lhs.videoCount == rhs.videoCount && lhs.title == rhs.title && lhs.frontVideos == rhs.frontVideos
+        return lhs.channel?.channelId == rhs.channel?.channelId && lhs.channel?.name == rhs.channel?.name && lhs.playlistId == rhs.playlistId && lhs.timePosted == rhs.timePosted && lhs.videoCount == rhs.videoCount && lhs.title == rhs.title && lhs.frontVideos == rhs.frontVideos
     }
     
     public static func canBeDecoded(json: JSON) -> Bool {
@@ -37,26 +37,17 @@ public struct YTPlaylist: YTSearchResult {
         if let playlistTitle = json["title"]["simpleText"].string {
             playlist.title = playlistTitle
         } else {
-            var playlistTitle: String = ""
-            for playlistTitleTextPart in json["title"]["runs"].array ?? [] {
-                playlistTitle += playlistTitleTextPart["text"].string ?? ""
-            }
+            let playlistTitle = json["title"]["runs"].arrayValue.map({$0["text"].stringValue}).joined()
             playlist.title = playlistTitle
         }
         
-        YTThumbnail.appendThumbnails(json: json["thumbnailRenderer"]["playlistVideoThumbnailRenderer"], thumbnailList: &playlist.thumbnails)
+        YTThumbnail.appendThumbnails(json: json["thumbnailRenderer"]["playlistVideoThumbnailRenderer"]["thumbnail"], thumbnailList: &playlist.thumbnails)
                     
-        playlist.videoCount = ""
-        for videoCountTextPart in json["videoCountText"]["runs"].array ?? [] {
-            playlist.videoCount! += videoCountTextPart["text"].string ?? ""
-        }
+        playlist.videoCount = json["videoCountText"]["runs"].arrayValue.map({$0["text"].stringValue}).joined()
         
-        playlist.channel.name = ""
-        for channelNameTextPart in json["longBylineText"]["runs"].array ?? [] {
-            playlist.channel.name! += channelNameTextPart["text"].string ?? ""
+        if let channelId = json["longBylineText"]["runs"][0]["navigationEndpoint"]["browseEndpoint"]["browseId"].string {
+            playlist.channel = YTLittleChannelInfos(channelId: channelId, name: json["longBylineText"]["runs"].arrayValue.map({$0["text"].stringValue}).joined())
         }
-        
-        playlist.channel.channelId = json["longBylineText"]["runs"][0]["navigationEndpoint"]["browseEndpoint"]["browseId"].string
         
         playlist.timePosted = json["publishedTimeText"]["simpleText"].string
         
@@ -94,11 +85,11 @@ public struct YTPlaylist: YTSearchResult {
     /// Usually sorted by resolution, from low to high.
     public var thumbnails: [YTThumbnail] = []
     
-    /// A string representing the number of video in the playlist.
+    /// A string representing the count of video in the playlist.
     public var videoCount: String?
 
     /// Channel informations.
-    public var channel: YTLittleChannelInfos = .init()
+    public var channel: YTLittleChannelInfos? = nil
     
     /// String representing the moment when the video was posted.
     ///

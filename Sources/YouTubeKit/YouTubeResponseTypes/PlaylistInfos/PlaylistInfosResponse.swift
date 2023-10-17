@@ -8,7 +8,7 @@
 import Foundation
 
 /// Struct representing a PlaylistInfosResponse to get the infos and the videos from a playlist.
-public struct PlaylistInfosResponse: YouTubeResponse {
+public struct PlaylistInfosResponse: ResultsResponse {
     public static var headersType: HeaderTypes = .playlistHeaders
     
     /// Channel(s) that own(s) the playlist.
@@ -18,7 +18,7 @@ public struct PlaylistInfosResponse: YouTubeResponse {
     public var continuationToken: String?
     
     /// Videos of the playlists.
-    public var videos: [YTVideo] = []
+    public var results: [any YTSearchResult] = []
             
     /// Description of the playlist.
     public var playlistDescription: String?
@@ -38,11 +38,16 @@ public struct PlaylistInfosResponse: YouTubeResponse {
     /// Possible user interactions with the playlist.
     public var userInteractions: UserInteractions = .init()
     
-    /// String representing the number of videos of the playlist.
+    /// String representing the count of videos of the playlist.
     public var videoCount: String?
     
-    /// String representing the number of views of the playlist.
+    /// String representing the count of views of the playlist.
     public var viewCount: String?
+    
+    /// Ids related to the playlist of the videos, generally only defined when the ``YouTubeModel/cookies`` are defined, used in the request and the user owns the playlist.
+    public var videoIdsInPlaylist: [String?]?
+    
+    public var visitorData: String? = nil
     
     public static func decodeData(data: Data) -> PlaylistInfosResponse {
         let json = JSON(data)
@@ -52,11 +57,9 @@ public struct PlaylistInfosResponse: YouTubeResponse {
         
         if let channelInfosArray = playlistInfosJSON["ownerText"]["runs"].array {
             for channelInfosPart in channelInfosArray {
-                guard let channelInfosStringPart = channelInfosPart["text"].string else { continue }
+                guard let channelId = channelInfosPart["navigationEndpoint"]["browseEndpoint"]["browseId"].string else { continue }
                 
-                var newChannel = YTLittleChannelInfos(name: channelInfosStringPart)
-                
-                newChannel.channelId = channelInfosPart["navigationEndpoint"]["browseEndpoint"]["browseId"].string
+                let newChannel = YTLittleChannelInfos(channelId: channelId, name: channelInfosPart["text"].string)
                 toReturn.channel.append(newChannel)
             }
         }
@@ -70,16 +73,12 @@ public struct PlaylistInfosResponse: YouTubeResponse {
         
         toReturn.privacy = YTPrivacy(rawValue: playlistInfosJSON["privacy"].stringValue)
         
-        YTThumbnail.appendThumbnails(json: playlistInfosJSON["playlistHeaderBanner"]["heroPlaylistThumbnailRenderer"], thumbnailList: &toReturn.thumbnails)
+        YTThumbnail.appendThumbnails(json: playlistInfosJSON["playlistHeaderBanner"]["heroPlaylistThumbnailRenderer"]["thumbnail"], thumbnailList: &toReturn.thumbnails)
         
         toReturn.title = playlistInfosJSON["title"]["simpleText"].string
         
         if let videoCountArray = playlistInfosJSON["numVideosText"]["runs"].array {
-            var videoCountToReturn = ""
-            for videoCountPart in videoCountArray {
-                videoCountToReturn += videoCountPart["text"].stringValue
-            }
-            toReturn.videoCount = videoCountToReturn
+            toReturn.videoCount = videoCountArray.map({$0["text"].stringValue}).joined()
         }
         
         toReturn.viewCount = playlistInfosJSON["viewCountText"]["simpleText"].string
@@ -87,6 +86,10 @@ public struct PlaylistInfosResponse: YouTubeResponse {
         toReturn.userInteractions.canBeDeleted = playlistInfosJSON["editableDetails"]["canDelete"].bool
         
         toReturn.userInteractions.isEditable = playlistInfosJSON["isEditable"].bool
+        
+        if toReturn.userInteractions.isEditable ?? false {
+            toReturn.videoIdsInPlaylist = []
+        }
         
         toReturn.userInteractions.isSaveButtonDisabled = playlistInfosJSON["saveButton"]["toggleButtonRenderer"]["isDisabled"].bool
         
@@ -103,12 +106,18 @@ public struct PlaylistInfosResponse: YouTubeResponse {
                 
                 for thirdVideoArrayPart in thirdVideoArray {
                     guard let finalVideoArray = thirdVideoArrayPart["playlistVideoListRenderer"]["contents"].array else { continue }
-                    for video in finalVideoArray {
-                        if let video = YTVideo.decodeVideoFromPlaylist(json: video["playlistVideoRenderer"]) {
-                            toReturn.videos.append(video)
-                        } else if let video = YTVideo.decodeVideoFromPlaylist(json: video["playlistVideoListRenderer"]) {
-                            toReturn.videos.append(video)
-                        } else if let continuationToken = video["continuationItemRenderer"]["continuationEndpoint"]["continuationCommand"]["token"].string {
+                    for videoJSON in finalVideoArray {
+                        if let video = YTVideo.decodeVideoFromPlaylist(json: videoJSON["playlistVideoRenderer"]) {
+                            
+                            toReturn.videoIdsInPlaylist?.append(videoJSON["playlistVideoRenderer"]["setVideoId"].string)
+                            
+                            toReturn.results.append(video)
+                        } else if let video = YTVideo.decodeVideoFromPlaylist(json: videoJSON["playlistVideoListRenderer"]) {
+                            
+                            toReturn.videoIdsInPlaylist?.append(videoJSON["playlistVideoListRenderer"]["setVideoId"].string)
+                            
+                            toReturn.results.append(video)
+                        } else if let continuationToken = videoJSON["continuationItemRenderer"]["continuationEndpoint"]["continuationCommand"]["token"].string {
                             toReturn.continuationToken = continuationToken
                         }
                     }
@@ -123,18 +132,22 @@ public struct PlaylistInfosResponse: YouTubeResponse {
     /// - Parameter continuation: the ``PlaylistInfosResponse/Continuation`` that will be merged.
     public mutating func mergeWithContinuation(_ continuation: Continuation) {
         self.continuationToken = continuation.continuationToken
-        self.videos.append(contentsOf: continuation.videos)
+        self.results.append(contentsOf: continuation.results.filter({$0 as? YTVideo != nil}) as! [YTVideo])
+        self.videoIdsInPlaylist?.append(contentsOf: continuation.videoIdsInPlaylist)
     }
     
     /// Struct representing the continuation ("load more videos" button)
-    public struct Continuation: YouTubeResponse {
+    public struct Continuation: ResultsContinuationResponse {
         public static var headersType: HeaderTypes = .playlistContinuationHeaders
         
         /// Continuation token used to fetch more videos, nil if there is no more videos to fetch.
         public var continuationToken: String?
         
         /// Array of videos.
-        public var videos: [YTVideo] = []
+        public var results: [any YTSearchResult] = []
+        
+        /// Ids related to the playlist of the videos, generally only defined when the ``YouTubeModel/cookies`` are defined, used in the request and the user owns the playlist.
+        public var videoIdsInPlaylist: [String?] = []
         
         public static func decodeData(data: Data) -> PlaylistInfosResponse.Continuation {
             let json = JSON(data)
@@ -143,12 +156,18 @@ public struct PlaylistInfosResponse: YouTubeResponse {
             guard let continuationActionsArray = json["onResponseReceivedActions"].array else { return toReturn }
             for continationAction in continuationActionsArray {
                 guard let continuationItemsArray = continationAction["appendContinuationItemsAction"]["continuationItems"].array else { continue }
-                for video in continuationItemsArray {
-                    if let video = YTVideo.decodeVideoFromPlaylist(json: video["playlistVideoRenderer"]) {
-                        toReturn.videos.append(video)
-                    } else if let video = YTVideo.decodeVideoFromPlaylist(json: video["playlistVideoListRenderer"]) {
-                        toReturn.videos.append(video)
-                    } else if let continuationToken = video["continuationItemRenderer"]["continuationEndpoint"]["continuationCommand"]["token"].string {
+                for videoJSON in continuationItemsArray {
+                    if let video = YTVideo.decodeVideoFromPlaylist(json: videoJSON["playlistVideoRenderer"]) {
+                        
+                        toReturn.videoIdsInPlaylist.append(videoJSON["playlistVideoRenderer"]["setVideoId"].string)
+                        
+                        toReturn.results.append(video)
+                    } else if let video = YTVideo.decodeVideoFromPlaylist(json: videoJSON["playlistVideoListRenderer"]) {
+                        
+                        toReturn.videoIdsInPlaylist.append(videoJSON["playlistVideoListRenderer"]["setVideoId"].string)
+                        
+                        toReturn.results.append(video)
+                    } else if let continuationToken = videoJSON["continuationItemRenderer"]["continuationEndpoint"]["continuationCommand"]["token"].string {
                         toReturn.continuationToken = continuationToken
                     }
                 }
@@ -159,6 +178,13 @@ public struct PlaylistInfosResponse: YouTubeResponse {
     
     /// Struct representing the informations about what the user's can do with it.
     public struct UserInteractions {
+        public init(canBeDeleted: Bool? = nil, isEditable: Bool? = nil, isSaveButtonDisabled: Bool? = nil, isSaveButtonToggled: Bool? = nil) {
+            self.canBeDeleted = canBeDeleted
+            self.isEditable = isEditable
+            self.isSaveButtonDisabled = isSaveButtonDisabled
+            self.isSaveButtonToggled = isSaveButtonToggled
+        }
+        
         /// Boolean indicating if the playlist can be deleted by the user.
         public var canBeDeleted: Bool?
         
@@ -170,6 +196,5 @@ public struct PlaylistInfosResponse: YouTubeResponse {
         
         /// Boolean indicating if the playlist is already saved by the user.
         public var isSaveButtonToggled: Bool?
-        
     }
 }

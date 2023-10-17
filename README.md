@@ -105,6 +105,19 @@ YTM.alwaysUseCookies = true
 ```
 3. You can also choose to use cookies by request by specifying the `useCookies` parameter present in every request function.
 
+### Custom request calls
+A lot of structures and protocol have custom request calls (shortcuts to various `YouTubeResponse`), here is a few examples:
+    1. `YouTubeVideo` (`YTVideo` conforms to it) has:
+        1. `fetchStreamingInfos` that can be used to retrieve the basic streaming data.
+        2. `fetchStreamingInfosWithDownloadFormats` that is the same as `fetchStreamingInfos` but it includes the download formats (all the different video/audio formats you can stream/download the video).
+        3. `fetchMoreInfos` that can be used to retrieve more infos about the video (recommended videos, description with chapters and links, and more!).
+        4. `likeVideo`, `dislikeVideo`, `removeLikeFromVideo`.
+    2. `YouTubeChannel` (`YTChannel`and `YTLittleChannelInfos` are conform to it) has:
+        1. `fetchInfos` that can be used to retrieve various informations about the channel.
+    3. `ResultsResponse` (`HomeScreenResponse`, `SearchResponse`, `PlaylistInfosResponse` are conform to it) has:
+        1. `mergeContinuation` to merge the continuations easily.
+        2. `fetchContinuation` to get those continuations.
+
 ## Custom requests and responses:
 To create custom headers and so custom request/response function, you have to:
 1. Append the function that is used to generate the `HeadersList` in `YouTubeModel.customHeadersFunctions`, e.g
@@ -184,7 +197,6 @@ NameAndSurnameResponse.sendRequest(youtubeModel: YTM, data: [:], result: { resul
 })
 ```
 Note: you would include in the request the parameters if needed like: query, browseId or anything like this to put in the body of the request to send.
-
 
 ## Troubleshooting: 
 This category lists solutions to problems you might encounter with YouTubeKit.

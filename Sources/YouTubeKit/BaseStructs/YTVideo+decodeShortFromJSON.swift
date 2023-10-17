@@ -24,7 +24,7 @@ public extension YTVideo {
                 
         video.viewCount = json["viewCountText"]["simpleText"].string
         
-        YTThumbnail.appendThumbnails(json: json, thumbnailList: &video.thumbnails)
+        YTThumbnail.appendThumbnails(json: json["thumbnail"], thumbnailList: &video.thumbnails)
         
         return video
     }
