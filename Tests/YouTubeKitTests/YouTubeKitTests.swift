@@ -683,7 +683,7 @@ final class YouTubeKitTests: XCTestCase {
             let dislikeVideoError = await video.dislikeVideo(youtubeModel: YTM)
             
             XCTAssertNil(dislikeVideoError, TEST_NAME + "Checking if dislikeVideoResponse is defined, error -> \(String(describing: dislikeVideoError))")
-            
+                        
             let localLikeStatus = await getCurrentLikeStatus()
             guard localLikeStatus == .disliked else { XCTFail(TEST_NAME + "Checking if localLikeStatus is disliked"); return }
         }
@@ -692,7 +692,7 @@ final class YouTubeKitTests: XCTestCase {
             let likeVideoError = await video.likeVideo(youtubeModel: YTM)
             
             XCTAssertNil(likeVideoError, TEST_NAME + "Checking if likeVideoResponse is defined, error -> \(String(describing: likeVideoError))")
-            
+                        
             let localLikeStatus = await getCurrentLikeStatus()
             guard localLikeStatus == .liked else { XCTFail(TEST_NAME + "Checking if localLikeStatus is liked"); return }
         }
@@ -700,7 +700,7 @@ final class YouTubeKitTests: XCTestCase {
         func removelikeVideo() async {
             let removeLikeFromVideoError = await video.removeLikeFromVideo(youtubeModel: YTM)
             XCTAssertNil(removeLikeFromVideoError, TEST_NAME + "Checking if removeLikeFromVideoResponse is defined, error -> \(String(describing: removeLikeFromVideoError))")
-            
+                        
             let localLikeStatus = await getCurrentLikeStatus()
             guard localLikeStatus == .nothing else { XCTFail(TEST_NAME + "Checking if localLikeStatus is nothing"); return }
         }
