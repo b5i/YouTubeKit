@@ -9,7 +9,7 @@ import Foundation
 
 /// Struct representing a playlist.
 public struct YTPlaylist: YTSearchResult {
-    public init(id: Int? = nil, playlistId: String, title: String? = nil, thumbnails: [YTThumbnail] = [], videoCount: String? = nil, channel: YTLittleChannelInfos? = nil, timePosted: String? = nil, frontVideos: [YTVideo] = []) {
+    public init(id: Int? = nil, playlistId: String, title: String? = nil, thumbnails: [YTThumbnail] = [], videoCount: String? = nil, channel: YTLittleChannelInfos? = nil, timePosted: String? = nil, frontVideos: [YTVideo] = [], privacy: YTPrivacy? = nil) {
         self.id = id
         self.playlistId = playlistId
         self.title = title
@@ -18,6 +18,7 @@ public struct YTPlaylist: YTSearchResult {
         self.channel = channel
         self.timePosted = timePosted
         self.frontVideos = frontVideos
+        self.privacy = privacy
     }
     
     public static func == (lhs: YTPlaylist, rhs: YTPlaylist) -> Bool {
@@ -32,7 +33,7 @@ public struct YTPlaylist: YTSearchResult {
         /// Check if the JSON can be decoded as a Playlist.
         guard let playlistId = json["playlistId"].string else { return nil }
         /// Inititalize a new ``YTSearchResultType/Playlist-swift.struct`` instance to put the informations in it.
-        var playlist = YTPlaylist(playlistId: playlistId.prefix(2) == "VL" ? playlistId : "VL" + playlistId)
+        var playlist = YTPlaylist(playlistId: playlistId.hasPrefix("VL") ? playlistId : "VL" + playlistId)
                     
         if let playlistTitle = json["title"]["simpleText"].string {
             playlist.title = playlistTitle
@@ -98,6 +99,8 @@ public struct YTPlaylist: YTSearchResult {
     
     /// An array of videos that are contained in the playlist, usually the first ones.
     public var frontVideos: [YTVideo] = []
+    
+    public var privacy: YTPrivacy?
     
     ///Not necessary here because of prepareJSON() method
     /*

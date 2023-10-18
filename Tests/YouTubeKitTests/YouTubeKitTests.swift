@@ -5,7 +5,7 @@ final class YouTubeKitTests: XCTestCase {
     private let YTM = YouTubeModel()
     
     /// Keep them secret! Make sure you remove them after having tested YouTubeKit.
-    private let cookies = ""
+    private let cookies = "SAPISID=PTrSgY7JgA38aSPG/Aymw7P7NV8SzTKZ3O; __Secure-1PAPISID=PTrSgY7JgA38aSPG/Aymw7P7NV8SzTKZ3O; __Secure-1PSID=cAiNRWRbocDDj0gLARvVWTiIvtFvejbk21WIeGrQbYjwunFezBQmHGf1E4uMDP45X4nbNQ."
     
     func testCreateCustomHeaders() async {
         let TEST_NAME = "Test: testCreateCustomHeaders() -> "
@@ -395,7 +395,7 @@ final class YouTubeKitTests: XCTestCase {
         
         let (playlistContinuation, playlistContinuationError) = await playlistInfosResult.fetchContinuation(youtubeModel: YTM)
         
-        guard let playlistContinuation = playlistContinuation else { XCTFail(TEST_NAME + "Checking if the continuation is defined (error: \(String(describing: playlistContinuationError))."); return }
+        guard let playlistContinuation = playlistContinuation else { XCTFail(TEST_NAME + "Checking if the continuation is defined (error: \(String(describing: playlistContinuationError))."); return } // Could fail if the 
         
         let videoCount = playlistInfosResult.results.count + playlistContinuation.results.count
         playlistInfosResult.mergeWithContinuation(playlistContinuation)
@@ -483,6 +483,22 @@ final class YouTubeKitTests: XCTestCase {
         guard var createdPlaylistId = creationResponse.createdPlaylistId, let playlistCreatorId = creationResponse.playlistCreatorId else { XCTFail(TEST_NAME + "Checking if the playlist has been created."); return }
         
         XCTAssertNotNil(creationResponse.playlistCreatorId, TEST_NAME + "Checking if the playlist's creator has been extracted.")
+        
+        print(createdPlaylistId)
+        
+        
+        // Let the playlist be updated in YouTube's servers
+        try? await Task.sleep(nanoseconds: 2_000_000_000)
+        
+        let firstVideo = YTVideo(videoId: firstVideoToAddId)
+        let (allPlaylistResponse, allPlaylistsError) = await firstVideo.getAllPossibleHostPlaylists(youtubeModel: YTM)
+        
+        guard let allPlaylistResponse = allPlaylistResponse else { XCTFail(TEST_NAME + "Checking if allPlaylistResponse is defined (error: \(String(describing: allPlaylistsError)))."); return }
+        
+        guard let createdPlaylistResult = allPlaylistResponse.playlistsAndStatus.first(where: {$0.playlist.playlistId.contains(createdPlaylistId)}) else { XCTFail(TEST_NAME + "Checking if the created playlist is listed among the other playlists."); return }
+        
+        XCTAssert(createdPlaylistResult.isVideoPresentInside, TEST_NAME + "Checking if video is present inside the new playlist.")
+        XCTAssertEqual(createdPlaylistResult.playlist.privacy, YTPrivacy.private, TEST_NAME + "Checking if the privacy is correctly extracted.")
         
         if createdPlaylistId.hasPrefix("VL") { // We need to remove the VL in order to make the following requests
             createdPlaylistId = String(createdPlaylistId.dropFirst(2))
