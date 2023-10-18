@@ -56,7 +56,7 @@ public protocol YouTubeVideo {
     ///
     /// Usually sorted by resolution, from low to high.
     var thumbnails: [YTThumbnail] { get set }
-    
+        
     /// Get more infos about a video.
     /// - Parameters:
     ///   - youtubeModel: the ``YouTubeModel`` that has to be used to know which headers to use.
