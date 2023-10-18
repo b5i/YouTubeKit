@@ -87,6 +87,8 @@ public struct PlaylistInfosResponse: ResultsResponse {
         
         toReturn.userInteractions.isEditable = playlistInfosJSON["isEditable"].bool
         
+        toReturn.userInteractions.canReorder = playlistInfosJSON["canReorder"].bool
+        
         if toReturn.userInteractions.isEditable ?? false {
             toReturn.videoIdsInPlaylist = []
         }
@@ -178,8 +180,9 @@ public struct PlaylistInfosResponse: ResultsResponse {
     
     /// Struct representing the informations about what the user's can do with it.
     public struct UserInteractions {
-        public init(canBeDeleted: Bool? = nil, isEditable: Bool? = nil, isSaveButtonDisabled: Bool? = nil, isSaveButtonToggled: Bool? = nil) {
+        public init(canBeDeleted: Bool? = nil, canReorder: Bool? = nil, isEditable: Bool? = nil, isSaveButtonDisabled: Bool? = nil, isSaveButtonToggled: Bool? = nil) {
             self.canBeDeleted = canBeDeleted
+            self.canReorder = canReorder
             self.isEditable = isEditable
             self.isSaveButtonDisabled = isSaveButtonDisabled
             self.isSaveButtonToggled = isSaveButtonToggled
@@ -187,6 +190,9 @@ public struct PlaylistInfosResponse: ResultsResponse {
         
         /// Boolean indicating if the playlist can be deleted by the user.
         public var canBeDeleted: Bool?
+        
+        /// Boolean indicating if the playlist can be reordered by the user (history for example could not). Generally defined only when the account owns the playlist.
+        public var canReorder: Bool?
         
         /// Boolean indicating if the playlist can be modified by the user.
         public var isEditable: Bool?
