@@ -5,7 +5,7 @@ final class YouTubeKitTests: XCTestCase {
     private let YTM = YouTubeModel()
     
     /// Keep them secret! Make sure you remove them after having tested YouTubeKit.
-    private let cookies = "SAPISID=PTrSgY7JgA38aSPG/Aymw7P7NV8SzTKZ3O; __Secure-1PAPISID=PTrSgY7JgA38aSPG/Aymw7P7NV8SzTKZ3O; __Secure-1PSID=cAiNRWRbocDDj0gLARvVWTiIvtFvejbk21WIeGrQbYjwunFezBQmHGf1E4uMDP45X4nbNQ."
+    private let cookies = ""
     
     func testCreateCustomHeaders() async {
         let TEST_NAME = "Test: testCreateCustomHeaders() -> "
@@ -491,7 +491,7 @@ final class YouTubeKitTests: XCTestCase {
         try? await Task.sleep(nanoseconds: 2_000_000_000)
         
         let firstVideo = YTVideo(videoId: firstVideoToAddId)
-        let (allPlaylistResponse, allPlaylistsError) = await firstVideo.getAllPossibleHostPlaylists(youtubeModel: YTM)
+        let (allPlaylistResponse, allPlaylistsError) = await firstVideo.fetchAllPossibleHostPlaylists(youtubeModel: YTM)
         
         guard let allPlaylistResponse = allPlaylistResponse else { XCTFail(TEST_NAME + "Checking if allPlaylistResponse is defined (error: \(String(describing: allPlaylistsError)))."); return }
         
