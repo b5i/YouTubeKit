@@ -122,6 +122,16 @@ public protocol YouTubeVideo {
         useCookies: Bool?
     ) async -> (MoreVideoInfosResponse?, Error?)
     
+    /// Get all the user's playlists and if the video is already inside or not.
+    func getAllPossibleHostPlaylists(
+        youtubeModel: YouTubeModel,
+        result: @escaping (AllPossibleHostPlaylistsResponse?, Error?) -> Void
+    )
+    
+    /// Get all the user's playlists and if the video is already inside or not.
+    @available(macOS 10.15, iOS 13.0, watchOS 6.0, tvOS 13.0, *)
+    func getAllPossibleHostPlaylists(youtubeModel: YouTubeModel) async -> (AllPossibleHostPlaylistsResponse?, Error?)
+    
     /// Like the video.
     ///
     /// Requires a ``YouTubeModel`` where ``YouTubeModel/cookies`` is defined.

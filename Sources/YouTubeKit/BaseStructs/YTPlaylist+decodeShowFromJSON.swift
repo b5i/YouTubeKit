@@ -14,7 +14,7 @@ public extension YTPlaylist {
     static func decodeShowFromJSON(json: JSON) -> YTPlaylist? {
         /// Decode the playlist that is named a "show" by YouTube.
         guard let playlistId = json["navigationEndpoint"]["browseEndpoint"]["browseId"].string else { return nil }
-        var playlist = YTPlaylist(playlistId: playlistId.prefix(2) == "VL" ? playlistId : "VL" + playlistId)
+        var playlist = YTPlaylist(playlistId: playlistId.hasPrefix("VL") ? playlistId : "VL" + playlistId)
         playlist.title = json["title"]["simpleText"].string
         
         YTThumbnail.appendThumbnails(json: json["thumbnailRenderer"]["showCustomThumbnailRenderer"]["thumbnail"], thumbnailList: &playlist.thumbnails)

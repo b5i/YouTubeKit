@@ -68,11 +68,9 @@ public enum HeaderTypes {
     /// Get a user's library.
     case usersLibraryHeaders
     
-    /* already present in the usersLibraryHeaders response
-    /// Get all user's playlists.
-    /// - Parameter browseId: The getAllPlaylists token.
+    /// Get all playlists where a video could be added, also includes the info whether the video is already in the playlist or not.
+    /// - Parameter browseId: The video's id to check.
     case usersAllPlaylistsHeaders
-     */
     
     /// Create a playlist containing a video.
     /// - Parameter query: The playlist's name.

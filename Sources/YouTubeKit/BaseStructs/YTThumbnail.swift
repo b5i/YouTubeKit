@@ -35,7 +35,7 @@ public struct YTThumbnail: Codable, Equatable {
         for thumbnail in json["thumbnails"].array ?? [] {
             if var url = thumbnail["url"].url {
                 /// URL is of form "//yt3.googleusercontent.com/ytc"
-                if url.absoluteString.prefix(2) == "//" {
+                if url.absoluteString.hasPrefix("//") {
                     url = URL(string: "https:\(url.absoluteString)") ?? url
                     thumbnailList.append(
                         YTThumbnail(
