@@ -455,7 +455,7 @@ final class YouTubeKitTests: XCTestCase {
         
         guard !response.isDisconnected else { XCTFail(TEST_NAME + "Checking if cookies were defined"); return }
         
-        XCTAssertNotEqual(response.accountStats.count, 0, TEST_NAME + "Checking if account's stats have been extracted.")
+        //XCTAssertNotEqual(response.accountStats.count, 0, TEST_NAME + "Checking if account's stats have been extracted.") // has been removed by YouTube
         XCTAssertNotNil(response.history, TEST_NAME + "Checking if history has been extracted.")
         XCTAssertNotNil(response.likes, TEST_NAME + "Checking if likes has been extracted.")
         XCTAssertNotNil(response.watchLater, TEST_NAME + "Checking if watchLater has been extracted.")
