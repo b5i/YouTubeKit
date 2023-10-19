@@ -18,7 +18,7 @@ public class YouTubeModel {
     
     /// Set the locale you want to receive the call responses in.
     ///
-    /// Note: if authentication ``YouTubeModel/cookies`` are given, the response will not take `selectedLocale` in account but the the account's selected locale.
+    /// Note: if authentication ``YouTubeModel/cookies`` are given, the response will not take `selectedLocale` in account but the account's selected locale.
     public var selectedLocale: String = Locale.preferredLanguages[0]
     
     /// Get the language code for ``YouTubeModel/selectedLocale``.
@@ -321,6 +321,7 @@ public class YouTubeModel {
                     .init(name: "Origin", content: "https://www.youtube.com/"),
                     .init(name: "Connection", content: "keep-alive"),
                     .init(name: "Content-Type", content: "application/json"),
+                    .init(name: "X-Origin", content: "https://www.youtube.com")
                 ],
                 addQueryAfterParts: [
                 ],

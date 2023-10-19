@@ -22,6 +22,7 @@ public struct AccountLibraryResponse: AuthenticatedResponse {
     ///     ("Likes", "5791")
     /// ]
     /// ```
+    /// - Note: this category has been removed from YouTube, it will be deprecated in a future version of YouTubeKit.
     public var accountStats: [(key: String, value: String)] = []
     
     /// Playlist containing all the playlists created/added account.
