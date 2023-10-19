@@ -518,7 +518,7 @@ public struct VideoInfosWithDownloadFormatsResponse: YouTubeResponse {
     }
     
     public struct AudioOnlyFormat: DownloadFormat {
-        public init(averageBitrate: Int? = nil, contentLength: Int? = nil, contentDuration: Int? = nil, isCopyrightedMedia: Bool? = nil, url: URL? = nil, audioSampleRate: Int? = nil, loudness: Double? = nil) {
+        public init(averageBitrate: Int? = nil, contentLength: Int? = nil, contentDuration: Int? = nil, isCopyrightedMedia: Bool? = nil, url: URL? = nil, audioSampleRate: Int? = nil, loudness: Double? = nil, formatLocaleInfos: FormatLocaleInfos? = nil) {
             self.averageBitrate = averageBitrate
             self.contentLength = contentLength
             self.contentDuration = contentDuration
@@ -526,6 +526,7 @@ public struct VideoInfosWithDownloadFormatsResponse: YouTubeResponse {
             self.url = url
             self.audioSampleRate = audioSampleRate
             self.loudness = loudness
+            self.formatLocaleInfos = formatLocaleInfos
         }
         
         /// Protocol properties
@@ -548,6 +549,31 @@ public struct VideoInfosWithDownloadFormatsResponse: YouTubeResponse {
         
         /// Audio loudness in decibels.
         public var loudness: Double?
+        
+        /// Infos about the audio track language.
+        ///
+        /// - Note: it will be present only if the audio is not the original audio of the video.
+        public var formatLocaleInfos: FormatLocaleInfos?
+        
+        /// Struct representing some informations about the audio track language.
+        public struct FormatLocaleInfos {
+            public init(displayName: String? = nil, localeId: String? = nil, isDefaultAudioFormat: Bool? = nil) {
+                self.displayName = displayName
+                self.localeId = localeId
+                self.isDefaultAudioFormat = isDefaultAudioFormat
+            }
+            
+            /// Name of the language, e.g. "French".
+            ///
+            /// - Note: the name of the language depends on the ``YouTubeModel``'s locale and the cookie's (if provided) account's default language. E.g. you would get "French" if your cookies point to an english account and "Français" if they pointed to a french one.
+            public var displayName: String?
+            
+            /// Id of the language, generally is the language code that has ".3" has suffix. E.g. "fr.3" or "en.3".
+            public var localeId: String?
+            
+            /// Boolean indicating whether the format is considered as the default one by YouTube (depends on the ``YouTubeModel``'s locale and the cookie's (if provided) account's default language).
+            public var isDefaultAudioFormat: Bool?
+        }
     }
     
     /// Decode a ``DownloadFormat`` base informations from a JSON instance.
@@ -606,7 +632,8 @@ public struct VideoInfosWithDownloadFormatsResponse: YouTubeResponse {
                         return nil
                     }
                 }(),
-                loudness: json["loudnessDb"].double
+                loudness: json["loudnessDb"].double,
+                formatLocaleInfos: json["audioTrack"]["id"].string != nil ? .init(displayName: json["audioTrack"]["displayName"].string, localeId: json["audioTrack"]["id"].string, isDefaultAudioFormat: json["audioTrack"]["audioIsDefault"].bool) : nil
             )
         }
     }
