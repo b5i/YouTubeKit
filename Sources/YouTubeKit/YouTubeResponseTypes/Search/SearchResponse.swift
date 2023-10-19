@@ -57,7 +57,13 @@ public struct SearchResponse: ResultsResponse {
     static func decodedResults(results: [JSON]) -> [any YTSearchResult] {
         var toReturn: [any YTSearchResult] = []
         for (index, resultElement) in results.enumerated() {
-            guard var castedElement = getCastedResultElement(element: resultElement) else { continue } //continue if element type is not handled
+            guard var castedElement = getCastedResultElement(element: resultElement) else { 
+                /// YouTube can put a block of video instead of a single video, this is why we treat this case.
+                if let otherElementsArray = resultElement["shelfRenderer"]["content"]["verticalListRenderer"]["items"].array {
+                    toReturn.append(contentsOf: decodedResults(results: otherElementsArray))
+                }
+                continue
+            }
             castedElement.id = index
             toReturn.append(castedElement)
         }

@@ -287,7 +287,7 @@ final class YouTubeKitTests: XCTestCase {
     func testVideoInfosWithDownloadFormatsResponse() async {
         let TEST_NAME = "Test: testVideoInfosWithDownloadFormatsResponse() -> "
         
-        let video = YTVideo(videoId: "90RLzVUuXe4")
+        let video = YTVideo(videoId: "3ryID_SwU5E")
         
         VideoInfosWithDownloadFormatsResponse.removePlayersFromDisk()
         
@@ -405,11 +405,16 @@ final class YouTubeKitTests: XCTestCase {
     
     func testHomeResponse() async {
         let TEST_NAME = "Test: testHomeResponse() -> "
-        
+            
         let (homeMenuResult, homeMenuResultError) = await HomeScreenResponse.sendRequest(youtubeModel: YTM, data: [:])
-        
         guard var homeMenuResult = homeMenuResult else { XCTFail(TEST_NAME + "Checking if homeMenuResult is defined (error: \(String(describing: homeMenuResultError)))."); return }
-        guard let continuationToken = homeMenuResult.continuationToken else { XCTFail(TEST_NAME + "Checking if homeMenuResult.continuationToken is defined (error: \(String(describing: homeMenuResultError)))."); return }
+        guard let continuationToken = homeMenuResult.continuationToken else {
+            // Could fail because sometimes YouTube gives an empty page telling you to start browsing. We check this case here.
+            if !(homeMenuResult.results.count == 0 && homeMenuResult.visitorData != nil) {
+                XCTFail(TEST_NAME + "Checking if homeMenuResult.continuationToken is defined (error: \(String(describing: homeMenuResultError))).");
+            }
+            return
+        }
         
         guard let visitorData = homeMenuResult.visitorData else { XCTFail(TEST_NAME + "Checking if homeMenuResult.visitorData is defined (error: \(String(describing: homeMenuResultError)))."); return }
         

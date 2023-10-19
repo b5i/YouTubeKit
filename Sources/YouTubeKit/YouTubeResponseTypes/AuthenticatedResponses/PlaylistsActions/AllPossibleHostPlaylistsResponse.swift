@@ -15,7 +15,6 @@ public struct AllPossibleHostPlaylistsResponse: AuthenticatedResponse {
     public var playlistsAndStatus: [(playlist: YTPlaylist, isVideoPresentInside: Bool)] = []
 
     public static func decodeData(data: Data) -> AllPossibleHostPlaylistsResponse {
-        let dataString = String(decoding: data, as: UTF8.self)
         let json = JSON(data)
         var toReturn = AllPossibleHostPlaylistsResponse()
         
