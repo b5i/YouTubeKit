@@ -298,7 +298,7 @@ final class YouTubeKitTests: XCTestCase {
         XCTAssertNotEqual(requestResult.downloadFormats.count, 0, TEST_NAME + "Checking if requestResult.downloadFormats is empty")
         XCTAssertNotEqual(requestResult.downloadFormats.count, 0, TEST_NAME + "Checking if requestResult.downloadFormats is empty")
     }
-    
+
     func testAutoCompletionResponse() async {
         YTM.selectedLocale = "en-US"
         
@@ -626,7 +626,7 @@ final class YouTubeKitTests: XCTestCase {
         let TEST_NAME = "Test: testMoreVideoInfosResponse() -> "
         YTM.cookies = cookies
 
-        let video = YTVideo(videoId: "peIBCNTY8hA")
+        let video = YTVideo(videoId: "nVoMKVU1FAg")
         
         let (moreVideoInfosResponse, moreVideoInfosError) = await video.fetchMoreInfos(youtubeModel: YTM, useCookies: true)
         
