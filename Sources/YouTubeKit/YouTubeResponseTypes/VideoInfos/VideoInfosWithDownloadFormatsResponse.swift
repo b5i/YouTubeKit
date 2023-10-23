@@ -472,11 +472,12 @@ public struct VideoInfosWithDownloadFormatsResponse: YouTubeResponse {
     
     /// Struct representing a download format that contains the video and audio.
     public struct VideoDownloadFormat: DownloadFormat {
-        public init(averageBitrate: Int? = nil, contentDuration: Int? = nil, contentLength: Int? = nil, isCopyrightedMedia: Bool? = nil, url: URL? = nil, width: Int? = nil, height: Int? = nil, quality: String? = nil, fps: Int? = nil) {
+        public init(averageBitrate: Int? = nil, contentDuration: Int? = nil, contentLength: Int? = nil, isCopyrightedMedia: Bool? = nil, url: URL? = nil, mimeType: String? = nil, width: Int? = nil, height: Int? = nil, quality: String? = nil, fps: Int? = nil) {
             self.averageBitrate = averageBitrate
             self.contentDuration = contentDuration
             self.contentLength = contentLength
             self.isCopyrightedMedia = isCopyrightedMedia
+            self.mimeType = mimeType
             self.url = url
             self.width = width
             self.height = height
@@ -494,6 +495,8 @@ public struct VideoInfosWithDownloadFormatsResponse: YouTubeResponse {
         public var contentLength: Int?
         
         public var isCopyrightedMedia: Bool?
+        
+        public var mimeType: String?
         
         public var url: URL?
         
@@ -518,12 +521,13 @@ public struct VideoInfosWithDownloadFormatsResponse: YouTubeResponse {
     }
     
     public struct AudioOnlyFormat: DownloadFormat {
-        public init(averageBitrate: Int? = nil, contentLength: Int? = nil, contentDuration: Int? = nil, isCopyrightedMedia: Bool? = nil, url: URL? = nil, audioSampleRate: Int? = nil, loudness: Double? = nil, formatLocaleInfos: FormatLocaleInfos? = nil) {
+        public init(averageBitrate: Int? = nil, contentLength: Int? = nil, contentDuration: Int? = nil, isCopyrightedMedia: Bool? = nil, url: URL? = nil, mimeType: String? = nil, audioSampleRate: Int? = nil, loudness: Double? = nil, formatLocaleInfos: FormatLocaleInfos? = nil) {
             self.averageBitrate = averageBitrate
             self.contentLength = contentLength
             self.contentDuration = contentDuration
             self.isCopyrightedMedia = isCopyrightedMedia
             self.url = url
+            self.mimeType = mimeType
             self.audioSampleRate = audioSampleRate
             self.loudness = loudness
             self.formatLocaleInfos = formatLocaleInfos
@@ -541,6 +545,8 @@ public struct VideoInfosWithDownloadFormatsResponse: YouTubeResponse {
         public var isCopyrightedMedia: Bool?
         
         public var url: URL?
+        
+        public var mimeType: String?
         
         /// Audio only medias specific infos
         
@@ -600,6 +606,7 @@ public struct VideoInfosWithDownloadFormatsResponse: YouTubeResponse {
                 }(),
                 isCopyrightedMedia: json["signatureCipher"].string != nil,
                 url: nil,
+                mimeType: json["mimeType"].string?.components(separatedBy: ";").first,
                 width: json["width"].int,
                 height: json["height"].int,
                 quality: json["qualityLabel"].string,
@@ -625,6 +632,7 @@ public struct VideoInfosWithDownloadFormatsResponse: YouTubeResponse {
                 }(),
                 isCopyrightedMedia: json["signatureCipher"].string != nil,
                 url: nil,
+                mimeType: json["mimeType"].string?.components(separatedBy: ";").first,
                 audioSampleRate: {
                     if let audioSampleRate = json["audioSampleRate"].string {
                         return Int(audioSampleRate)

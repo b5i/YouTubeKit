@@ -30,4 +30,9 @@ public protocol DownloadFormat {
     /// Download URL of the format.
     var url: URL? { get set }
     
+    /// The mimeType of the format.
+    ///
+    /// Is usually "video/mp4", "video/webm", "audio/mp4" or "audio/webm".
+    /// - Note: The WebM (mimeType: "audio/webm" or "video/webm") format isn't supported natively by AVFoundation.
+    var mimeType: String? { get set }
 }
