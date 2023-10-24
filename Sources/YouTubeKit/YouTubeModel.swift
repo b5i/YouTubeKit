@@ -86,7 +86,7 @@ public class YouTubeModel {
         guard !headers.isEmpty else { result(nil, "The headers from ID: \(ResponseType.headersType) are empty! (probably an error in the name or they are not added in YouTubeModel.shared.customHeadersFunctions)"); return}
         
         /// Check if it should append the cookies.
-        if ((useCookies ?? false) || alwaysUseCookies), cookies != "" {
+        if useCookies != false, ((useCookies ?? false) || alwaysUseCookies), cookies != "" {
             if let presentCookiesIndex = headers.headers.enumerated().first(where: {$0.element.name.lowercased() == "cookie"})?.offset {
                 headers.headers[presentCookiesIndex].content += "; \(cookies)"
             } else {
