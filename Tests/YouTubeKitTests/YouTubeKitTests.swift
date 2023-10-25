@@ -617,7 +617,7 @@ final class YouTubeKitTests: XCTestCase {
         }
         let (deletePlaylistResponse, deletePlaylistError) = await DeletePlaylistResponse.sendRequest(youtubeModel: YTM, data: [.browseId: createdPlaylistId])
         
-        guard let deletePlaylistResponse = deletePlaylistResponse else { XCTFail(TEST_NAME + "Checking if DeletePlaylistResponse is defined (error: \(String(describing: deletePlaylistError)))."); return }
+        guard let deletePlaylistResponse = deletePlaylistResponse else { XCTFail(TEST_NAME + "Checking if y.sDeletePlaylistResponse is defined (error: \(String(describing: deletePlaylistError)))."); return }
 
         guard !deletePlaylistResponse.isDisconnected, deletePlaylistResponse.success else { XCTFail(TEST_NAME + "Checking if cookies were defined and that the request was successful."); return }
     }
@@ -627,7 +627,7 @@ final class YouTubeKitTests: XCTestCase {
         YTM.cookies = cookies
 
         let video = YTVideo(videoId: "nVoMKVU1FAg")
-        
+
         let (moreVideoInfosResponse, moreVideoInfosError) = await video.fetchMoreInfos(youtubeModel: YTM, useCookies: true)
         
         guard var moreVideoInfosResponse = moreVideoInfosResponse else { XCTFail(TEST_NAME + "Checking if moreVideoInfosResponse is defined, error -> \(String(describing: moreVideoInfosError))"); return }
