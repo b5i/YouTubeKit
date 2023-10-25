@@ -189,7 +189,7 @@ public struct MoreVideoInfosResponse: YouTubeResponse {
         
         for engagementPanel in json["engagementPanels"].arrayValue {
             /// Chapters extraction.
-            if engagementPanel["engagementPanelSectionListRenderer"]["targetId"].string == "engagement-panel-macro-markers-auto-chapters" {
+            if let targetId = engagementPanel["engagementPanelSectionListRenderer"]["targetId"].string, (targetId == "engagement-panel-macro-markers-auto-chapters" || targetId == "engagement-panel-macro-markers-description-chapters") {
                 var chapterstoReturn: [Chapter] = []
                 for chapterJSON in engagementPanel["engagementPanelSectionListRenderer"]["content"]["macroMarkersListRenderer"]["contents"].arrayValue {
                     var chapter = Chapter()
