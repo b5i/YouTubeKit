@@ -6,7 +6,9 @@
 //
 
 import Foundation
+#if canImport(CommonCrypto)
 import CommonCrypto
+#endif
 #if canImport(FoundationNetworking)
 import FoundationNetworking
 #endif
@@ -52,6 +54,7 @@ public class YouTubeModel {
     public var alwaysUseCookies: Bool = false
     
     
+    #if canImport(CommonCrypto)
     /// Generate the authentication hash from user's cookies required by YouTube.
     /// - Parameter cookies: user's authentification cookies.
     /// - Returns: A SAPISIDHASH cookie value, is generally used as the value for an HTTP header with name `Authorization`.
@@ -67,6 +70,7 @@ public class YouTubeModel {
         let finalString = "SAPISIDHASH \(time)_\(hexBytes.joined())"
         return finalString
     }
+    #endif
     
     /// Send a request of type `ResponseType` to YouTube's API.
     /// - Parameters:
@@ -92,7 +96,9 @@ public class YouTubeModel {
             } else {
                 headers.headers.append(HeadersList.Header(name: "Cookie", content: cookies))
             }
+            #if canImport(CommonCrypto)
             headers.headers.append(HeadersList.Header(name: "Authorization", content: generateSAPISIDHASHForCookies(cookies)))
+            #endif
         }
         
         /// Create request
