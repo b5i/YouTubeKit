@@ -3,7 +3,7 @@
 //
 //  Created by Antoine Bollengier (github.com/b5i) on 20.06.2023.
 //  Copyright © 2023 Antoine Bollengier. All rights reserved.
-//  
+//
 
 import Foundation
 #if canImport(JavaScriptCore)
@@ -210,11 +210,19 @@ public struct VideoInfosWithDownloadFormatsResponse: YouTubeResponse {
         preparedStringForPlayerName = preparedStringForPlayerName[1].components(separatedBy: "/")
         
         let playerName = preparedStringForPlayerName[0]
-                
-        if 
-            let savedPlayerInstructionsData = FileManager.default.contents(atPath: getDocumentDirectory().absoluteString + "YouTubeKitPlayers-\(playerName).ab"),
+        
+        let documentDirectoryPath: String
+        
+        if #available(macOS 13, iOS 16.0, watchOS 9.0, tvOS 16.0, *) {
+            documentDirectoryPath = getDocumentDirectory().path()
+        } else {
+            documentDirectoryPath = getDocumentDirectory().path
+        }
+        
+        if
+            let savedPlayerInstructionsData = FileManager.default.contents(atPath: documentDirectoryPath + "YouTubeKitPlayers-\(playerName).ab"),
             let savedPlayerIntructions = try? JSONDecoder().decode([PlayerCipherDecodeInstruction].self, from: savedPlayerInstructionsData),
-            let savedPlayerCodeData = FileManager.default.contents(atPath: getDocumentDirectory().absoluteString + "YouTubeKitPlayers-\(playerName).abn")
+            let savedPlayerCodeData = FileManager.default.contents(atPath: documentDirectoryPath + "YouTubeKitPlayers-\(playerName).abn")
         {
             let savedPlayerCode = String(decoding: savedPlayerCodeData, as: UTF8.self)
             return .success((savedPlayerIntructions, savedPlayerCode))
@@ -258,7 +266,7 @@ public struct VideoInfosWithDownloadFormatsResponse: YouTubeResponse {
                     instructionsString = instructionsString.components(separatedBy: "return a.join(\"\")};")[0]
                     
                     let instructionsStringArray = instructionsString.split(separator: ";")
-                                        
+                    
                     for instruction in instructionsStringArray {
                         var preparedCurrentInstructionName = instruction.components(separatedBy: "(a,")
                         guard preparedCurrentInstructionName.count > 1 else { continue }
@@ -288,16 +296,23 @@ public struct VideoInfosWithDownloadFormatsResponse: YouTubeResponse {
                             instructionsArray.append(knownPlayerCipherDecodeInstructions[currentFunctionName] ?? .unknown)
                         }
                     }
+                    let documentDirectoryPath: String
+                    
+                    if #available(macOS 13, iOS 16.0, watchOS 9.0, tvOS 16.0, *) {
+                        documentDirectoryPath = getDocumentDirectory().path()
+                    } else {
+                        documentDirectoryPath = getDocumentDirectory().path
+                    }
                     do {
                         FileManager.default.createFile(
-                            atPath: getDocumentDirectory().absoluteString + "YouTubeKitPlayers-\(playerName).ab",
+                            atPath: documentDirectoryPath + "YouTubeKitPlayers-\(playerName).ab",
                             contents: try JSONEncoder().encode(instructionsArray)
                         )
                         
                         let nParameterFunctionData: Data = extractNParameterFunction(fromFileText: dataString)
                         
                         FileManager.default.createFile(
-                            atPath: getDocumentDirectory().absoluteString + "YouTubeKitPlayers-\(playerName).abn",
+                            atPath: documentDirectoryPath + "YouTubeKitPlayers-\(playerName).abn",
                             contents: nParameterFunctionData
                         )
                         
