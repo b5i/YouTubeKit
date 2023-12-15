@@ -287,16 +287,18 @@ final class YouTubeKitTests: XCTestCase {
     func testVideoInfosWithDownloadFormatsResponse() async {
         let TEST_NAME = "Test: testVideoInfosWithDownloadFormatsResponse() -> "
         
-        let video = YTVideo(videoId: "3ryID_SwU5E")
-        
         VideoInfosWithDownloadFormatsResponse.removePlayersFromDisk()
         
-        let (requestResult, requestError) = await video.fetchStreamingInfosWithDownloadFormats(youtubeModel: YTM)
-        
-        guard let requestResult = requestResult else { XCTFail(TEST_NAME + "requestResult is not defined, error: \(String(describing: requestError))."); return }
-        
-        XCTAssertNotEqual(requestResult.downloadFormats.count, 0, TEST_NAME + "Checking if requestResult.downloadFormats is empty")
-        XCTAssertNotEqual(requestResult.downloadFormats.count, 0, TEST_NAME + "Checking if requestResult.downloadFormats is empty")
+        for video in [YTVideo(videoId: "3ryID_SwU5E"), YTVideo(videoId: "xUdZhqe2n7w")] as [YTVideo] {
+            
+            let (requestResult, requestError) = await video.fetchStreamingInfosWithDownloadFormats(youtubeModel: YTM)
+            
+            guard let requestResult = requestResult else { XCTFail(TEST_NAME + "requestResult is not defined, error: \(String(describing: requestError))."); return }
+            
+            XCTAssertNotEqual(requestResult.downloadFormats.count, 0, TEST_NAME + "Checking if requestResult.downloadFormats is empty")
+            XCTAssertNotEqual(requestResult.defaultFormats.count, 0, TEST_NAME + "Checking if requestResult.defaultFormats is empty")
+            XCTAssertNotEqual(requestResult.videoInfos.streamingURL, nil, TEST_NAME + "Checking if requestResult.videoInfos.streamingURL is empty")
+        }
     }
 
     func testAutoCompletionResponse() async {

@@ -59,10 +59,13 @@ public struct VideoInfosWithDownloadFormatsResponse: YouTubeResponse {
                 return toReturn
             }
             
-            preparedStringForJSONData = preparedStringForJSONData[1].components(separatedBy: ";</script><div id=\"player\"")
+             preparedStringForJSONData = preparedStringForJSONData[1].components(separatedBy: ";</script><div id=\"player\"")
             
-            let stringJSONData = preparedStringForJSONData[0]
-            
+            preparedStringForJSONData = (preparedStringForJSONData[0] + ";") // We add a ";" so then when we look for "}}}};" we get at least one result.
+                                            .components(separatedBy: "}}}};")
+                        
+            let stringJSONData = preparedStringForJSONData[0] + "}}}}" // As we removed them in the split operation.
+                        
             let json = JSON(stringJSONData.data(using: .utf8) ?? Data())
             
             toReturn.videoInfos = VideoInfosResponse.decodeJSON(json)
