@@ -37,6 +37,7 @@ Here is a list of the default requests supported by YouTubeKit, all the informat
 - [PlaylistInfosResponse](https://github.com/b5i/YouTubeKit/blob/721120db20cdd00cf6b586fb3accc02345cb205a/Sources/YouTubeKit/YouTubeResponseTypes/PlaylistInfos/PlaylistInfosResponse.swift#L11) -> get a playlist's informations and the videos it contains. Its [Continuation](https://github.com/b5i/YouTubeKit/blob/721120db20cdd00cf6b586fb3accc02345cb205a/Sources/YouTubeKit/YouTubeResponseTypes/PlaylistInfos/PlaylistInfosResponse.swift#L130) is also available.
 - [AccountInfosResponse](https://github.com/b5i/YouTubeKit/blob/9db43b336ceba6c11981dee2c7e9afad49ebda22/Sources/YouTubeKit/YouTubeResponseTypes/AuthenticatedResponses/AccountResponses/AccountInfosResponse.swift#L10C19-L10C19) to get the informations about a YouTube account (using the cookies).
 - [AccountLibraryResponse](https://github.com/b5i/YouTubeKit/blob/9db43b336ceba6c11981dee2c7e9afad49ebda22/Sources/YouTubeKit/YouTubeResponseTypes/AuthenticatedResponses/AccountResponses/AccountLibraryResponse.swift#L10C15-L10C37) to get the library of an account.
+- [HistoryResponse] and [RemoveVideoFromHistroryResponse] to get the history of an account and remove some videos of it.
 - [SubscribeChannelResponse](https://github.com/b5i/YouTubeKit/blob/9db43b336ceba6c11981dee2c7e9afad49ebda22/Sources/YouTubeKit/YouTubeResponseTypes/AuthenticatedResponses/ChannelsActions/SubscribeChannelResponse.swift#L10C15-L10C39) and [UnsubscribeChannelResponse](https://github.com/b5i/YouTubeKit/blob/9db43b336ceba6c11981dee2c7e9afad49ebda22/Sources/YouTubeKit/YouTubeResponseTypes/AuthenticatedResponses/ChannelsActions/UnsubscribeChannelResponse.swift#L10C15-L10C39).
 - [AllPossibleHostPlaylistsResponse](https://github.com/b5i/YouTubeKit/blob/63205472997244f04405838a55f284e075193dba/Sources/YouTubeKit/YouTubeResponseTypes/AuthenticatedResponses/PlaylistsActions/AllPossibleHostPlaylistsResponse.swift#L10C15-L10C47) to get all the playlists a
   video could be added to and if the video is already present inside.
@@ -126,6 +127,7 @@ A lot of structures and protocol have custom request calls (shortcuts to various
     3. `ResultsResponse` (`HomeScreenResponse`, `SearchResponse`, `PlaylistInfosResponse` are conform to it) has:
         1. `mergeContinuation` to merge the continuations easily.
         2. `fetchContinuation` to get those continuations.
+    4. `HistoryResponse` has `removeVideo` that can be used to remove a video from the history.
 
 ## Custom requests and responses:
 To create custom headers and so custom request/response function, you have to:

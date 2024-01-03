@@ -24,7 +24,7 @@ public extension YouTubeVideo {
     func likeVideo(youtubeModel: YouTubeModel) async -> Error? {
         return await withCheckedContinuation({ (continuation: CheckedContinuation<Error?, Never>) in
             likeVideo(youtubeModel: youtubeModel, result: { error in
-                continuation.resume(returning: (error))
+                continuation.resume(returning: error)
             })
         })
     }
@@ -45,7 +45,7 @@ public extension YouTubeVideo {
     func dislikeVideo(youtubeModel: YouTubeModel) async -> Error? {
         return await withCheckedContinuation({ (continuation: CheckedContinuation<Error?, Never>) in
             dislikeVideo(youtubeModel: youtubeModel, result: { error in
-                continuation.resume(returning: (error))
+                continuation.resume(returning: error)
             })
         })
     }
@@ -66,7 +66,7 @@ public extension YouTubeVideo {
     func removeLikeFromVideo(youtubeModel: YouTubeModel) async -> Error? {
         return await withCheckedContinuation({ (continuation: CheckedContinuation<Error?, Never>) in
             removeLikeFromVideo(youtubeModel: youtubeModel, result: { error in
-                continuation.resume(returning: (error))
+                continuation.resume(returning: error)
             })
         })
     }

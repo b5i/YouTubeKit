@@ -101,8 +101,15 @@ public enum HeaderTypes {
     case addVideoToPlaylistHeaders
     
     /// Delete a playlist from the account.
-    /// - Parameter browseId: The playlist's id.
+    /// - Parameter movingVideoId: The video's `suppressToken`.
     case deletePlaylistHeaders
+    
+    /// Get the history of the account.
+    case historyHeaders
+    
+    /// Delete a video from the history of the account.
+    /// - Parameter browseId: The playlist's id.
+    case deleteVideoFromHistory
     
     /// Get more infos about a video (comment, recommanded videos, etc...).
     /// - Parameter query: The video's id.

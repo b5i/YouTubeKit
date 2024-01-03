@@ -410,7 +410,7 @@ final class YouTubeKitTests: XCTestCase {
             
         let (homeMenuResult, homeMenuResultError) = await HomeScreenResponse.sendRequest(youtubeModel: YTM, data: [:])
         guard var homeMenuResult = homeMenuResult else { XCTFail(TEST_NAME + "Checking if homeMenuResult is defined (error: \(String(describing: homeMenuResultError)))."); return }
-        guard let continuationToken = homeMenuResult.continuationToken else {
+        guard homeMenuResult.continuationToken != nil else {
             // Could fail because sometimes YouTube gives an empty page telling you to start browsing. We check this case here.
             if !(homeMenuResult.results.count == 0 && homeMenuResult.visitorData != nil) {
                 XCTFail(TEST_NAME + "Checking if homeMenuResult.continuationToken is defined (error: \(String(describing: homeMenuResultError))).");
@@ -418,7 +418,7 @@ final class YouTubeKitTests: XCTestCase {
             return
         }
         
-        guard let visitorData = homeMenuResult.visitorData else { XCTFail(TEST_NAME + "Checking if homeMenuResult.visitorData is defined (error: \(String(describing: homeMenuResultError)))."); return }
+        XCTAssertNotNil(homeMenuResult.visitorData, TEST_NAME + "Checking if homeMenuResult.visitorData is defined (error: \(String(describing: homeMenuResultError))).")
         
         let (homeMenuContinuationResult, homeMenuContinuationError) = await homeMenuResult.fetchContinuation(youtubeModel: YTM)
                 
@@ -624,6 +624,25 @@ final class YouTubeKitTests: XCTestCase {
         guard !deletePlaylistResponse.isDisconnected, deletePlaylistResponse.success else { XCTFail(TEST_NAME + "Checking if cookies were defined and that the request was successful."); return }
     }
     
+    func testHistoryResponse() async {
+        let TEST_NAME = "Test: testHistoryResponse() -> "
+        guard cookies != "" else { return }
+        YTM.cookies = cookies
+        
+        let (historyResponse, historyError) = await HistoryResponse.sendRequest(youtubeModel: YTM, data: [:], useCookies: true)
+        
+        guard let historyResponse = historyResponse else { XCTFail(TEST_NAME + "Checking if historyResponse is defined (error: \(String(describing: historyError)))."); return }
+        
+        XCTAssertNotNil(historyResponse.title, TEST_NAME + "Checking if historyResponse.title has been extracted.")
+        XCTAssertNotEqual(historyResponse.videosAndTime.count, 0, TEST_NAME + "Checking if historyResponse.videosAndTime is not empty.")
+        
+        guard let firstVideoToken = historyResponse.videosAndTime.first?.1.first?.suppressToken else { XCTFail(TEST_NAME + "Could not find a video with a suppressToken in the history"); return }
+        
+        let deleteFromHistoryError = await historyResponse.removeVideo(withSuppressToken: firstVideoToken, youtubeModel: YTM)
+        
+        XCTAssertNil(deleteFromHistoryError, TEST_NAME + "Error while trying to delete video from history: \(String(describing: deleteFromHistoryError))")
+    }
+    
     func testMoreVideoInfosResponse() async {
         let TEST_NAME = "Test: testMoreVideoInfosResponse() -> "
         YTM.cookies = cookies
@@ -671,7 +690,7 @@ final class YouTubeKitTests: XCTestCase {
         let TEST_NAME = "Test: testLikeRequests() -> "
         YTM.cookies = cookies
         
-        let video = YTVideo(videoId: "3ryID_SwU5E")
+        let video = YTVideo(videoId: "JdFRjsEZrmU")
         
         let likeStatus: MoreVideoInfosResponse.AuthenticatedData.LikeStatus? = await getCurrentLikeStatus()
         
@@ -680,15 +699,21 @@ final class YouTubeKitTests: XCTestCase {
         switch likeStatus {
         case .liked:
             await dislikeVideo()
+            try? await Task.sleep(nanoseconds: 1_000_000_000) // introduce some delay to avoid a block from YouTube.
             await removelikeVideo()
+            try? await Task.sleep(nanoseconds: 1_000_000_000)
             await likeVideo()
         case .disliked:
             await removelikeVideo()
+            try? await Task.sleep(nanoseconds: 1_000_000_000)
             await likeVideo()
+            try? await Task.sleep(nanoseconds: 1_000_000_000)
             await dislikeVideo()
         case .nothing:
             await likeVideo()
+            try? await Task.sleep(nanoseconds: 1_000_000_000)
             await dislikeVideo()
+            try? await Task.sleep(nanoseconds: 1_000_000_000)
             await removelikeVideo()
         case .none:
             XCTFail(TEST_NAME + "Checking if likeStatus is defined")
