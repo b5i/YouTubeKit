@@ -29,6 +29,8 @@ public struct AccountLibraryResponse: AuthenticatedResponse {
     public var playlists: [YTPlaylist] = []
     
     /// Playlist containing all the video seen by the account.
+    ///
+    /// - Warning: To fetch the contents of the history you can't use the base ``PlaylistInfosResponse`` but you have to use ``HistoryResponse``.
     public var history: YTPlaylist?
     
     /// Playlist containing all the video that the account added to the Watch Later playlist.

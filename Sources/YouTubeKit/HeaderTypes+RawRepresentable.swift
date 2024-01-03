@@ -57,6 +57,10 @@ extension HeaderTypes: RawRepresentable {
             return "addVideoToPlaylistHeaders"
         case .deletePlaylistHeaders:
             return "deletePlaylistHeaders"
+        case .historyHeaders:
+            return "getHistory"
+        case .deleteVideoFromHistory:
+            return "deleteVideoFromHistory"
         case .moreVideoInfosHeaders:
             return "moreVideoInfosHeaders"
         case .fetchMoreRecommendedVideosHeaders:
