@@ -27,7 +27,7 @@ public struct HistoryResponse: AuthenticatedResponse {
     /// ```swift
     /// var videosAndTime = [("Today", [A few videos]), ("Yesterday", [A few videos too])]
     /// ```
-    public var videosAndTime: [(String, [(YTVideo, suppressToken: String?)])] = []
+    public var videosAndTime: [(groupTitle: String, videosArray: [(YTVideo, suppressToken: String?)])] = []
     
     /// Title of the playlist.
     public var title: String?
