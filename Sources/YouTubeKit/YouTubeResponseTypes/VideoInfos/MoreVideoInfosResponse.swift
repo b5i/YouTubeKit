@@ -8,6 +8,40 @@
 import Foundation
 
 public struct MoreVideoInfosResponse: YouTubeResponse {
+    // Init
+    public init() {}
+    
+    public init(videoTitle: String?,
+                viewsCount: (shortViewsCount: String?, fullViewsCount: String?),
+                timePosted: (postedDate: String?, relativePostedDate: String?),
+                channel: YTChannel?,
+                videoDescription: [YouTubeDescriptionPart]?,
+                teaserComment: (avatar: [YTThumbnail]?, teaserText: String?),
+                commentsContinuationToken: String?,
+                commentsCount: String?,
+                recommendedVideos: [any YTSearchResult],
+                recommendedVideosContinuationToken: String?,
+                chapters: [Chapter]?,
+                likesCount: (defaultState: String?, likeButtonClickedNewValue: String?),
+                authenticatedInfos: AuthenticatedData?) {
+            
+            self.videoTitle = videoTitle
+            self.viewsCount = viewsCount
+            self.timePosted = timePosted
+            self.channel = channel
+            self.videoDescription = videoDescription
+            self.teaserComment = teaserComment
+            self.commentsContinuationToken = commentsContinuationToken
+            self.commentsCount = commentsCount
+            self.recommendedVideos = recommendedVideos
+            self.recommendedVideosContinuationToken = recommendedVideosContinuationToken
+            self.chapters = chapters
+            self.likesCount = likesCount
+            self.authenticatedInfos = authenticatedInfos
+        }
+    
+    // The Rest
+    
     public static var headersType: HeaderTypes = .moreVideoInfosHeaders
     
     /// Title of the video.
@@ -302,10 +336,16 @@ public struct MoreVideoInfosResponse: YouTubeResponse {
             
             return toReturn
         }
+        
+        public init() {}
+        
+        public init(continuationToken: String?) {
+            self.continuationToken = continuationToken
+        }
     }
     
     /// Struct representing the data about the video that concerns the account that was used to make the requests (the cookies).
-    public struct AuthenticatedData {
+    public struct AuthenticatedData: Codable {
         public init(likeStatus: LikeStatus? = nil, subscriptionStatus: Bool? = nil) {
             self.likeStatus = likeStatus
             self.subscriptionStatus = subscriptionStatus
@@ -318,7 +358,7 @@ public struct MoreVideoInfosResponse: YouTubeResponse {
         public var subscriptionStatus: Bool?
         
         /// Enum representing the different "appreciation" status of the account for the video.
-        public enum LikeStatus {
+        public enum LikeStatus: Codable {
             case liked
             case disliked
             case nothing
@@ -326,7 +366,7 @@ public struct MoreVideoInfosResponse: YouTubeResponse {
     }
     
     /// Struct representing a part of the video's description.
-    public struct YouTubeDescriptionPart {
+    public struct YouTubeDescriptionPart: Codable {
         public init(text: String? = nil, role: YouTubeDescriptionPartRole? = nil, style: YouTubeDescriptionPartStyle = .normalText) {
             self.text = text
             self.role = role
@@ -343,7 +383,7 @@ public struct MoreVideoInfosResponse: YouTubeResponse {
         public var style: YouTubeDescriptionPartStyle = .normalText
         
         /// Enum representing the different description part roles that the text could have.
-        public enum YouTubeDescriptionPartRole {
+        public enum YouTubeDescriptionPartRole: Codable {
             /// Contains the URL of the link.
             case link(URL)
             
@@ -361,7 +401,7 @@ public struct MoreVideoInfosResponse: YouTubeResponse {
         }
         
         /// Style that this part adopts on YouTube's website.
-        public enum YouTubeDescriptionPartStyle {
+        public enum YouTubeDescriptionPartStyle: Codable {
             case normalText
             case blue
             
@@ -371,7 +411,7 @@ public struct MoreVideoInfosResponse: YouTubeResponse {
     }
     
     /// Struct representing a chapter of the video.
-    public struct Chapter {
+    public struct Chapter: Codable {
         public init(title: String? = nil, thumbnail: [YTThumbnail] = [], startTimeSeconds: Int? = nil, timeDescriptions: (shortTimeDescription: String?, textTimeDescription: String?) = (nil, nil)) {
             self.title = title
             self.thumbnail = thumbnail
@@ -394,5 +434,35 @@ public struct MoreVideoInfosResponse: YouTubeResponse {
         ///
         /// `shortTimeDescription` could be "0:00" and `textTimeDescription` could be "0 second".
         public var timeDescriptions: (shortTimeDescription: String?, textTimeDescription: String?)
+        
+        
+        // Codable Conformance
+        enum CodingKeys: String, CodingKey {
+            case title
+            case thumbnail
+            case startTimeSeconds
+            case shortTimeDescription
+            case textTimeDescription
+        }
+        
+        public init(from decoder: Decoder) throws {
+            let container = try decoder.container(keyedBy: CodingKeys.self)
+            
+            title = try container.decodeIfPresent(String.self, forKey: .title)
+            thumbnail = try container.decodeIfPresent([YTThumbnail].self, forKey: .thumbnail) ?? []
+            startTimeSeconds = try container.decodeIfPresent(Int.self, forKey: .startTimeSeconds)
+            timeDescriptions.shortTimeDescription = try container.decodeIfPresent(String?.self, forKey: .shortTimeDescription) ?? nil
+            timeDescriptions.textTimeDescription = try container.decodeIfPresent(String?.self, forKey: .textTimeDescription) ?? nil
+        }
+        
+        public func encode(to encoder: Encoder) throws {
+            var container = encoder.container(keyedBy: CodingKeys.self)
+            
+            try container.encode(title, forKey: .title)
+            try container.encode(thumbnail, forKey: .thumbnail)
+            try container.encode(startTimeSeconds, forKey: .startTimeSeconds)
+            try container.encode(timeDescriptions.shortTimeDescription, forKey: .shortTimeDescription)
+            try container.encode(timeDescriptions.textTimeDescription, forKey: .textTimeDescription)
+        }
     }
 }
