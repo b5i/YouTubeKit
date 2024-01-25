@@ -9,21 +9,19 @@ import Foundation
 
 public struct MoreVideoInfosResponse: YouTubeResponse {
     // Init
-    public init() {}
-    
-    public init(videoTitle: String?,
-                viewsCount: (shortViewsCount: String?, fullViewsCount: String?),
-                timePosted: (postedDate: String?, relativePostedDate: String?),
-                channel: YTChannel?,
-                videoDescription: [YouTubeDescriptionPart]?,
-                teaserComment: (avatar: [YTThumbnail]?, teaserText: String?),
-                commentsContinuationToken: String?,
-                commentsCount: String?,
-                recommendedVideos: [any YTSearchResult],
-                recommendedVideosContinuationToken: String?,
-                chapters: [Chapter]?,
-                likesCount: (defaultState: String?, likeButtonClickedNewValue: String?),
-                authenticatedInfos: AuthenticatedData?) {
+    public init(videoTitle: String? = nil,
+                viewsCount: (shortViewsCount: String?, fullViewsCount: String?) = (nil, nil),
+                timePosted: (postedDate: String?, relativePostedDate: String?) = (nil, nil),
+                channel: YTChannel? = nil,
+                videoDescription: [YouTubeDescriptionPart]? = nil,
+                teaserComment: (avatar: [YTThumbnail]?, teaserText: String?) = (nil, nil),
+                commentsContinuationToken: String? = nil,
+                commentsCount: String? = nil,
+                recommendedVideos: [any YTSearchResult] = [],
+                recommendedVideosContinuationToken: String? = nil,
+                chapters: [Chapter]? = nil,
+                likesCount: (defaultState: String?, likeButtonClickedNewValue: String?) = (nil, nil),
+                authenticatedInfos: AuthenticatedData? = nil) {
             
             self.videoTitle = videoTitle
             self.viewsCount = viewsCount

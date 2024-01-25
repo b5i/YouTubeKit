@@ -10,6 +10,30 @@ import Foundation
 /// Struct representing a search response.
 public struct VideoInfosResponse: YouTubeResponse {
     
+    public init(
+            channel: YTLittleChannelInfos? = nil,
+            isLive: Bool? = nil,
+            keywords: [String] = [],
+            streamingURL: URL? = nil,
+            thumbnails: [YTThumbnail] = [],
+            title: String? = nil,
+            videoDescription: String? = nil,
+            videoId: String? = nil,
+            videoURLsExpireAt: Date? = nil,
+            viewCount: String? = nil
+        ) {
+            self.channel = channel
+            self.isLive = isLive
+            self.keywords = keywords
+            self.streamingURL = streamingURL
+            self.thumbnails = thumbnails
+            self.title = title
+            self.videoDescription = videoDescription
+            self.videoId = videoId
+            self.videoURLsExpireAt = videoURLsExpireAt
+            self.viewCount = viewCount
+        }
+    
     public static var headersType: HeaderTypes = .videoInfos
         
     /// Name of the channel that posted the video.
