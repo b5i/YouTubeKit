@@ -10,7 +10,6 @@ import Foundation
 /// Struct representing a search response.
 public struct VideoInfosResponse: YouTubeResponse {
     
-    public init() {}
     public init(
             channel: YTLittleChannelInfos? = nil,
             isLive: Bool? = nil,
