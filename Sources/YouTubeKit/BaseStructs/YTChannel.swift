@@ -30,6 +30,7 @@ public struct YTChannel: YTSearchResult, YouTubeChannel {
         /// Inititalize a new ``YTSearchResultType/Channel-swift.struct`` instance to put the informations in it.
         var channel = YTChannel(channelId: channelId)
         channel.name = json["title"]["simpleText"].string
+        channel.handle = json["subscriberCountText"]["simpleText"].string
                     
         YTThumbnail.appendThumbnails(json: json["thumbnail"], thumbnailList: &channel.thumbnails)
         
@@ -53,6 +54,9 @@ public struct YTChannel: YTSearchResult, YouTubeChannel {
     
     /// Channel's name.
     public var name: String?
+    
+    /// Channel's handle.
+    public var handle: String?
     
     /// Channel's identifier, can be used to get the informations about the channel.
     ///
