@@ -8,7 +8,7 @@
 import Foundation
 
 /// Enum representing the various privacy levels of YouTube like videos or playlists.
-public enum YTPrivacy: String, Codable {
+public enum YTPrivacy: String, Codable, Hashable {
     case `private` = "PRIVATE"
     case `public` = "PUBLIC"
     case unlisted = "UNLISTED"
