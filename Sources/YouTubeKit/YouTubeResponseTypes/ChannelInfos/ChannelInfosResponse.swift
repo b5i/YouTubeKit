@@ -107,6 +107,9 @@ public struct ChannelInfosResponse: YouTubeResponse {
     
     /// Name of the channel.
     public var name: String?
+    
+    /// Channel's handle.
+    public var handle: String?
         
     /// Public handle of the channel, the "@" identifier of the channel.
     public var publicIdentifier: String?
@@ -148,6 +151,7 @@ public struct ChannelInfosResponse: YouTubeResponse {
         toReturn.isSubcribeButtonEnabled = channelInfos["subscribeButton"]["subscribeButtonRenderer"]["enabled"].bool
         
         toReturn.name = channelInfos["title"].string
+        toReturn.handle = channelInfos["channelHandleText"]["runs"].array?.first?["text"].string
         
         toReturn.publicIdentifier = channelInfos["navigationEndpoint"]["browseEndpoint"]["canonicalBaseUrl"].string?.replacingOccurrences(of: "/", with: "") /// Need to remove the first slash because the string is like "/@ChannelHandle"
         
