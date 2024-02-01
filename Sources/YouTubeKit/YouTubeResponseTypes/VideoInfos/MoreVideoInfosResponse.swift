@@ -138,6 +138,21 @@ public struct MoreVideoInfosResponse: YouTubeResponse {
                         }
                         toReturn.likesCount.likeButtonClickedNewValue = button["segmentedLikeDislikeButtonRenderer"]["likeButton"]["toggleButtonRenderer"]["toggledText"]["simpleText"].string
                         break
+                    } else if button["segmentedLikeDislikeButtonViewModel"].exists() { // new button
+                        let likeStatus = button["segmentedLikeDislikeButtonViewModel"]["likeButtonViewModel"]["likeButtonViewModel"]["likeStatusEntity"]["likeStatus"].stringValue
+                        if isAccountConnected {
+                            switch likeStatus {
+                            case "LIKE":
+                                toReturn.authenticatedInfos?.likeStatus = .liked
+                            case "DISLIKE":
+                                toReturn.authenticatedInfos?.likeStatus = .disliked
+                            default:
+                                toReturn.authenticatedInfos?.likeStatus = .nothing
+                            }
+                        }
+                        toReturn.likesCount.defaultState = button["segmentedLikeDislikeButtonViewModel"]["likeCountEntity"]["likeCountIfIndifferent"]["content"].string ?? /* usually because there is no account connected */ button["segmentedLikeDislikeButtonViewModel"]["likeButtonViewModel"]["likeButtonViewModel"]["toggleButtonViewModel"]["toggleButtonViewModel"]["toggledButtonViewModel"]["buttonViewModel"]["title"].string
+                        toReturn.likesCount.likeButtonClickedNewValue = button["segmentedLikeDislikeButtonViewModel"]["likeCountEntity"]["likeCountIfLiked"]["content"].string ?? /* usually because there is no account connected */ button["segmentedLikeDislikeButtonViewModel"]["likeButtonViewModel"]["likeButtonViewModel"]["toggleButtonViewModel"]["toggleButtonViewModel"]["defaultButtonViewModel"]["buttonViewModel"]["title"].string
+                        break
                     }
                 }
             } else if contentPart["videoSecondaryInfoRenderer"].exists() {
