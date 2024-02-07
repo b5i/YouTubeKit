@@ -108,11 +108,8 @@ public struct ChannelInfosResponse: YouTubeResponse {
     /// Name of the channel.
     public var name: String?
     
-    /// Channel's handle.
-    public var handle: String?
-        
     /// Public handle of the channel, the "@" identifier of the channel.
-    public var publicIdentifier: String?
+    public var handle: String?
         
     /// Dictionnary of a string representing the params to send to get the RequestType from YouTube.
     public var requestParams: [RequestTypes : String] = [:]
@@ -151,9 +148,11 @@ public struct ChannelInfosResponse: YouTubeResponse {
         toReturn.isSubcribeButtonEnabled = channelInfos["subscribeButton"]["subscribeButtonRenderer"]["enabled"].bool
         
         toReturn.name = channelInfos["title"].string
-        toReturn.handle = channelInfos["channelHandleText"]["runs"].array?.first?["text"].string
-        
-        toReturn.publicIdentifier = channelInfos["navigationEndpoint"]["browseEndpoint"]["canonicalBaseUrl"].string?.replacingOccurrences(of: "/", with: "") /// Need to remove the first slash because the string is like "/@ChannelHandle"
+        if let handle = channelInfos["channelHandleText"]["runs"].array?.first?["text"].string, !handle.isEmpty {
+            toReturn.handle = channelInfos["channelHandleText"]["runs"].array?.first?["text"].string
+        } else {
+            toReturn.handle = channelInfos["navigationEndpoint"]["browseEndpoint"]["canonicalBaseUrl"].string?.replacingOccurrences(of: "/", with: "") // Need to remove the first slash because the string is like "/@ChannelHandle"
+        }
         
         toReturn.subscribeStatus = channelInfos["subscribeButton"]["subscribeButtonRenderer"]["subscribed"].bool
         
@@ -608,7 +607,7 @@ public struct ChannelInfosResponse: YouTubeResponse {
         self.currentContent = otherResponse.currentContent
         self.isSubcribeButtonEnabled = otherResponse.isSubcribeButtonEnabled
         self.name = otherResponse.name
-        self.publicIdentifier = otherResponse.publicIdentifier
+        self.handle = otherResponse.handle
         self.subscribeStatus = otherResponse.subscribeStatus
         self.subscribersCount = otherResponse.subscribersCount
         self.videosCount = otherResponse.videosCount
