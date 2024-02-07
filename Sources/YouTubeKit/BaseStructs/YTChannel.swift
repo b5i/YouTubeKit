@@ -10,10 +10,11 @@ import Foundation
 
 /// Struct representing a channel.
 public struct YTChannel: YTSearchResult, YouTubeChannel {
-    public init(id: Int? = nil, name: String? = nil, channelId: String, thumbnails: [YTThumbnail] = [], subscriberCount: String? = nil, badges: [String] = []) {
+    public init(id: Int? = nil, name: String? = nil, channelId: String, handle: String? = nil, thumbnails: [YTThumbnail] = [], subscriberCount: String? = nil, badges: [String] = []) {
         self.id = id
         self.name = name
         self.channelId = channelId
+        self.handle = handle
         self.thumbnails = thumbnails
         self.subscriberCount = subscriberCount
         self.badges = badges
