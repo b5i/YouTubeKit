@@ -54,6 +54,7 @@ public struct PlaylistInfosResponse: ResultsResponse {
         var toReturn = PlaylistInfosResponse()
         
         let playlistInfosJSON = json["header"]["playlistHeaderRenderer"]
+        let playlistVideoListRendererJSON = json["contents"]["twoColumnBrowseResultsRenderer"]["tabs"].array?[0]["tabRenderer"]["content"]["sectionListRenderer"]["contents"].array?[0]["itemSectionRenderer"]["contents"].array?[0]["playlistVideoListRenderer"]
         
         if let channelInfosArray = playlistInfosJSON["ownerText"]["runs"].array {
             for channelInfosPart in channelInfosArray {
@@ -83,11 +84,11 @@ public struct PlaylistInfosResponse: ResultsResponse {
         
         toReturn.viewCount = playlistInfosJSON["viewCountText"]["simpleText"].string
         
-        toReturn.userInteractions.canBeDeleted = playlistInfosJSON["editableDetails"]["canDelete"].bool
+        toReturn.userInteractions.canBeDeleted = playlistVideoListRendererJSON?["editableDetails"]["canDelete"].bool
         
-        toReturn.userInteractions.isEditable = playlistInfosJSON["isEditable"].bool
+        toReturn.userInteractions.isEditable = playlistVideoListRendererJSON?["isEditable"].bool
         
-        toReturn.userInteractions.canReorder = playlistInfosJSON["canReorder"].bool
+        toReturn.userInteractions.canReorder = playlistVideoListRendererJSON?["canReorder"].bool
         
         if toReturn.userInteractions.isEditable ?? false {
             toReturn.videoIdsInPlaylist = []
