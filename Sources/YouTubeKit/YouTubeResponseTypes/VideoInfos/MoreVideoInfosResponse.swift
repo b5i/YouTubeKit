@@ -334,12 +334,6 @@ public struct MoreVideoInfosResponse: YouTubeResponse {
             
             return toReturn
         }
-        
-        public init() {}
-        
-        public init(continuationToken: String?) {
-            self.continuationToken = continuationToken
-        }
     }
     
     /// Struct representing the data about the video that concerns the account that was used to make the requests (the cookies).
