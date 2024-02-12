@@ -42,7 +42,7 @@ public struct HistoryResponse: AuthenticatedResponse {
         
         guard let tabJSON = json["contents"]["twoColumnBrowseResultsRenderer"]["tabs"].array?.first(where: {$0["tabRenderer"]["selected"].bool == true})?["tabRenderer"], tabJSON["tabIdentifier"].string == "FEhistory" else { return toReturn }
         
-        toReturn.title = tabJSON["content"]["sectionListRenderer"]["header"]["textHeaderRenderer"]["title"]["runs"].array?.map({$0["text"].stringValue}).joined()
+        toReturn.title = json["header"]["pageHeaderRenderer"]["pageTitle"].string
 
         for videoGroup in tabJSON["content"]["sectionListRenderer"]["contents"].arrayValue.map({$0["itemSectionRenderer"]}) {
             let title = videoGroup["header"]["itemSectionHeaderRenderer"]["title"]["runs"].array?.map({$0["text"].stringValue}).joined() ?? videoGroup["header"]["itemSectionHeaderRenderer"]["title"]["simpleText"].stringValue

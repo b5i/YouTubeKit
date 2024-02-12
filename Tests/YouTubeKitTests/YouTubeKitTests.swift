@@ -491,9 +491,6 @@ final class YouTubeKitTests: XCTestCase {
         
         XCTAssertNotNil(creationResponse.playlistCreatorId, TEST_NAME + "Checking if the playlist's creator has been extracted.")
         
-        print(createdPlaylistId)
-        
-        
         // Let the playlist be updated in YouTube's servers
         try? await Task.sleep(nanoseconds: 2_000_000_000)
         
@@ -502,7 +499,7 @@ final class YouTubeKitTests: XCTestCase {
         
         guard let allPlaylistResponse = allPlaylistResponse else { XCTFail(TEST_NAME + "Checking if allPlaylistResponse is defined (error: \(String(describing: allPlaylistsError)))."); return }
         
-        guard let createdPlaylistResult = allPlaylistResponse.playlistsAndStatus.first(where: {$0.playlist.playlistId.contains(createdPlaylistId)}) else { XCTFail(TEST_NAME + "Checking if the created playlist is listed among the other playlists."); return }
+        guard let createdPlaylistResult = allPlaylistResponse.playlistsAndStatus.first(where: {$0.playlist.playlistId.contains(createdPlaylistId) || createdPlaylistId.contains($0.playlist.playlistId)} /* avoid VL prefix notation bug*/) else { XCTFail(TEST_NAME + "Checking if the created playlist is listed among the other playlists."); return }
         
         XCTAssert(createdPlaylistResult.isVideoPresentInside, TEST_NAME + "Checking if video is present inside the new playlist.")
         XCTAssertEqual(createdPlaylistResult.playlist.privacy, YTPrivacy.private, TEST_NAME + "Checking if the privacy is correctly extracted.")
@@ -695,7 +692,7 @@ final class YouTubeKitTests: XCTestCase {
         
         let likeStatus: MoreVideoInfosResponse.AuthenticatedData.LikeStatus? = await getCurrentLikeStatus()
         
-        guard likeStatus != nil else { XCTFail(TEST_NAME + "Checking if likeStatus is defined"); return}
+        guard let likeStatus = likeStatus else { XCTFail(TEST_NAME + "Checking if likeStatus is defined"); return}
     
         switch likeStatus {
         case .liked:
@@ -716,8 +713,6 @@ final class YouTubeKitTests: XCTestCase {
             await dislikeVideo()
             try? await Task.sleep(nanoseconds: 1_000_000_000)
             await removelikeVideo()
-        case .none:
-            XCTFail(TEST_NAME + "Checking if likeStatus is defined")
         }
         
         func getCurrentLikeStatus() async -> MoreVideoInfosResponse.AuthenticatedData.LikeStatus? {
