@@ -84,6 +84,8 @@ public struct PlaylistInfosResponse: ResultsResponse {
         
         toReturn.viewCount = playlistInfosJSON["viewCountText"]["simpleText"].string
         
+        toReturn.userInteractions.canBeDeleted = playlistInfosJSON["editableDetails"]["canDelete"].bool
+        
         toReturn.userInteractions.isSaveButtonDisabled = playlistInfosJSON["saveButton"]["toggleButtonRenderer"]["isDisabled"].bool
         
         toReturn.userInteractions.isSaveButtonToggled = playlistInfosJSON["saveButton"]["toggleButtonRenderer"]["isToggled"].bool
@@ -99,8 +101,6 @@ public struct PlaylistInfosResponse: ResultsResponse {
                 
                 for thirdVideoArrayPart in thirdVideoArray {
                     let secondHeader = thirdVideoArrayPart["playlistVideoListRenderer"]
-                    
-                    toReturn.userInteractions.canBeDeleted = playlistInfosJSON["editableDetails"]["canDelete"].bool ?? secondHeader["editableDetails"]["canDelete"].bool
 
                     toReturn.userInteractions.isEditable = playlistInfosJSON["isEditable"].bool ?? secondHeader["isEditable"].bool
 
