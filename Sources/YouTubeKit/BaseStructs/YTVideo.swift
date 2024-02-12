@@ -52,6 +52,11 @@ public struct YTVideo: YTSearchResult, YouTubeVideo, Codable {
             YTThumbnail.appendThumbnails(json: json["channelThumbnailSupportedRenderers"]["channelThumbnailWithLinkRenderer"]["thumbnail"], thumbnailList: &channel.thumbnails)
             
             video.channel = channel
+        } else if let channelId = json["shortBylineText"]["runs"][0]["navigationEndpoint"]["browseEndpoint"]["browseId"].string {
+            var channel = YTLittleChannelInfos(channelId: channelId, name: json["shortBylineText"]["runs"][0]["text"].string)
+            YTThumbnail.appendThumbnails(json: json["channelThumbnailSupportedRenderers"]["channelThumbnailWithLinkRenderer"]["thumbnail"], thumbnailList: &channel.thumbnails)
+            
+            video.channel = channel
         }
         
         if let viewCount = json["shortViewCountText"]["simpleText"].string {
