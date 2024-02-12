@@ -44,7 +44,7 @@ public struct PlaylistInfosResponse: ResultsResponse {
     /// String representing the count of views of the playlist.
     public var viewCount: String?
     
-    /// Ids related to the playlist of the videos used in the reques and generally only defined when the ``YouTubeModel/cookies``  and only if the user owns the playlist.
+    /// Ids related to the playlist of the videos used in the reques and generally only defined when the ``YouTubeModel/cookies``  and only if the user owns the playlist. The n-th id correspond to the n-th result in ``PlaylistInfosResponse/results``.
     public var videoIdsInPlaylist: [String?]?
     
     public var visitorData: String? = nil
