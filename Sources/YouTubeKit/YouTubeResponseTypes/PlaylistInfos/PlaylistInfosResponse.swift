@@ -84,16 +84,6 @@ public struct PlaylistInfosResponse: ResultsResponse {
         
         toReturn.viewCount = playlistInfosJSON["viewCountText"]["simpleText"].string
         
-        toReturn.userInteractions.canBeDeleted = playlistVideoListRendererJSON?["editableDetails"]["canDelete"].bool
-        
-        toReturn.userInteractions.isEditable = playlistVideoListRendererJSON?["isEditable"].bool
-        
-        toReturn.userInteractions.canReorder = playlistVideoListRendererJSON?["canReorder"].bool
-        
-        if toReturn.userInteractions.isEditable ?? false {
-            toReturn.videoIdsInPlaylist = []
-        }
-        
         toReturn.userInteractions.isSaveButtonDisabled = playlistInfosJSON["saveButton"]["toggleButtonRenderer"]["isDisabled"].bool
         
         toReturn.userInteractions.isSaveButtonToggled = playlistInfosJSON["saveButton"]["toggleButtonRenderer"]["isToggled"].bool
@@ -108,6 +98,17 @@ public struct PlaylistInfosResponse: ResultsResponse {
                 guard let thirdVideoArray = secondVideoArrayPart["itemSectionRenderer"]["contents"].array else { continue }
                 
                 for thirdVideoArrayPart in thirdVideoArray {
+                    let secondHeader = thirdVideoArrayPart["playlistVideoListRenderer"]
+                    
+                    toReturn.userInteractions.canBeDeleted = playlistInfosJSON["editableDetails"]["canDelete"].bool ?? secondHeader["editableDetails"]["canDelete"].bool
+
+                    toReturn.userInteractions.isEditable = playlistInfosJSON["isEditable"].bool ?? secondHeader["isEditable"].bool
+
+                    toReturn.userInteractions.canReorder = playlistInfosJSON["canReorder"].bool ?? secondHeader["canReorder"].bool
+
+                    if toReturn.userInteractions.isEditable ?? false {
+                        toReturn.videoIdsInPlaylist = []
+                    }
                     guard let finalVideoArray = thirdVideoArrayPart["playlistVideoListRenderer"]["contents"].array else { continue }
                     for videoJSON in finalVideoArray {
                         if let video = YTVideo.decodeVideoFromPlaylist(json: videoJSON["playlistVideoRenderer"]) {
