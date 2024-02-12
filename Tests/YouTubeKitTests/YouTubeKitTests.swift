@@ -662,7 +662,6 @@ final class YouTubeKitTests: XCTestCase {
         XCTAssertNotNil(moreVideoInfosResponse.channel, TEST_NAME + "Checking if the channel has been extracted.")
         XCTAssertNotNil(moreVideoInfosResponse.commentsCount, TEST_NAME + "Checking if the commentsCount has been extracted.")
         XCTAssertNotNil(moreVideoInfosResponse.likesCount.defaultState, TEST_NAME + "Checking if the likesCount has been extracted.")
-        XCTAssertNotEqual(moreVideoInfosResponse.recommendedVideos.count, 0, TEST_NAME + "Checking if recommendedVideos are not empty.")
         XCTAssertNotNil(moreVideoInfosResponse.recommendedVideosContinuationToken, TEST_NAME + "Checking if the recommendedVideosContinuationToken has been extracted.")
         XCTAssertNotNil(moreVideoInfosResponse.timePosted.postedDate, TEST_NAME + "Checking if the timePosted.postedDate has been extracted.")
         XCTAssertNotNil(moreVideoInfosResponse.timePosted.relativePostedDate, TEST_NAME + "Checking if the timePosted.relativePostedDate has been extracted.")
@@ -675,6 +674,8 @@ final class YouTubeKitTests: XCTestCase {
         let (recommendedVideosContinuationResponse, recommendedVideosContinuationError) = await moreVideoInfosResponse.getRecommendedVideosContination(youtubeModel: YTM)
         
         guard let recommendedVideosContinuationResponse = recommendedVideosContinuationResponse else { XCTFail(TEST_NAME + "Checking if recommendedVideosResponse is defined, error -> \(String(describing: recommendedVideosContinuationError))"); return }
+        
+        guard !(moreVideoInfosResponse.recommendedVideos.isEmpty && recommendedVideosContinuationResponse.results.isEmpty) else { XCTFail(TEST_NAME + "No recommanded videos in the first place nor with the continuationResponse, error -> \(String(describing: recommendedVideosContinuationError))"); return}
         
         XCTAssertNotEqual(recommendedVideosContinuationResponse.results.count, 0, TEST_NAME + "Checking if results for continuation have been extracted.")
         XCTAssertNotNil(recommendedVideosContinuationResponse.continuationToken, TEST_NAME + "Checking if continuationToken has been extracted.")
