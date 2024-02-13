@@ -3,7 +3,7 @@
 //
 //  Created by Antoine Bollengier (github.com/b5i) on 27.06.2023.
 //  Copyright © 2023 Antoine Bollengier. All rights reserved.
-//  
+//
 
 import Foundation
 
@@ -110,6 +110,16 @@ public struct PlaylistInfosResponse: ResultsResponse {
                         toReturn.videoIdsInPlaylist = []
                     }
                     guard let finalVideoArray = thirdVideoArrayPart["playlistVideoListRenderer"]["contents"].array else { continue }
+                    let secondHeader = thirdVideoArrayPart["playlistVideoListRenderer"]
+                                        
+                    toReturn.userInteractions.isEditable = playlistInfosJSON["isEditable"].bool ?? secondHeader["isEditable"].bool
+                    
+                    toReturn.userInteractions.canReorder = playlistInfosJSON["canReorder"].bool ?? secondHeader["canReorder"].bool
+                    
+                    if toReturn.userInteractions.isEditable ?? false {
+                        toReturn.videoIdsInPlaylist = []
+                    }
+                    
                     for videoJSON in finalVideoArray {
                         if let video = YTVideo.decodeVideoFromPlaylist(json: videoJSON["playlistVideoRenderer"]) {
                             
