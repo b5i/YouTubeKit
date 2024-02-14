@@ -99,6 +99,7 @@ public struct PlaylistInfosResponse: ResultsResponse {
                 guard let thirdVideoArray = secondVideoArrayPart["itemSectionRenderer"]["contents"].array else { continue }
                 
                 for thirdVideoArrayPart in thirdVideoArray {
+                    guard let finalVideoArray = thirdVideoArrayPart["playlistVideoListRenderer"]["contents"].array else { continue }
                     let secondHeader = thirdVideoArrayPart["playlistVideoListRenderer"]
 
                     toReturn.userInteractions.isEditable = playlistInfosJSON["isEditable"].bool ?? secondHeader["isEditable"].bool
@@ -108,7 +109,6 @@ public struct PlaylistInfosResponse: ResultsResponse {
                     if toReturn.userInteractions.isEditable ?? false {
                         toReturn.videoIdsInPlaylist = []
                     }
-                    guard let finalVideoArray = thirdVideoArrayPart["playlistVideoListRenderer"]["contents"].array else { continue }
                     
                     for videoJSON in finalVideoArray {
                         if let video = YTVideo.decodeVideoFromPlaylist(json: videoJSON["playlistVideoRenderer"]) {
