@@ -54,7 +54,6 @@ public struct PlaylistInfosResponse: ResultsResponse {
         var toReturn = PlaylistInfosResponse()
         
         let playlistInfosJSON = json["header"]["playlistHeaderRenderer"]
-        let playlistVideoListRendererJSON = json["contents"]["twoColumnBrowseResultsRenderer"]["tabs"].array?[0]["tabRenderer"]["content"]["sectionListRenderer"]["contents"].array?[0]["itemSectionRenderer"]["contents"].array?[0]["playlistVideoListRenderer"]
         
         if let channelInfosArray = playlistInfosJSON["ownerText"]["runs"].array {
             for channelInfosPart in channelInfosArray {
