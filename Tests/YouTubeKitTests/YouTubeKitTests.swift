@@ -198,6 +198,7 @@ final class YouTubeKitTests: XCTestCase {
         let testChannelShouldBe = YTChannel(
             name: "MrBeast",
             channelId: "UCX6OQ3DkcsbYNE6H8uQQuVA",
+            handle: "@MrBeast",
             thumbnails: [
                 .init(width: 88, height: 88, url: URL(string: "https://yt3.googleusercontent.com/ytc/AGIKgqNRr7IEdQ7TplsO8BG-KjG19aCcCpVjiV9l36-9lQ=s88-c-k-c0x00ffffff-no-rj-mo")!),
                 .init(width: 176, height: 176, url: URL(string: "https://yt3.googleusercontent.com/ytc/AGIKgqNRr7IEdQ7TplsO8BG-KjG19aCcCpVjiV9l36-9lQ=s176-c-k-c0x00ffffff-no-rj-mo")!)
