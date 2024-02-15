@@ -25,7 +25,7 @@ public struct HistoryResponse: AuthenticatedResponse {
     ///
     /// Example:
     /// ```swift
-    /// var videosAndTime = [("Today", [A few videos]), ("Yesterday", [A few videos too])]
+    /// var videosAndTime = [HistoryBlock(groupTitle: "Today", videosArray: [A few videos]), (groupTitle: "Yesterday", videosArray: [A few videos too])]
     /// ```
     public var videosAndTime: [HistoryBlock] = []
     
