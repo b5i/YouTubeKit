@@ -27,7 +27,7 @@ public struct HistoryResponse: AuthenticatedResponse {
     /// ```swift
     /// var videosAndTime = [("Today", [A few videos]), ("Yesterday", [A few videos too])]
     /// ```
-    public var videosAndTime: [(groupTitle: String, videosArray: [VideoInfo])] = []
+    public var videosAndTime: [VideosAndTime] = []
     
     /// Title of the playlist.
     public var title: String?
@@ -46,10 +46,10 @@ public struct HistoryResponse: AuthenticatedResponse {
 
         for videoGroup in tabJSON["content"]["sectionListRenderer"]["contents"].arrayValue.map({$0["itemSectionRenderer"]}) {
             let title = videoGroup["header"]["itemSectionHeaderRenderer"]["title"]["runs"].array?.map({$0["text"].stringValue}).joined() ?? videoGroup["header"]["itemSectionHeaderRenderer"]["title"]["simpleText"].stringValue
-            var toAppend: (String , [VideoInfo]) = (title, [])
+            var toAppend: VideosAndTime = .init(groupTitle: title, videosArray: [])
             for videoJSON in videoGroup["contents"].arrayValue {
                 if let video = YTVideo.decodeJSON(json: videoJSON["videoRenderer"]) {
-                    toAppend.1.append(.init(video: video, suppressToken: videoJSON["videoRenderer"]["menu"]["menuRenderer"]["topLevelButtons"].array?.first?["buttonRenderer"]["serviceEndpoint"]["feedbackEndpoint"]["feedbackToken"].string))
+                    toAppend.videosArray.append(.init(video: video, suppressToken: videoJSON["videoRenderer"]["menu"]["menuRenderer"]["topLevelButtons"].array?.first?["buttonRenderer"]["serviceEndpoint"]["feedbackEndpoint"]["feedbackToken"].string))
                 }
             }
             toReturn.videosAndTime.append(toAppend)
@@ -73,7 +73,7 @@ public struct HistoryResponse: AuthenticatedResponse {
         public var continuationToken: String?
         
         /// Array of videos.
-        public var videosAndTime: [(String, [HistoryResponse.VideoInfo])] = []
+        public var videosAndTime: [VideosAndTime] = []
         
         public static func decodeData(data: Data) -> HistoryResponse.Continuation {
             let json = JSON(data)
@@ -84,10 +84,10 @@ public struct HistoryResponse: AuthenticatedResponse {
                 guard let continuationItemsArray = continationAction["appendContinuationItemsAction"]["continuationItems"].array else { continue }
                 for videoGroup in continuationItemsArray {
                     let title = videoGroup["header"]["itemSectionHeaderRenderer"]["title"]["runs"].array?.map({$0["text"].stringValue}).joined() ?? videoGroup["header"]["itemSectionHeaderRenderer"]["title"]["simpleText"].stringValue
-                    var toAppend: (String , [HistoryResponse.VideoInfo]) = (title, [])
+                    var toAppend: VideosAndTime = .init(groupTitle: title, videosArray: [])
                     for videoJSON in videoGroup["contents"].arrayValue {
                         if let video = YTVideo.decodeJSON(json: videoJSON["videoRenderer"]) {
-                            toAppend.1.append(.init(video: video, suppressToken: videoJSON["videoRenderer"]["menu"]["menuRenderer"]["topLevelButtons"].array?.first?["buttonRenderer"]["serviceEndpoint"]["feedbackEndpoint"]["feedbackToken"].string))
+                            toAppend.videosArray.append(.init(video: video, suppressToken: videoJSON["videoRenderer"]["menu"]["menuRenderer"]["topLevelButtons"].array?.first?["buttonRenderer"]["serviceEndpoint"]["feedbackEndpoint"]["feedbackToken"].string))
                         }
                     }
                     toReturn.videosAndTime.append(toAppend)
@@ -95,6 +95,12 @@ public struct HistoryResponse: AuthenticatedResponse {
             }
             return toReturn
         }
+    }
+    
+    public struct VideosAndTime: Hashable, Identifiable {
+        public let id = UUID()
+        public let groupTitle: String
+        public var videosArray: [VideoInfo]
     }
     
     public struct VideoInfo: Hashable, Identifiable {
