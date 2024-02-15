@@ -25,9 +25,9 @@ public struct HistoryResponse: AuthenticatedResponse {
     ///
     /// Example:
     /// ```swift
-    /// var videosAndTime = [("Today", [A few videos]), ("Yesterday", [A few videos too])]
+    /// var videosAndTime = [HistoryBlock(groupTitle: "Today", videosArray: [A few videos]), (groupTitle: "Yesterday", videosArray: [A few videos too])]
     /// ```
-    public var videosAndTime: [(groupTitle: String, videosArray: [(YTVideo, suppressToken: String?)])] = []
+    public var videosAndTime: [HistoryBlock] = []
     
     /// Title of the playlist.
     public var title: String?
@@ -46,10 +46,10 @@ public struct HistoryResponse: AuthenticatedResponse {
 
         for videoGroup in tabJSON["content"]["sectionListRenderer"]["contents"].arrayValue.map({$0["itemSectionRenderer"]}) {
             let title = videoGroup["header"]["itemSectionHeaderRenderer"]["title"]["runs"].array?.map({$0["text"].stringValue}).joined() ?? videoGroup["header"]["itemSectionHeaderRenderer"]["title"]["simpleText"].stringValue
-            var toAppend: (String , [(YTVideo, String?)]) = (title, [])
+            var toAppend: HistoryBlock = .init(groupTitle: title, videosArray: [])
             for videoJSON in videoGroup["contents"].arrayValue {
                 if let video = YTVideo.decodeJSON(json: videoJSON["videoRenderer"]) {
-                    toAppend.1.append((video, videoJSON["videoRenderer"]["menu"]["menuRenderer"]["topLevelButtons"].array?.first?["buttonRenderer"]["serviceEndpoint"]["feedbackEndpoint"]["feedbackToken"].string))
+                    toAppend.videosArray.append(.init(video: video, suppressToken: videoJSON["videoRenderer"]["menu"]["menuRenderer"]["topLevelButtons"].array?.first?["buttonRenderer"]["serviceEndpoint"]["feedbackEndpoint"]["feedbackToken"].string))
                 }
             }
             toReturn.videosAndTime.append(toAppend)
@@ -73,7 +73,7 @@ public struct HistoryResponse: AuthenticatedResponse {
         public var continuationToken: String?
         
         /// Array of videos.
-        public var videosAndTime: [(String, [(YTVideo, suppressToken: String?)])] = []
+        public var videosAndTime: [HistoryBlock] = []
         
         public static func decodeData(data: Data) -> HistoryResponse.Continuation {
             let json = JSON(data)
@@ -84,10 +84,10 @@ public struct HistoryResponse: AuthenticatedResponse {
                 guard let continuationItemsArray = continationAction["appendContinuationItemsAction"]["continuationItems"].array else { continue }
                 for videoGroup in continuationItemsArray {
                     let title = videoGroup["header"]["itemSectionHeaderRenderer"]["title"]["runs"].array?.map({$0["text"].stringValue}).joined() ?? videoGroup["header"]["itemSectionHeaderRenderer"]["title"]["simpleText"].stringValue
-                    var toAppend: (String , [(YTVideo, String?)]) = (title, [])
+                    var toAppend: HistoryBlock = .init(groupTitle: title, videosArray: [])
                     for videoJSON in videoGroup["contents"].arrayValue {
                         if let video = YTVideo.decodeJSON(json: videoJSON["videoRenderer"]) {
-                            toAppend.1.append((video, videoJSON["videoRenderer"]["menu"]["menuRenderer"]["topLevelButtons"].array?.first?["buttonRenderer"]["serviceEndpoint"]["feedbackEndpoint"]["feedbackToken"].string))
+                            toAppend.videosArray.append(.init(video: video, suppressToken: videoJSON["videoRenderer"]["menu"]["menuRenderer"]["topLevelButtons"].array?.first?["buttonRenderer"]["serviceEndpoint"]["feedbackEndpoint"]["feedbackToken"].string))
                         }
                     }
                     toReturn.videosAndTime.append(toAppend)
@@ -96,4 +96,24 @@ public struct HistoryResponse: AuthenticatedResponse {
             return toReturn
         }
     }
+    /// Struct representing a block of history, containing a title and an array of YTVideos.
+        public struct HistoryBlock: Hashable, Identifiable {
+            public var id: Int { return groupTitle.hashValue }
+
+            /// Ttitle of the group, usually represent a part of the time in the history like "Today", "Yesterday" or "February 15".
+            public let groupTitle: String
+
+            /// An array of the videos that have been watched in the part of time indicated by the HistoryResponse/HistoryBlock/groupTitle.
+            public var videosArray: [VideoWithToken]
+        }
+
+        /// Struct representing a video and the token that should be used to suppress it from the history.
+        public struct VideoWithToken: Hashable, Identifiable {
+            public var id: Int { return video.hashValue + (suppressToken?.hashValue ?? 0) }
+
+            public let video: YTVideo
+
+            /// Token that can be used to remove the video from the history, using for example HistoryResponse/removeVideo(withSuppressToken:youtubeModel:).
+            public let suppressToken: String?
+        }
 }
