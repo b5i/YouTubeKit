@@ -149,7 +149,7 @@ public struct ChannelInfosResponse: YouTubeResponse {
         
         toReturn.name = channelInfos["title"].string
         if let handle = channelInfos["channelHandleText"]["runs"].array?.first?["text"].string, !handle.isEmpty {
-            toReturn.handle = channelInfos["channelHandleText"]["runs"].array?.first?["text"].string
+            toReturn.handle = handle
         } else {
             toReturn.handle = channelInfos["navigationEndpoint"]["browseEndpoint"]["canonicalBaseUrl"].string?.replacingOccurrences(of: "/", with: "") // Need to remove the first slash because the string is like "/@ChannelHandle"
         }
