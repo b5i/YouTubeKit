@@ -634,7 +634,7 @@ final class YouTubeKitTests: XCTestCase {
         XCTAssertNotNil(historyResponse.title, TEST_NAME + "Checking if historyResponse.title has been extracted.")
         XCTAssertNotEqual(historyResponse.videosAndTime.count, 0, TEST_NAME + "Checking if historyResponse.videosAndTime is not empty.")
         
-        guard let firstVideoToken = historyResponse.videosAndTime.first?.1.first?.suppressToken else { XCTFail(TEST_NAME + "Could not find a video with a suppressToken in the history"); return }
+        guard let firstVideoToken = historyResponse.videosAndTime.first?.videosArray.first?.suppressToken else { XCTFail(TEST_NAME + "Could not find a video with a suppressToken in the history"); return }
         
         let deleteFromHistoryError = await historyResponse.removeVideo(withSuppressToken: firstVideoToken, youtubeModel: YTM)
         
