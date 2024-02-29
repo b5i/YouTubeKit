@@ -85,21 +85,27 @@ With YouTubeKit you can make a large variety of requests to the YouTube API, new
 4. Execute the request with (e.g. a `SearchResponse` request)
   ```swift
   SearchResponse.sendRequest(youtubeModel: YTM, data: dataParameters, result: { result, error in
-       /// Process here the result.
-       print(result)
-
-       /// If the result is nil you should obtain an error explaining why there is one.
-       print(error)
+    switch result {
+    case .success(let response):
+        /// Process here the result.
+        print(response)
+    case .failure(let error):
+        /// If there is no result you should obtain an error explaining why there is none.
+        print(error)
+    }
   })
   ```
   you can also send the request without explicitly declaring `dataParameters` like this
   ```swift
-  SearchResponse.sendRequest(youtubeModel: YTM, data: [.query: textQuery], result: { result, error in
-       /// Process here the result.
-       print(result)
-
-       /// If the result is nil you should obtain an error explaining why there is one.
-       print(error)
+  SearchResponse.sendRequest(youtubeModel: YTM, data: [.query: textQuery], result: { result in
+    switch result {
+    case .success(let response):
+        /// Process here the result.
+        print(response)
+    case .failure(let error):
+        /// If there is no result you should obtain an error explaining why there is none.
+        print(error)
+    }
   })
   ```
 ### Cookies usage
@@ -197,17 +203,20 @@ public struct NameAndSurnameResponse: YouTubeResponse {
 3. And to exectute it you just have to call `func sendRequest<ResponseType: YouTubeResponse>(
     responseType: ResponseType.Type,
     data: [HeadersList.AddQueryInfo.ContentTypes : String],
-    result: @escaping (ResponseType?, Error?) -> ()
+    result: @escaping (Result<ResponseType, Error>) -> ()
 )`
 e.g,
 ```swift
 /// We continue with our example:
-NameAndSurnameResponse.sendRequest(youtubeModel: YTM, data: [:], result: { result, error in
-    /// Process here the result.
-    print(result)
-    
-    /// If the result is nil you should obtain an error explaining why there is one.
-    print(error)
+NameAndSurnameResponse.sendRequest(youtubeModel: YTM, data: [:], result: { result in
+    switch result {
+    case .success(let response):
+        /// Process here the result.
+        print(response)
+    case .failure(let error):
+        /// If there is no result you should obtain an error explaining why there is none.
+        print(error)
+    }
 })
 ```
 Note: you would include in the request the parameters if needed like: query, browseId or anything like this to put in the body of the request to send.

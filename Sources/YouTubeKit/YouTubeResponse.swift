@@ -40,7 +40,7 @@ public protocol YouTubeResponse {
         youtubeModel: YouTubeModel,
         data: [HeadersList.AddQueryInfo.ContentTypes : String],
         useCookies: Bool?,
-        result: @escaping (Self?, Error?) -> ()
+        result: @escaping (Result<Self, Error>) -> ()
     )
 
     /// A function to call the request of the given YouTubeResponse. For more informations see ``YouTubeResponse/sendRequest(youtubeModel:data:useCookies:result:)-7p1m2``.
@@ -49,8 +49,7 @@ public protocol YouTubeResponse {
         youtubeModel: YouTubeModel,
         data: [HeadersList.AddQueryInfo.ContentTypes : String],
         useCookies: Bool?
-    ) async -> (Self?, Error?)
-
+    ) async throws -> Self
 }
 
 public extension YouTubeResponse {
@@ -59,7 +58,7 @@ public extension YouTubeResponse {
         youtubeModel: YouTubeModel,
         data: [HeadersList.AddQueryInfo.ContentTypes : String],
         useCookies: Bool? = nil,
-        result: @escaping (Self?, Error?) -> ()
+        result: @escaping (Result<Self, Error>) -> ()
     ) {
         /// Call YouTubeModel's `sendRequest` function to have a more readable use.
         youtubeModel.sendRequest(
@@ -75,10 +74,10 @@ public extension YouTubeResponse {
         youtubeModel: YouTubeModel,
         data: [HeadersList.AddQueryInfo.ContentTypes : String],
         useCookies: Bool? = nil
-    ) async -> (Self?, Error?) {
-        return await withCheckedContinuation({ (continuation: CheckedContinuation<(Self?, Error?), Never>) in
-            sendRequest(youtubeModel: youtubeModel, data: data, useCookies: useCookies, result: { result, error in
-                continuation.resume(returning: (result, error))
+    ) async throws -> Self {
+        return try await withCheckedThrowingContinuation({ (continuation: CheckedContinuation<Self, Error>) in
+            sendRequest(youtubeModel: youtubeModel, data: data, useCookies: useCookies, result: { result in
+                continuation.resume(with: result)
             })
         })
     }

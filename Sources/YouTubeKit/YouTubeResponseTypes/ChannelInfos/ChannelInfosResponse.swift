@@ -31,9 +31,12 @@ public struct ChannelInfosResponse: YouTubeResponse {
     /// ```swift
     /// let YTM = YouTubeModel()
     /// let myInstance: ChannelInfosResponse = ...
-    /// myInstance.getChannelContent(type: .wantedType, youtubeModel: YTM) { newInstance, error in
-    ///     if let newInstance = newInstance {
+    /// myInstance.getChannelContent(type: .wantedType, youtubeModel: YTM) { result in
+    ///     switch result {
+    ///     case .success(let newInstance):
     ///         myInstance.channelContentStore.merge(newInstance.channelContentStore, uniquingKeysWith: { (_, new) in new }) /// Will merge the two instances results and keep the most recent data.
+    ///     case .failure(let error):
+    ///         // Deal with the error
     ///     }
     /// }
     /// ```
@@ -45,7 +48,7 @@ public struct ChannelInfosResponse: YouTubeResponse {
     /// ```swift
     /// let YTM = YouTubeModel()
     /// if let myVideosContinuation = channelContentContinuationStore[.videos] {
-    ///     get
+    ///     let directsRequestContinuationResult = try await myVideosContinuation.getChannelContentContinuation(myVideosContinuation.Type.self /* precise the proper type */, youtubeModel: YTM)
     /// }
     /// ```
     public var channelContentContinuationStore: [RequestTypes : String?] = [:]
@@ -56,9 +59,14 @@ public struct ChannelInfosResponse: YouTubeResponse {
     /// ```swift
     /// let YTM = YouTubeModel()
     /// let channelId: String = ...
-    /// ChannelInfosResponse.sendRequest(youtubeModel: YTM, data: [.browseId : channelId], result: { result, error in
-    ///      print(result)
-    ///      print(error)
+    /// ChannelInfosResponse.sendRequest(youtubeModel: YTM, data: [.browseId : channelId], result: { result in
+    ///     switch result {
+    ///     case .success(let response):
+    ///         print(response)
+    ///     case .failure(let error):
+    ///         // Deal with the error
+    ///         print(error)
+    ///     }
     /// })
     /// ```
     public var channelId: String?
@@ -218,9 +226,12 @@ public struct ChannelInfosResponse: YouTubeResponse {
     /// ```swift
     /// let YTM = YouTubeModel()
     /// let myInstance: ChannelInfosResponse = ...
-    /// myInstance.getChannelContent(type: .wantedType, youtubeModel: YTM) { newInstance, error in
-    ///     if let newInstance = newInstance {
+    /// myInstance.getChannelContent(type: .wantedType, youtubeModel: YTM) { newInstance in
+    ///     switch result {
+    ///     case .success(let newInstance):
     ///         myInstance.copyProperties(of: newInstance) /// Will update to the properties of the newInstance
+    ///     case .failure(let error):
+    ///         // Deal with the error
     ///     }
     /// }
     /// ```
@@ -229,20 +240,23 @@ public struct ChannelInfosResponse: YouTubeResponse {
     /// ```swift
     /// let YTM = YouTubeModel()
     /// let myInstance: ChannelInfosResponse = ...
-    /// myInstance.getChannelContent(type: .wantedType, youtubeModel: YTM) { newInstance, error in
-    ///     if let newInstance = newInstance {
+    /// myInstance.getChannelContent(type: .wantedType, youtubeModel: YTM) { result in
+    ///     switch result {
+    ///     case .success(let newInstance):
     ///         myInstance.channelContentStore.merge(newInstance.channelContentStore, uniquingKeysWith: { (_, new) in new }) /// Will merge the two instances results and keep the most recent data.
+    ///     case .failure(let error):
+    ///         // Deal with the error
     ///     }
     /// }
     /// ```
-    public func getChannelContent(type: RequestTypes, youtubeModel: YouTubeModel, useCookies: Bool? = nil, result: @escaping (ChannelInfosResponse?, Error?) -> ()) {
+    public func getChannelContent(type: RequestTypes, youtubeModel: YouTubeModel, useCookies: Bool? = nil, result: @escaping (Result<ChannelInfosResponse, Error>) -> ()) {
         guard
             let params = requestParams[type]
-        else { result(nil, "Something between returnType or params haven't been added where it should, returnType in ChannelInfosResponse.requestTypes and params in ChannelInfosResponse.requestParams"); return }
-        guard let channelId = self.channelId else { result(nil, "Channel ID is nil"); return}
+        else { result(.failure("Something between returnType or params haven't been added where it should, returnType in ChannelInfosResponse.requestTypes and params in ChannelInfosResponse.requestParams")); return }
+        guard let channelId = self.channelId else { result(.failure("Channel ID is nil")); return}
         
-        ChannelInfosResponse.sendRequest(youtubeModel: youtubeModel, data: [.browseId: channelId, .params: params], useCookies: useCookies, result: { channelResponse, error in
-            result(channelResponse, error)
+        ChannelInfosResponse.sendRequest(youtubeModel: youtubeModel, data: [.browseId: channelId, .params: params], useCookies: useCookies, result: { channelResponse in
+            result(channelResponse)
         })
     }
     
@@ -256,9 +270,13 @@ public struct ChannelInfosResponse: YouTubeResponse {
     /// ```swift
     /// let YTM = YouTubeModel()
     /// let myInstance: ChannelInfosResponse = ...
-    /// myInstance.getChannelContent(type: .wantedType, youtubeModel: YTM) { newInstance, error in
-    ///     if let newInstance = newInstance {
+    /// myInstance.getChannelContent(type: .wantedType, youtubeModel: YTM) { result in
+    ///     switch result {
+    ///     case .success(let response):
     ///         myInstance.copyProperties(of: newInstance) /// Will update to the properties of the newInstance
+    ///     case .failure(let error):
+    ///         // Deal with the error
+    ///         print(error)
     ///     }
     /// }
     /// ```
@@ -267,17 +285,21 @@ public struct ChannelInfosResponse: YouTubeResponse {
     /// ```swift
     /// let YTM = YouTubeModel()
     /// let myInstance: ChannelInfosResponse = ...
-    /// myInstance.getChannelContent(type: .wantedType, youtubeModel: YTM) { newInstance, error in
-    ///     if let newInstance = newInstance {
-    ///         myInstance.channelContentStore.merge(newInstance.channelContentStore, uniquingKeysWith: { (_, new) in new }) /// Will merge the two instances results and keep the most recent data.
+    /// myInstance.getChannelContent(type: .wantedType, youtubeModel: YTM) { result in
+    ///     switch result {
+    ///     case .success(let response):
+    ///          myInstance.channelContentStore.merge(newInstance.channelContentStore, uniquingKeysWith: { (_, new) in new }) /// Will merge the two instances results and keep the most recent data.
+    ///     case .failure(let error):
+    ///         // Deal with the error
+    ///         print(error)
     ///     }
     /// }
     /// ```
     @available(macOS 10.15, iOS 13.0, watchOS 6.0, tvOS 13.0, *)
-    public func getChannelContent(type: RequestTypes, youtubeModel: YouTubeModel) async -> (ChannelInfosResponse?, Error?) {
-        return await withCheckedContinuation({ (continuation: CheckedContinuation<(ChannelInfosResponse?, Error?), Never>) in
-            getChannelContent(type: type, youtubeModel: youtubeModel, result: { channelContent, error in
-                continuation.resume(returning: (channelContent, error))
+    public func getChannelContent(type: RequestTypes, youtubeModel: YouTubeModel) async throws -> ChannelInfosResponse {
+        return try await withCheckedThrowingContinuation({ (continuation: CheckedContinuation<ChannelInfosResponse, Error>) in
+            getChannelContent(type: type, youtubeModel: youtubeModel, result: { channelContent in
+                continuation.resume(with: channelContent)
             })
         })
     }
@@ -291,8 +313,7 @@ public struct ChannelInfosResponse: YouTubeResponse {
         _: T.Type,
         youtubeModel: YouTubeModel,
         useCookies: Bool? = nil,
-        result: @escaping (ContentContinuation<T>?, Error?
-        ) -> ()) {
+        result: @escaping (Result<ContentContinuation<T>, Error>) -> Void) {
         guard
             /// Get requestType from the given ChannelContent (T)
             let requestType = channelContentStore.first(where: { element in
@@ -300,7 +321,7 @@ public struct ChannelInfosResponse: YouTubeResponse {
             })?.key,
             /// Get the continuation token from this requestType
             let continuationToken = channelContentContinuationStore.first(where: {$0.key == requestType})?.value
-        else { result(nil, "There is no continuation token for this type (\(T.self)"); return }
+            else { result(.failure("There is no continuation token for this type (\(T.self)")); return }
         ContentContinuation.sendRequest(
             youtubeModel: youtubeModel,
             data: [.continuation: continuationToken], 
@@ -319,10 +340,10 @@ public struct ChannelInfosResponse: YouTubeResponse {
         _: T.Type,
         youtubeModel: YouTubeModel,
         useCookies: Bool? = nil
-    ) async -> (ContentContinuation<T>?, Error?) {
-        return await withCheckedContinuation({ (continuation: CheckedContinuation<(ContentContinuation<T>?, Error?), Never>) in
-            getChannelContentContinuation(T.self, youtubeModel: youtubeModel, useCookies: useCookies, result: { result, error in
-                continuation.resume(returning: (result, error))
+    ) async throws -> ContentContinuation<T> {
+        return try await withCheckedThrowingContinuation({ (continuation: CheckedContinuation<ContentContinuation<T>, Error>) in
+            getChannelContentContinuation(T.self, youtubeModel: youtubeModel, useCookies: useCookies, result: { result in
+                continuation.resume(with: result)
             })
         })
     }

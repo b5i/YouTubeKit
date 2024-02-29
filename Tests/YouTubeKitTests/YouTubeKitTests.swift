@@ -7,7 +7,7 @@ final class YouTubeKitTests: XCTestCase {
     /// Keep them secret! Make sure you remove them after having tested YouTubeKit.
     private let cookies = ""
     
-    func testCreateCustomHeaders() async {
+    func testCreateCustomHeaders() async throws {
         let TEST_NAME = "Test: testCreateCustomHeaders() -> "
         let myCustomHeadersFunction: () -> HeadersList = {
             HeadersList(
@@ -50,16 +50,12 @@ final class YouTubeKitTests: XCTestCase {
         let NAME_SHOULD_BE = "myName"
         let SURNAME_SHOULD_BE = "mySurname"
         
-        let (result, error) = await NameAndSurnameResponse.sendRequest(youtubeModel: YTM, data: [:])
+        let response = try await NameAndSurnameResponse.sendRequest(youtubeModel: YTM, data: [:])
         
-        if let result = result, error == nil {
-            if result.name == NAME_SHOULD_BE && result.surname == SURNAME_SHOULD_BE {
-                XCTAssert(true, TEST_NAME + "successful!")
-            } else {
-                XCTFail(TEST_NAME + "the name != \(NAME_SHOULD_BE) actually (\(result.name)) or surname != \(SURNAME_SHOULD_BE) actually (\(result.surname))")
-            }
+        if response.name == NAME_SHOULD_BE && response.surname == SURNAME_SHOULD_BE {
+            XCTAssert(true, TEST_NAME + "successful!")
         } else {
-            XCTFail(TEST_NAME + "the result is not defined (result = \(String(describing: result))) or the error is not nil (error = \(String(describing: error))")
+            XCTFail(TEST_NAME + "the name != \(NAME_SHOULD_BE) actually (\(response.name)) or surname != \(SURNAME_SHOULD_BE) actually (\(response.surname))")
         }
     }
     
@@ -149,13 +145,11 @@ final class YouTubeKitTests: XCTestCase {
         XCTAssertEqual(request.value(forHTTPHeaderField: "MyCustomHTTPHeader"), "Ahahahah", TEST_NAME + "Checking equality of header \"MyCustomHTTPHeader\".")
     }
     
-    func testRestrictedSearch() async {
+    func testRestrictedSearch() async throws {
         let TEST_NAME = "Test: testRestrictedSearch() -> "
         
-        let (requestResult, error) = await SearchResponse.Restricted.sendRequest(youtubeModel: YTM, data: [.query: "mrbeast"])
-        
-        guard let requestResult = requestResult else { XCTFail(TEST_NAME + "Checking if requestResult is defined., error -> \(String(describing: error))"); return}
-        
+        let requestResult = try await SearchResponse.Restricted.sendRequest(youtubeModel: YTM, data: [.query: "mrbeast"])
+                
         XCTAssertNotEqual(requestResult.results.count, 0, TEST_NAME + "Checking if there is actual results in requestResult.results")
     }
     
@@ -243,36 +237,26 @@ final class YouTubeKitTests: XCTestCase {
         }
     }
     
-    func testSearchResponseContinuation() async {
+    func testSearchResponseContinuation() async throws {
         let TEST_NAME = "Test: testSearchResponseContinuation() -> "
         
-        let (requestResult, _) = await SearchResponse.sendRequest(youtubeModel: YTM, data: [.query: "fred again"])
-        guard let continuationToken = requestResult?.continuationToken else { XCTFail(TEST_NAME + "continuationToken is not defined"); return }
-        guard let visitorData = requestResult?.visitorData else { XCTFail(TEST_NAME + "visitorData is not defined"); return }
-        if let _ = requestResult {
-            let (continuationResult, _) = await SearchResponse.Continuation.sendRequest(youtubeModel: YTM, data: [
-                .continuation: continuationToken,
-                .visitorData: visitorData
-            ])
-            if let continuationResult = continuationResult {
-                XCTAssertNotEqual(continuationResult.continuationToken, "", TEST_NAME + "Checking continuationToken for SearchResponse.Contination.")
-                XCTAssertNotEqual(continuationResult.results.count, 0, TEST_NAME + "Checking if continuation results aren't empty.")
-            } else {
-                XCTFail(TEST_NAME + "Failed to get continuationResult (SearchResponse.Continuation request failed).")
-            }
-        } else {
-            XCTFail(TEST_NAME + "Failed to get requestResult (SearchResponse request failed).")
-        }
+        let requestResult = try await SearchResponse.sendRequest(youtubeModel: YTM, data: [.query: "fred again"])
+        guard let continuationToken = requestResult.continuationToken else { XCTFail(TEST_NAME + "continuationToken is not defined"); return }
+        guard let visitorData = requestResult.visitorData else { XCTFail(TEST_NAME + "visitorData is not defined"); return }
+        let continuationResult = try await SearchResponse.Continuation.sendRequest(youtubeModel: YTM, data: [
+            .continuation: continuationToken,
+            .visitorData: visitorData
+        ])
+        XCTAssertNotEqual(continuationResult.continuationToken, "", TEST_NAME + "Checking continuationToken for SearchResponse.Contination.")
+        XCTAssertNotEqual(continuationResult.results.count, 0, TEST_NAME + "Checking if continuation results aren't empty.")
     }
     
-    func testVideoInfosResponse() async {
+    func testVideoInfosResponse() async throws {
         let TEST_NAME = "Test: testVideoInfosResponse() -> "
         let video = YTVideo(videoId: "90RLzVUuXe4")
         
-        let (requestResult, requestError) = await video.fetchStreamingInfos(youtubeModel: YTM)
-                
-        guard let requestResult = requestResult else { XCTFail(TEST_NAME + "requestResult is not defined, error: \(String(describing: requestError))."); return }
-        
+        let requestResult = try await video.fetchStreamingInfos(youtubeModel: YTM)
+                        
         XCTAssertNotNil(requestResult.channel?.name, TEST_NAME + "Checking if requestResult.channel.name is not nil.")
         XCTAssertNotNil(requestResult.channel?.channelId, TEST_NAME + "Checking if requestResult.channel.browseId is not nil.")
         XCTAssertNotNil(requestResult.isLive, TEST_NAME + "Checking if requestResult.isLive is not nil.")
@@ -285,146 +269,126 @@ final class YouTubeKitTests: XCTestCase {
         XCTAssertNotNil(requestResult.viewCount, TEST_NAME + "Checking if requestResult.viewCount is not nil.")
     }
     
-    func testVideoInfosWithDownloadFormatsResponse() async {
+    func testVideoInfosWithDownloadFormatsResponse() async throws {
         let TEST_NAME = "Test: testVideoInfosWithDownloadFormatsResponse() -> "
         
         VideoInfosWithDownloadFormatsResponse.removePlayersFromDisk()
         
         for video in [YTVideo(videoId: "3ryID_SwU5E"), YTVideo(videoId: "xUdZhqe2n7w")] as [YTVideo] {
             
-            let (requestResult, requestError) = await video.fetchStreamingInfosWithDownloadFormats(youtubeModel: YTM)
-            
-            guard let requestResult = requestResult else { XCTFail(TEST_NAME + "requestResult is not defined, error: \(String(describing: requestError))."); return }
-            
+            let requestResult = try await video.fetchStreamingInfosWithDownloadFormats(youtubeModel: YTM)
+                        
             XCTAssertNotEqual(requestResult.downloadFormats.count, 0, TEST_NAME + "Checking if requestResult.downloadFormats is empty")
             XCTAssertNotEqual(requestResult.defaultFormats.count, 0, TEST_NAME + "Checking if requestResult.defaultFormats is empty")
             XCTAssertNotEqual(requestResult.videoInfos.streamingURL, nil, TEST_NAME + "Checking if requestResult.videoInfos.streamingURL is empty")
         }
     }
 
-    func testAutoCompletionResponse() async {
+    func testAutoCompletionResponse() async throws {
         YTM.selectedLocale = "en-US"
         
         let TEST_NAME = "Test: testAutoCompletionResponse() -> "
         
         let query: String = "mrbe"
         
-        let (requestResult, _) = await AutoCompletionResponse.sendRequest(youtubeModel: YTM, data: [.query: query])
-        
-        guard let requestResult = requestResult else { XCTFail(TEST_NAME + "requestResult is not defined."); return }
-        
+        let requestResult = try await AutoCompletionResponse.sendRequest(youtubeModel: YTM, data: [.query: query])
+                
         XCTAssertEqual(requestResult.initialQuery, query, TEST_NAME + "Checking if query and initialQuery are equal")
         XCTAssertNotEqual(requestResult.autoCompletionEntries.count, 0, TEST_NAME + "Checking if requestResult.autoCompletionEntries is empty")
     }
     
-    func testChannelInfosResponse() async {
+    func testChannelInfosResponse() async throws {
         let TEST_NAME = "Test: testChannelInfosResponse() -> "
         
-        let (videoResult, videoResultError) = await VideoInfosResponse.sendRequest(youtubeModel: YTM, data: [.query: "bvUNXch3rdI"]) /// T-Series' video because they have continuation in every category
-        
-        guard let videoResult = videoResult else { XCTFail(TEST_NAME + "Couldn't get video infos, error: \(String(describing: videoResultError))"); return }
-        
+        let videoResult = try await VideoInfosResponse.sendRequest(youtubeModel: YTM, data: [.query: "bvUNXch3rdI"]) /// T-Series' video because they have continuation in every category
+                
         guard let channel = videoResult.channel, channel.channelId != "" else { XCTFail(TEST_NAME + "The channel in the retrieved video is not defined (structure nil or channelId empty)."); return }
         
-        let (mainRequestResult, mainRequestResultError) = await channel.fetchInfos(youtubeModel: YTM)
-        
-        guard let mainRequestResult = mainRequestResult else { XCTFail(TEST_NAME + "Couldn't get channel base infos, error: \(String(describing: mainRequestResultError))"); return }
-        
+        let mainRequestResult = try await channel.fetchInfos(youtubeModel: YTM)
+                
         XCTAssertNotNil(mainRequestResult.videosCount, TEST_NAME + "Checking if mainRequestResult.videosCount is not nil")
         
         /// Testing ChannelContent fetching, Videos, Shorts, Directs and Playlists
         
         ///Videos
-        let (videoRequestResult, videoRequestResultError) = await mainRequestResult.getChannelContent(type: .videos, youtubeModel: YTM)
-        
-        guard let videoRequestResult = videoRequestResult else { XCTFail(TEST_NAME + "Couldn't get channel Videos special content, error: \(String(describing: videoRequestResultError))"); return }
-        
+        var videoRequestResult = try await mainRequestResult.getChannelContent(type: .videos, youtubeModel: YTM)
+                
         XCTAssertEqual(videoRequestResult.name, videoResult.channel?.name, TEST_NAME + "Checking if videoRequestResult.name is equal to videoResult.channel.name")
         XCTAssertEqual(videoRequestResult.channelId, videoResult.channel?.channelId, TEST_NAME + "Checking if videoRequestResult.channelId is equal to videoResult.channel.channelId")
         
         /// Test continuation
-        let (videoRequestContinuationResult, videoRequestContinuationResultError) = await videoRequestResult.getChannelContentContinuation(ChannelInfosResponse.Videos.self, youtubeModel: YTM)
+        let videoRequestContinuationResult = try await videoRequestResult.getChannelContentContinuation(ChannelInfosResponse.Videos.self, youtubeModel: YTM)
         
-        guard let _ = videoRequestContinuationResult else { XCTFail(TEST_NAME + "Couldn't get continuation for Videos special content, error: \(String(describing: videoRequestContinuationResultError))"); return }
+        videoRequestResult.mergeListableChannelContentContinuation(videoRequestContinuationResult)
         
         /// Shorts
-        let (shortsRequestResult, shortsRequestResultError) = await mainRequestResult.getChannelContent(type: .shorts, youtubeModel: YTM)
-        
-        guard let shortsRequestResult = shortsRequestResult else { XCTFail(TEST_NAME + "Couldn't get channel Shorts special content, error: \(String(describing: shortsRequestResultError))"); return }
-        
+        let shortsRequestResult = try await mainRequestResult.getChannelContent(type: .shorts, youtubeModel: YTM)
+                
         XCTAssertEqual(shortsRequestResult.name, videoResult.channel?.name, TEST_NAME + "Checking if shortsRequestResult.name is equal to videoResult.channel.name")
         XCTAssertEqual(shortsRequestResult.channelId, videoResult.channel?.channelId, TEST_NAME + "Checking if shortsRequestResult.channelId is equal to videoResult.channel.channelId")
                 
         /// Test continuation
-        let (shortsRequestContinuationResult, shortsRequestContinuationResultError) = await shortsRequestResult.getChannelContentContinuation(ChannelInfosResponse.Shorts.self, youtubeModel: YTM)
+        let shortsRequestContinuationResult = try await shortsRequestResult.getChannelContentContinuation(ChannelInfosResponse.Shorts.self, youtubeModel: YTM)
         
-        guard let _ = shortsRequestContinuationResult else { XCTFail(TEST_NAME + "Couldn't get continuation for Shorts special content, error: \(String(describing: shortsRequestContinuationResultError))"); return }
+        videoRequestResult.mergeListableChannelContentContinuation(shortsRequestContinuationResult)
         
+                
         /// Directs
-        let (directsRequestResult, directsRequestResultError) = await mainRequestResult.getChannelContent(type: .directs, youtubeModel: YTM)
-        
-        guard let directsRequestResult = directsRequestResult else { XCTFail(TEST_NAME + "Couldn't get channel Directs special content, error: \(String(describing: directsRequestResultError))"); return }
-        
+        let directsRequestResult = try await mainRequestResult.getChannelContent(type: .directs, youtubeModel: YTM)
+                
         XCTAssertEqual(directsRequestResult.name, videoResult.channel?.name, TEST_NAME + "Checking if directsRequestResult.name is equal to videoResult.channel.name")
         XCTAssertEqual(directsRequestResult.channelId, videoResult.channel?.channelId, TEST_NAME + "Checking if directsRequestResult.channelId is equal to videoResult.channel.channelId")
         
         /// Test continuation
-        let (directsRequestContinuationResult, directsRequestContinuationResultError) = await directsRequestResult.getChannelContentContinuation(ChannelInfosResponse.Directs.self, youtubeModel: YTM)
+        let directsRequestContinuationResult = try await directsRequestResult.getChannelContentContinuation(ChannelInfosResponse.Directs.self, youtubeModel: YTM)
         
-        guard let _ = directsRequestContinuationResult else { XCTFail(TEST_NAME + "Couldn't get continuation for Directs special content, error: \(String(describing: directsRequestContinuationResultError))"); return }
+        videoRequestResult.mergeListableChannelContentContinuation(directsRequestContinuationResult)
         
+                
         /// Playlists
-        let (playlistsRequestResult, playlistsRequestResultError) = await mainRequestResult.getChannelContent(type: .playlists, youtubeModel: YTM)
-        
-        guard let playlistsRequestResult = playlistsRequestResult else { XCTFail(TEST_NAME + "Couldn't get channel Directs special content, error: \(String(describing: playlistsRequestResultError))"); return }
-        
+        let playlistsRequestResult = try await mainRequestResult.getChannelContent(type: .playlists, youtubeModel: YTM)
+                
         XCTAssertEqual(playlistsRequestResult.name, videoResult.channel?.name, TEST_NAME + "Checking if playlistsRequestResult.name is equal to videoResult.channel.name")
         XCTAssertEqual(playlistsRequestResult.channelId, videoResult.channel?.channelId, TEST_NAME + "Checking if playlistsRequestResult.channelId is equal to videoResult.channel.channelId")
         
         /// Test continuation
-        let (playlistRequestContinuationResult, playlistRequestContinuationResultError) = await playlistsRequestResult.getChannelContentContinuation(ChannelInfosResponse.Playlists.self, youtubeModel: YTM)
+        let playlistRequestContinuationResult = try await playlistsRequestResult.getChannelContentContinuation(ChannelInfosResponse.Playlists.self, youtubeModel: YTM)
         
-        guard let _ = playlistRequestContinuationResult else { XCTFail(TEST_NAME + "Couldn't get continuation for Playlists special content, error: \(String(describing: playlistRequestContinuationResultError))"); return }
+        videoRequestResult.mergeListableChannelContentContinuation(playlistRequestContinuationResult)
     }
     
-    func testGetPlaylistInfos() async {
+    func testGetPlaylistInfos() async throws {
         let TEST_NAME = "Test: testGetPlaylistInfos() -> "
         
         let playlist = YTPlaylist(playlistId: "VLPLw-VjHDlEOgs658kAHR_LAaILBXb-s6Q5")
         
-        let (playlistInfosResult, playlistInfosError) = await playlist.fetchVideos(youtubeModel: YTM)
-        
-        guard var playlistInfosResult = playlistInfosResult else { XCTFail(TEST_NAME + "Checking if playlistInfosResult is defined (error: \(String(describing: playlistInfosError)))."); return }
-        
-        let (playlistContinuation, playlistContinuationError) = await playlistInfosResult.fetchContinuation(youtubeModel: YTM)
-        
-        guard let playlistContinuation = playlistContinuation else { XCTFail(TEST_NAME + "Checking if the continuation is defined (error: \(String(describing: playlistContinuationError))."); return } // Could fail if the 
-        
+        var playlistInfosResult = try await playlist.fetchVideos(youtubeModel: YTM)
+                
+        let playlistContinuation = try await playlistInfosResult.fetchContinuation(youtubeModel: YTM)
+                
         let videoCount = playlistInfosResult.results.count + playlistContinuation.results.count
         playlistInfosResult.mergeWithContinuation(playlistContinuation)
         XCTAssertEqual(playlistInfosResult.results.count, videoCount, TEST_NAME + "Checking if the merge operation was successful. (videos count)")
         XCTAssertEqual(playlistInfosResult.continuationToken, playlistContinuation.continuationToken, TEST_NAME + "Checking if the merge operation was successful. (continuation token)")
     }
     
-    func testHomeResponse() async {
+    func testHomeResponse() async throws {
         let TEST_NAME = "Test: testHomeResponse() -> "
             
-        let (homeMenuResult, homeMenuResultError) = await HomeScreenResponse.sendRequest(youtubeModel: YTM, data: [:])
-        guard var homeMenuResult = homeMenuResult else { XCTFail(TEST_NAME + "Checking if homeMenuResult is defined (error: \(String(describing: homeMenuResultError)))."); return }
+        var homeMenuResult = try await HomeScreenResponse.sendRequest(youtubeModel: YTM, data: [:])
         guard homeMenuResult.continuationToken != nil else {
             // Could fail because sometimes YouTube gives an empty page telling you to start browsing. We check this case here.
             if !(homeMenuResult.results.count == 0 && homeMenuResult.visitorData != nil) {
-                XCTFail(TEST_NAME + "Checking if homeMenuResult.continuationToken is defined (error: \(String(describing: homeMenuResultError))).");
+                XCTFail(TEST_NAME + "Checking if homeMenuResult.continuationToken is defined.");
             }
             return
         }
         
-        XCTAssertNotNil(homeMenuResult.visitorData, TEST_NAME + "Checking if homeMenuResult.visitorData is defined (error: \(String(describing: homeMenuResultError))).")
+        XCTAssertNotNil(homeMenuResult.visitorData, TEST_NAME + "Checking if homeMenuResult.visitorData is defined.")
         
-        let (homeMenuContinuationResult, homeMenuContinuationError) = await homeMenuResult.fetchContinuation(youtubeModel: YTM)
+        let homeMenuContinuationResult = try await homeMenuResult.fetchContinuation(youtubeModel: YTM)
                 
-        guard let homeMenuContinuationResult = homeMenuContinuationResult else { XCTFail(TEST_NAME + "Checking if homeMenuContinuationResult is defined (error: \(String(describing: homeMenuContinuationError)))."); return }
-        guard homeMenuContinuationResult.continuationToken != nil else { XCTFail(TEST_NAME + "Checking if homeMenuContinuationResult.continuationToken is defined (error: \(String(describing: homeMenuContinuationError)))."); return }
+        guard homeMenuContinuationResult.continuationToken != nil else { XCTFail(TEST_NAME + "Checking if homeMenuContinuationResult.continuationToken is defined."); return }
         
         let videosCount = homeMenuResult.results.count + homeMenuContinuationResult.results.count
         
@@ -435,15 +399,13 @@ final class YouTubeKitTests: XCTestCase {
     }
     
     /// The following tests can't be done without some Account's cookies
-    func testAccountInfos() async {
+    func testAccountInfos() async throws {
         guard cookies != "" else { return }
         let TEST_NAME = "Test: testAccountInfos() -> "
         YTM.cookies = cookies
         
-        let (response, error) = await AccountInfosResponse.sendRequest(youtubeModel: YTM, data: [:])
-        
-        guard let response = response else { XCTFail(TEST_NAME + "Checking if AccountInfosResponse is defined (error: \(String(describing: error)))."); return  }
-        
+        let response = try await AccountInfosResponse.sendRequest(youtubeModel: YTM, data: [:])
+                
         guard !response.isDisconnected else { XCTFail(TEST_NAME + "Checking if the cookies are valid."); return }
         
         /// Could potentially fail if the cookies' account does not have a channel.
@@ -452,15 +414,13 @@ final class YouTubeKitTests: XCTestCase {
         XCTAssertNotEqual(response.avatar.count, 0, TEST_NAME + "Checking if the avatar of the account has been extracted.")
     }
     
-    func testAccountLibrary() async {
+    func testAccountLibrary() async throws {
         guard cookies != "" else { return }
         let TEST_NAME = "Test: testAccountLibrary() -> "
         YTM.cookies = cookies
         
-        let (response, error) = await AccountLibraryResponse.sendRequest(youtubeModel: YTM, data: [:])
-        
-        guard let response = response else { XCTFail(TEST_NAME + "Checking if AccountLibraryResponse is defined (error: \(String(describing: error)))."); return }
-        
+        let response = try await AccountLibraryResponse.sendRequest(youtubeModel: YTM, data: [:])
+                
         guard !response.isDisconnected else { XCTFail(TEST_NAME + "Checking if cookies were defined"); return }
         
         //XCTAssertNotEqual(response.accountStats.count, 0, TEST_NAME + "Checking if account's stats have been extracted.") // has been removed by YouTube
@@ -470,7 +430,7 @@ final class YouTubeKitTests: XCTestCase {
         XCTAssertNotEqual(response.playlists.count, 0, TEST_NAME + "Checking if account's playlists have been extracted.")
     }
     
-    func testPlaylistActions() async {
+    func testPlaylistActions() async throws {
         guard cookies != "" else { return }
         let TEST_NAME = "Test: testPlaylistActions() -> "
         YTM.cookies = cookies
@@ -482,10 +442,8 @@ final class YouTubeKitTests: XCTestCase {
         let thirdVideoToAddId = "OlWdMCVtKJw"
         
         // Playlist creation part
-        let (creationResponse, creationError) = await CreatePlaylistResponse.sendRequest(youtubeModel: YTM, data: [.query : newPlaylistName, .params: YTPrivacy.private.rawValue, .movingVideoId: firstVideoToAddId])
-        
-        guard let creationResponse = creationResponse else { XCTFail(TEST_NAME + "Checking if CreatePlaylistResponse is defined (error: \(String(describing: creationError)))."); return }
-        
+        let creationResponse = try await CreatePlaylistResponse.sendRequest(youtubeModel: YTM, data: [.query : newPlaylistName, .params: YTPrivacy.private.rawValue, .movingVideoId: firstVideoToAddId])
+                
         guard !creationResponse.isDisconnected else { XCTFail(TEST_NAME + "Checking if cookies were defined"); return }
         
         guard var createdPlaylistId = creationResponse.createdPlaylistId, let playlistCreatorId = creationResponse.playlistCreatorId else { XCTFail(TEST_NAME + "Checking if the playlist has been created."); return }
@@ -496,10 +454,8 @@ final class YouTubeKitTests: XCTestCase {
         try? await Task.sleep(nanoseconds: 2_000_000_000)
         
         let firstVideo = YTVideo(videoId: firstVideoToAddId)
-        let (allPlaylistResponse, allPlaylistsError) = await firstVideo.fetchAllPossibleHostPlaylists(youtubeModel: YTM)
-        
-        guard let allPlaylistResponse = allPlaylistResponse else { XCTFail(TEST_NAME + "Checking if allPlaylistResponse is defined (error: \(String(describing: allPlaylistsError)))."); return }
-        
+        let allPlaylistResponse = try await firstVideo.fetchAllPossibleHostPlaylists(youtubeModel: YTM)
+                
         guard let createdPlaylistResult = allPlaylistResponse.playlistsAndStatus.first(where: {$0.playlist.playlistId.contains(createdPlaylistId) || createdPlaylistId.contains($0.playlist.playlistId)} /* avoid VL prefix notation bug*/) else { XCTFail(TEST_NAME + "Checking if the created playlist is listed among the other playlists."); return }
         
         XCTAssert(createdPlaylistResult.isVideoPresentInside, TEST_NAME + "Checking if video is present inside the new playlist.")
@@ -510,10 +466,8 @@ final class YouTubeKitTests: XCTestCase {
         }
         
         // Video adding part
-        let (addVideoResponse, addVideoError) = await AddVideoToPlaylistResponse.sendRequest(youtubeModel: YTM, data: [.movingVideoId: secondVideoToAddId, .browseId: createdPlaylistId])
-        
-        guard let addVideoResponse = addVideoResponse else { XCTFail(TEST_NAME + "Checking if AddVideoToPlaylistResponse is defined (error: \(String(describing: addVideoError)))."); return }
-        
+        let addVideoResponse = try await AddVideoToPlaylistResponse.sendRequest(youtubeModel: YTM, data: [.movingVideoId: secondVideoToAddId, .browseId: createdPlaylistId])
+                
         guard !addVideoResponse.isDisconnected, addVideoResponse.success else { XCTFail(TEST_NAME + "Checking if cookies were defined and that the request was successful."); return }
         
         XCTAssertEqual(addVideoResponse.addedVideoId, secondVideoToAddId, TEST_NAME + "Checking if the video has been added.")
@@ -521,10 +475,8 @@ final class YouTubeKitTests: XCTestCase {
         XCTAssertEqual(addVideoResponse.playlistId, "VL" + createdPlaylistId, TEST_NAME + "Checking if the video has been added in the right playlist.")
         XCTAssertEqual(addVideoResponse.playlistCreatorId, playlistCreatorId, TEST_NAME + "Checking if the video has been added with the right account.")
         // Adding it a second time
-        let (addVideoResponse2, addVideoError2) = await AddVideoToPlaylistResponse.sendRequest(youtubeModel: YTM, data: [.movingVideoId: thirdVideoToAddId, .browseId: createdPlaylistId])
-        
-        guard let addVideoResponse2 = addVideoResponse2 else { XCTFail(TEST_NAME + "Checking if AddVideoToPlaylistResponse is defined (error: \(String(describing: addVideoError2)))."); return }
-        
+        let addVideoResponse2 = try await AddVideoToPlaylistResponse.sendRequest(youtubeModel: YTM, data: [.movingVideoId: thirdVideoToAddId, .browseId: createdPlaylistId])
+                
         guard !addVideoResponse2.isDisconnected, addVideoResponse2.success else { XCTFail(TEST_NAME + "Checking if cookies were defined and that the request was successful."); return }
         
         XCTAssertEqual(addVideoResponse2.addedVideoId, thirdVideoToAddId, TEST_NAME + "Checking if the video has been added.")
@@ -532,10 +484,8 @@ final class YouTubeKitTests: XCTestCase {
         XCTAssertEqual(addVideoResponse2.playlistId, "VL" + createdPlaylistId, TEST_NAME + "Checking if the video has been added in the right playlist.")
         XCTAssertEqual(addVideoResponse2.playlistCreatorId, playlistCreatorId, TEST_NAME + "Checking if the video has been added with the right account.")
         // Adding a third video
-        let (addVideoResponse3, addVideoError3) = await AddVideoToPlaylistResponse.sendRequest(youtubeModel: YTM, data: [.movingVideoId: secondVideoToAddId, .browseId: createdPlaylistId])
-        
-        guard let addVideoResponse3 = addVideoResponse3 else { XCTFail(TEST_NAME + "Checking if AddVideoToPlaylistResponse is defined (error: \(String(describing: addVideoError3)))."); return }
-        
+        let addVideoResponse3 = try await AddVideoToPlaylistResponse.sendRequest(youtubeModel: YTM, data: [.movingVideoId: secondVideoToAddId, .browseId: createdPlaylistId])
+                
         guard !addVideoResponse3.isDisconnected, addVideoResponse3.success else { XCTFail(TEST_NAME + "Checking if cookies were defined and that the request was successful."); return }
         
         XCTAssertEqual(addVideoResponse3.addedVideoId, secondVideoToAddId, TEST_NAME + "Checking if the video has been added.")
@@ -544,18 +494,14 @@ final class YouTubeKitTests: XCTestCase {
         XCTAssertEqual(addVideoResponse3.playlistCreatorId, playlistCreatorId, TEST_NAME + "Checking if the video has been added with the right account.")
         
         // Moving the last video to the third position
-        let (moveVideoResponse, moveVideoError) = await MoveVideoInPlaylistResponse.sendRequest(youtubeModel: YTM, data: [.movingVideoId: lastVideoIdInPlaylist, .videoBeforeId: secondVideoIdInPlaylist, .browseId: createdPlaylistId])
+        let moveVideoResponse = try await MoveVideoInPlaylistResponse.sendRequest(youtubeModel: YTM, data: [.movingVideoId: lastVideoIdInPlaylist, .videoBeforeId: secondVideoIdInPlaylist, .browseId: createdPlaylistId])
         
-        guard let moveVideoResponse = moveVideoResponse else { XCTFail(TEST_NAME + "Checking if MoveVideoInPlaylistResponse is defined (error: \(String(describing: moveVideoError)))."); return }
-
         guard !moveVideoResponse.isDisconnected, moveVideoResponse.success else { XCTFail(TEST_NAME + "Checking if cookies were defined and that the request was successful."); return }
         
         XCTAssertEqual(moveVideoResponse.playlistId, createdPlaylistId, TEST_NAME + "Checking if the video has been added in the right playlist.")
         // Moving the second video to the first position
-        let (moveVideoResponse2, moveVideoError2) = await MoveVideoInPlaylistResponse.sendRequest(youtubeModel: YTM, data: [.movingVideoId: secondVideoIdInPlaylist, .browseId: createdPlaylistId])
+        let moveVideoResponse2 = try await MoveVideoInPlaylistResponse.sendRequest(youtubeModel: YTM, data: [.movingVideoId: secondVideoIdInPlaylist, .browseId: createdPlaylistId])
         
-        guard let moveVideoResponse2 = moveVideoResponse2 else { XCTFail(TEST_NAME + "Checking if MoveVideoInPlaylistResponse is defined (error: \(String(describing: moveVideoError2)))."); return }
-
         guard !moveVideoResponse2.isDisconnected, moveVideoResponse2.success else { XCTFail(TEST_NAME + "Checking if cookies were defined and that the request was successful."); return }
         
         XCTAssertEqual(moveVideoResponse2.playlistId, createdPlaylistId, TEST_NAME + "Checking if the video has been added in the right playlist.")
@@ -578,25 +524,19 @@ final class YouTubeKitTests: XCTestCase {
         if !createdPlaylistId.hasPrefix("VL") { // We need to remove the VL in order to make the following requests
             createdPlaylistId = "VL" + createdPlaylistId
         }
-        let (finalPlaylist, finalPlaylistError) = await PlaylistInfosResponse.sendRequest(youtubeModel: YTM, data: [.browseId: createdPlaylistId], useCookies: true)
+        let finalPlaylist = try await PlaylistInfosResponse.sendRequest(youtubeModel: YTM, data: [.browseId: createdPlaylistId], useCookies: true)
         
-        guard let finalPlaylist = finalPlaylist else { XCTFail(TEST_NAME + "Checking if PlaylistInfosResponse is defined (error: \(String(describing: finalPlaylistError)))."); return }
-
         guard finalPlaylist.results.filter({$0 as? YTVideo != nil}).map({($0 as! YTVideo).videoId}) == [secondVideoToAddId, firstVideoToAddId, secondVideoToAddId, thirdVideoToAddId] else { XCTFail(TEST_NAME + "Checking if all the addings and moves were correctly executed."); return }
         
         // Removing part
         if createdPlaylistId.hasPrefix("VL") { // We need to remove the VL in order to make the following requests
             createdPlaylistId = String(createdPlaylistId.dropFirst(2))
         }
-        let (removeVideoResponse, removeVideoError) = await RemoveVideoFromPlaylistResponse.sendRequest(youtubeModel: YTM, data: [.movingVideoId: thirdVideoIdInPlaylist, .playlistEditToken: "CAFAAQ%3D%3D", .browseId: createdPlaylistId], useCookies: true) // playlistEditToken is hardcoded here, could lead to some error
-        
-        guard let removeVideoResponse = removeVideoResponse else { XCTFail(TEST_NAME + "Checking if RemoveVideoFromPlaylistResponse is defined (error: \(String(describing: removeVideoError)))."); return }
-        
+        let removeVideoResponse = try await RemoveVideoFromPlaylistResponse.sendRequest(youtubeModel: YTM, data: [.movingVideoId: thirdVideoIdInPlaylist, .playlistEditToken: "CAFAAQ%3D%3D", .browseId: createdPlaylistId], useCookies: true) // playlistEditToken is hardcoded here, could lead to some error
+                
         guard !removeVideoResponse.isDisconnected, removeVideoResponse.success else { XCTFail(TEST_NAME + "Checking if cookies were defined and that the request was successful."); return }
         
-        let (removeVideoResponse2, removeVideoError2) = await RemoveVideoByIdFromPlaylistResponse.sendRequest(youtubeModel: YTM, data: [.movingVideoId: secondVideoToAddId, .browseId: createdPlaylistId], useCookies: true)
-
-        guard let removeVideoResponse2 = removeVideoResponse2 else { XCTFail(TEST_NAME + "Checking if RemoveVideoByIdFromPlaylistResponse is defined (error: \(String(describing: removeVideoError2)))."); return }
+        let removeVideoResponse2 = try await RemoveVideoByIdFromPlaylistResponse.sendRequest(youtubeModel: YTM, data: [.movingVideoId: secondVideoToAddId, .browseId: createdPlaylistId], useCookies: true)
         
         guard !removeVideoResponse2.isDisconnected, removeVideoResponse2.success else { XCTFail(TEST_NAME + "Checking if cookies were defined and that the request was successful."); return }
         
@@ -604,10 +544,8 @@ final class YouTubeKitTests: XCTestCase {
         if !createdPlaylistId.hasPrefix("VL") { // We need to remove the VL in order to make the following requests
             createdPlaylistId = "VL" + createdPlaylistId
         }
-        let (finalPlaylist2, finalPlaylistError2) = await PlaylistInfosResponse.sendRequest(youtubeModel: YTM, data: [.browseId: createdPlaylistId], useCookies: true)
+        let finalPlaylist2 = try await PlaylistInfosResponse.sendRequest(youtubeModel: YTM, data: [.browseId: createdPlaylistId], useCookies: true)
         
-        guard let finalPlaylist2 = finalPlaylist2 else { XCTFail(TEST_NAME + "Checking if PlaylistInfosResponse is defined (error: \(String(describing: finalPlaylistError2)))."); return }
-
         guard finalPlaylist2.results.filter({$0 as? YTVideo != nil}).map({($0 as! YTVideo).videoId}) == [firstVideoToAddId] else { XCTFail(TEST_NAME + "Checking if all the removing were correctly executed."); return }
         
         // Deleting the playlist
@@ -615,42 +553,34 @@ final class YouTubeKitTests: XCTestCase {
         if createdPlaylistId.hasPrefix("VL") { // We need to remove the VL in order to make the following requests
             createdPlaylistId = String(createdPlaylistId.dropFirst(2))
         }
-        let (deletePlaylistResponse, deletePlaylistError) = await DeletePlaylistResponse.sendRequest(youtubeModel: YTM, data: [.browseId: createdPlaylistId])
+        let deletePlaylistResponse = try await DeletePlaylistResponse.sendRequest(youtubeModel: YTM, data: [.browseId: createdPlaylistId])
         
-        guard let deletePlaylistResponse = deletePlaylistResponse else { XCTFail(TEST_NAME + "Checking if y.sDeletePlaylistResponse is defined (error: \(String(describing: deletePlaylistError)))."); return }
-
         guard !deletePlaylistResponse.isDisconnected, deletePlaylistResponse.success else { XCTFail(TEST_NAME + "Checking if cookies were defined and that the request was successful."); return }
     }
     
-    func testHistoryResponse() async {
+    func testHistoryResponse() async throws {
         let TEST_NAME = "Test: testHistoryResponse() -> "
         guard cookies != "" else { return }
         YTM.cookies = cookies
         
-        let (historyResponse, historyError) = await HistoryResponse.sendRequest(youtubeModel: YTM, data: [:], useCookies: true)
-        
-        guard let historyResponse = historyResponse else { XCTFail(TEST_NAME + "Checking if historyResponse is defined (error: \(String(describing: historyError)))."); return }
-        
+        let historyResponse = try await HistoryResponse.sendRequest(youtubeModel: YTM, data: [:], useCookies: true)
+                
         XCTAssertNotNil(historyResponse.title, TEST_NAME + "Checking if historyResponse.title has been extracted.")
         XCTAssertNotEqual(historyResponse.videosAndTime.count, 0, TEST_NAME + "Checking if historyResponse.videosAndTime is not empty.")
         
         guard let firstVideoToken = historyResponse.videosAndTime.first?.videosArray.first?.suppressToken else { XCTFail(TEST_NAME + "Could not find a video with a suppressToken in the history"); return }
         
-        let deleteFromHistoryError = await historyResponse.removeVideo(withSuppressToken: firstVideoToken, youtubeModel: YTM)
-        
-        XCTAssertNil(deleteFromHistoryError, TEST_NAME + "Error while trying to delete video from history: \(String(describing: deleteFromHistoryError))")
+        try await historyResponse.removeVideo(withSuppressToken: firstVideoToken, youtubeModel: YTM)
     }
     
-    func testMoreVideoInfosResponse() async {
+    func testMoreVideoInfosResponse() async throws {
         let TEST_NAME = "Test: testMoreVideoInfosResponse() -> "
         YTM.cookies = cookies
 
         let video = YTVideo(videoId: "nVoMKVU1FAg")
 
-        let (moreVideoInfosResponse, moreVideoInfosError) = await video.fetchMoreInfos(youtubeModel: YTM, useCookies: true)
-        
-        guard var moreVideoInfosResponse = moreVideoInfosResponse else { XCTFail(TEST_NAME + "Checking if moreVideoInfosResponse is defined, error -> \(String(describing: moreVideoInfosError))"); return }
-        
+        var moreVideoInfosResponse = try await video.fetchMoreInfos(youtubeModel: YTM, useCookies: true)
+                
         if cookies != "" {
             XCTAssertNotNil(moreVideoInfosResponse.authenticatedInfos, TEST_NAME + "Checking if the authenticationData has been extracted.")
             XCTAssertNotNil(moreVideoInfosResponse.authenticatedInfos?.likeStatus, TEST_NAME + "Checking if the authenticationData.likeStatus has been extracted.")
@@ -669,11 +599,9 @@ final class YouTubeKitTests: XCTestCase {
         XCTAssertNotNil(moreVideoInfosResponse.viewsCount.shortViewsCount, TEST_NAME + "Checking if the viewsCount.shortViewsCount has been extracted.")
         
         /// Fetch the continuation of the recommendedVideos
-        let (recommendedVideosContinuationResponse, recommendedVideosContinuationError) = await moreVideoInfosResponse.getRecommendedVideosContination(youtubeModel: YTM)
-        
-        guard let recommendedVideosContinuationResponse = recommendedVideosContinuationResponse else { XCTFail(TEST_NAME + "Checking if recommendedVideosResponse is defined, error -> \(String(describing: recommendedVideosContinuationError))"); return }
-        
-        guard !(moreVideoInfosResponse.recommendedVideos.isEmpty && recommendedVideosContinuationResponse.results.isEmpty) else { XCTFail(TEST_NAME + "No recommanded videos in the first place nor with the continuationResponse, error -> \(String(describing: recommendedVideosContinuationError))"); return}
+        let recommendedVideosContinuationResponse = try await moreVideoInfosResponse.getRecommendedVideosContination(youtubeModel: YTM)
+                
+        guard !(moreVideoInfosResponse.recommendedVideos.isEmpty && recommendedVideosContinuationResponse.results.isEmpty) else { XCTFail(TEST_NAME + "No recommended videos in the first place nor with the continuationResponse."); return}
         
         XCTAssertNotEqual(recommendedVideosContinuationResponse.results.count, 0, TEST_NAME + "Checking if results for continuation have been extracted.")
         XCTAssertNotNil(recommendedVideosContinuationResponse.continuationToken, TEST_NAME + "Checking if continuationToken has been extracted.")
@@ -684,107 +612,97 @@ final class YouTubeKitTests: XCTestCase {
         XCTAssertEqual(moreVideoInfosResponse.recommendedVideosContinuationToken, recommendedVideosContinuationResponse.continuationToken, TEST_NAME + "Checking if the merge operation was successful (continuationToken overwriting).")
     }
     
-    func testLikeRequests() async {
+    func testLikeRequests() async throws {
         guard cookies != "" else { return }
         let TEST_NAME = "Test: testLikeRequests() -> "
         YTM.cookies = cookies
         
         let video = YTVideo(videoId: "JdFRjsEZrmU")
         
-        let likeStatus: MoreVideoInfosResponse.AuthenticatedData.LikeStatus? = await getCurrentLikeStatus()
+        let likeStatus: MoreVideoInfosResponse.AuthenticatedData.LikeStatus? = try await getCurrentLikeStatus()
         
         guard let likeStatus = likeStatus else { XCTFail(TEST_NAME + "Checking if likeStatus is defined"); return}
     
         switch likeStatus {
         case .liked:
-            await dislikeVideo()
-            try? await Task.sleep(nanoseconds: 1_000_000_000) // introduce some delay to avoid a block from YouTube.
-            await removelikeVideo()
-            try? await Task.sleep(nanoseconds: 1_000_000_000)
-            await likeVideo()
+            try await dislikeVideo()
+            try await Task.sleep(nanoseconds: 1_000_000_000) // introduce some delay to avoid a block from YouTube.
+            try await removelikeVideo()
+            try await Task.sleep(nanoseconds: 1_000_000_000)
+            try await likeVideo()
         case .disliked:
-            await removelikeVideo()
-            try? await Task.sleep(nanoseconds: 1_000_000_000)
-            await likeVideo()
-            try? await Task.sleep(nanoseconds: 1_000_000_000)
-            await dislikeVideo()
+            try await removelikeVideo()
+            try await Task.sleep(nanoseconds: 1_000_000_000)
+            try await likeVideo()
+            try await Task.sleep(nanoseconds: 1_000_000_000)
+            try await dislikeVideo()
         case .nothing:
-            await likeVideo()
-            try? await Task.sleep(nanoseconds: 1_000_000_000)
-            await dislikeVideo()
-            try? await Task.sleep(nanoseconds: 1_000_000_000)
-            await removelikeVideo()
+            try await likeVideo()
+            try await Task.sleep(nanoseconds: 1_000_000_000)
+            try await dislikeVideo()
+            try await Task.sleep(nanoseconds: 1_000_000_000)
+            try await removelikeVideo()
         }
         
-        func getCurrentLikeStatus() async -> MoreVideoInfosResponse.AuthenticatedData.LikeStatus? {
-            let (currentStatusResponse, currentStatusError) = await video.fetchMoreInfos(youtubeModel: YTM, useCookies: true)
-            
-            guard let currentStatusResponse = currentStatusResponse else { XCTFail(TEST_NAME + "Checking if currentStatusResponse is defined, error -> \(String(describing: currentStatusError))"); return nil}
-            
+        func getCurrentLikeStatus() async throws -> MoreVideoInfosResponse.AuthenticatedData.LikeStatus? {
+            let currentStatusResponse = try await video.fetchMoreInfos(youtubeModel: YTM, useCookies: true)
+                        
             return currentStatusResponse.authenticatedInfos?.likeStatus
         }
         
-        func dislikeVideo() async {
-            let dislikeVideoError = await video.dislikeVideo(youtubeModel: YTM)
-            
-            XCTAssertNil(dislikeVideoError, TEST_NAME + "Checking if dislikeVideoResponse is defined, error -> \(String(describing: dislikeVideoError))")
-                        
-            let localLikeStatus = await getCurrentLikeStatus()
+        func dislikeVideo() async throws {
+            try await video.dislikeVideo(youtubeModel: YTM)
+                                    
+            let localLikeStatus = try await getCurrentLikeStatus()
             guard localLikeStatus == .disliked else { XCTFail(TEST_NAME + "Checking if localLikeStatus is disliked"); return }
         }
         
-        func likeVideo() async {
-            let likeVideoError = await video.likeVideo(youtubeModel: YTM)
-            
-            XCTAssertNil(likeVideoError, TEST_NAME + "Checking if likeVideoResponse is defined, error -> \(String(describing: likeVideoError))")
-                        
-            let localLikeStatus = await getCurrentLikeStatus()
+        func likeVideo() async throws {
+            try await video.likeVideo(youtubeModel: YTM)
+                                    
+            let localLikeStatus = try await getCurrentLikeStatus()
             guard localLikeStatus == .liked else { XCTFail(TEST_NAME + "Checking if localLikeStatus is liked"); return }
         }
         
-        func removelikeVideo() async {
-            let removeLikeFromVideoError = await video.removeLikeFromVideo(youtubeModel: YTM)
-            XCTAssertNil(removeLikeFromVideoError, TEST_NAME + "Checking if removeLikeFromVideoResponse is defined, error -> \(String(describing: removeLikeFromVideoError))")
+        func removelikeVideo() async throws {
+            try await video.removeLikeFromVideo(youtubeModel: YTM)
                         
-            let localLikeStatus = await getCurrentLikeStatus()
+            let localLikeStatus = try await getCurrentLikeStatus()
             guard localLikeStatus == .nothing else { XCTFail(TEST_NAME + "Checking if localLikeStatus is nothing"); return }
         }
     }
     
-    func testSubscriptionRequests() async {
+    func testSubscriptionRequests() async throws {
         guard cookies != "" else { return }
         let TEST_NAME = "Test: testSubscriptionRequests() -> "
         YTM.cookies = cookies
         
         let video = YTVideo(videoId: "-K8nQk-iZzs")
         
-        let videoInfosResponse = await getSubscriptionStatus()
+        let videoInfosResponse = try await getSubscriptionStatus()
         guard let currentStatus = videoInfosResponse?.authenticatedInfos?.subscriptionStatus, let channel = videoInfosResponse?.channel else { XCTFail(TEST_NAME + "Checking if subscriptionStatus and channelId are defined."); return }
         
         if currentStatus {
-            await unsubscribeToChannel()
-            await subscribeToChannel()
+            try await unsubscribeToChannel()
+            try await subscribeToChannel()
         } else {
-            await subscribeToChannel()
-            await unsubscribeToChannel()
+            try await subscribeToChannel()
+            try await unsubscribeToChannel()
         }
         
-        func getSubscriptionStatus() async -> MoreVideoInfosResponse? {
-            let (videoResponse, videoError) = await video.fetchMoreInfos(youtubeModel: YTM, useCookies: true)
+        func getSubscriptionStatus() async throws -> MoreVideoInfosResponse? {
+            let videoResponse = try await video.fetchMoreInfos(youtubeModel: YTM, useCookies: true)
             
-            guard let videoResponse = videoResponse else { XCTFail(TEST_NAME + "Checking if videoResponse is defined, error -> \(String(describing: videoError))"); return nil }
             XCTAssertNotNil(videoResponse.authenticatedInfos, TEST_NAME + "Checking if request has been authenticated.")
             return videoResponse
         }
         
-        func subscribeToChannel() async {
-            let (channelError) = await channel.subscribe(youtubeModel: YTM)
-            XCTAssertNil(channelError, TEST_NAME + "Checking if channelError is nil, error -> \(String(describing: channelError))")
+        func subscribeToChannel() async throws {
+            try await channel.subscribe(youtubeModel: YTM)
         }
         
-        func unsubscribeToChannel() async {
-            let (channelError) = await channel.unsubscribe(youtubeModel: YTM)
-            XCTAssertNil(channelError, TEST_NAME + "Checking if channelError is nil, error -> \(String(describing: channelError))")
+        func unsubscribeToChannel() async throws {
+            try await channel.unsubscribe(youtubeModel: YTM)
         }
     }
 }

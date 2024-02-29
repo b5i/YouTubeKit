@@ -64,7 +64,7 @@ public protocol YouTubeVideo {
     func fetchStreamingInfos(
         youtubeModel: YouTubeModel,
         useCookies: Bool?,
-        infos: @escaping (VideoInfosResponse?, Error?) -> ()
+        infos: @escaping (Result<VideoInfosResponse, Error>) -> ()
     )
     
     @available(macOS 10.15, iOS 13.0, watchOS 6.0, tvOS 13.0, *)
@@ -76,7 +76,7 @@ public protocol YouTubeVideo {
     func fetchStreamingInfos(
         youtubeModel: YouTubeModel,
         useCookies: Bool?
-    ) async -> (VideoInfosResponse?, Error?)
+    ) async throws -> VideoInfosResponse
     
     /// Get more infos about a video, including an array of ``DownloadFormat``.
     /// - Parameters:
@@ -86,7 +86,7 @@ public protocol YouTubeVideo {
     func fetchStreamingInfosWithDownloadFormats(
         youtubeModel: YouTubeModel,
         useCookies: Bool?,
-        infos: @escaping (VideoInfosWithDownloadFormatsResponse?, Error?) -> ()
+        infos: @escaping (Result<VideoInfosWithDownloadFormatsResponse, Error>) -> ()
     )
     
     @available(macOS 10.15, iOS 13.0, watchOS 6.0, tvOS 13.0, *)
@@ -98,7 +98,7 @@ public protocol YouTubeVideo {
     func fetchStreamingInfosWithDownloadFormats(
         youtubeModel: YouTubeModel,
         useCookies: Bool?
-    ) async -> (VideoInfosWithDownloadFormatsResponse?, Error?)
+    ) async throws -> VideoInfosWithDownloadFormatsResponse
     
     /// Get more informations about a video (detailled description, chapters, recommended videos, etc...).
     ///
@@ -108,7 +108,7 @@ public protocol YouTubeVideo {
     func fetchMoreInfos(
         youtubeModel: YouTubeModel,
         useCookies: Bool?,
-        result: @escaping (MoreVideoInfosResponse?, Error?) -> ()
+        result: @escaping (Result<MoreVideoInfosResponse, Error>) -> ()
     )
     
     @available(macOS 10.15, iOS 13.0, watchOS 6.0, tvOS 13.0, *)
@@ -120,17 +120,17 @@ public protocol YouTubeVideo {
     func fetchMoreInfos(
         youtubeModel: YouTubeModel,
         useCookies: Bool?
-    ) async -> (MoreVideoInfosResponse?, Error?)
+    ) async throws -> MoreVideoInfosResponse
     
     /// Get all the user's playlists and if the video is already inside or not.
     func fetchAllPossibleHostPlaylists(
         youtubeModel: YouTubeModel,
-        result: @escaping (AllPossibleHostPlaylistsResponse?, Error?) -> Void
+        result: @escaping (Result<AllPossibleHostPlaylistsResponse, Error>) -> Void
     )
     
     /// Get all the user's playlists and if the video is already inside or not.
     @available(macOS 10.15, iOS 13.0, watchOS 6.0, tvOS 13.0, *)
-    func fetchAllPossibleHostPlaylists(youtubeModel: YouTubeModel) async -> (AllPossibleHostPlaylistsResponse?, Error?)
+    func fetchAllPossibleHostPlaylists(youtubeModel: YouTubeModel) async throws -> AllPossibleHostPlaylistsResponse
     
     /// Like the video.
     ///
@@ -144,7 +144,7 @@ public protocol YouTubeVideo {
     /// Like the video.
     ///
     /// Requires a ``YouTubeModel`` where ``YouTubeModel/cookies`` is defined.
-    func likeVideo(youtubeModel: YouTubeModel) async -> Error?
+    func likeVideo(youtubeModel: YouTubeModel) async throws
     
     /// Dislike the video.
     ///
@@ -158,7 +158,7 @@ public protocol YouTubeVideo {
     /// Dislike the video.
     ///
     /// Requires a ``YouTubeModel`` where ``YouTubeModel/cookies`` is defined.
-    func dislikeVideo(youtubeModel: YouTubeModel) async -> Error?
+    func dislikeVideo(youtubeModel: YouTubeModel) async throws
     
     /// Remove the like/dislike from the video.
     ///
@@ -172,5 +172,5 @@ public protocol YouTubeVideo {
     /// Remove the like/dislike from the video.
     ///
     /// Requires a ``YouTubeModel`` where ``YouTubeModel/cookies`` is defined.
-    func removeLikeFromVideo(youtubeModel: YouTubeModel) async -> Error?
+    func removeLikeFromVideo(youtubeModel: YouTubeModel) async throws
 }

@@ -11,7 +11,7 @@ public extension YouTubeVideo {
     func fetchStreamingInfosWithDownloadFormats(
         youtubeModel: YouTubeModel,
         useCookies: Bool? = nil,
-        infos: @escaping (VideoInfosWithDownloadFormatsResponse?, Error?) -> ()
+        infos: @escaping (Result<VideoInfosWithDownloadFormatsResponse, Error>) -> ()
     ) {
         VideoInfosWithDownloadFormatsResponse.sendRequest(
             youtubeModel: youtubeModel,
@@ -25,10 +25,10 @@ public extension YouTubeVideo {
     func fetchStreamingInfosWithDownloadFormats(
         youtubeModel: YouTubeModel,
         useCookies: Bool? = nil
-    ) async -> (VideoInfosWithDownloadFormatsResponse?, Error?) {
-        return await withCheckedContinuation({ (continuation: CheckedContinuation<(VideoInfosWithDownloadFormatsResponse?, Error?), Never>) in
-            fetchStreamingInfosWithDownloadFormats(youtubeModel: youtubeModel, useCookies: useCookies, infos: { infos, error in
-                continuation.resume(returning: (infos, error))
+    ) async throws -> VideoInfosWithDownloadFormatsResponse {
+        return try await withCheckedThrowingContinuation({ (continuation: CheckedContinuation<VideoInfosWithDownloadFormatsResponse, Error>) in
+            fetchStreamingInfosWithDownloadFormats(youtubeModel: youtubeModel, useCookies: useCookies, infos: { result in
+                continuation.resume(with: result)
             })
         })
     }

@@ -23,7 +23,7 @@ public protocol ResultsResponse: YouTubeResponse, ResultsContinuationResponse {
     func fetchContinuation(
         youtubeModel: YouTubeModel,
         useCookies: Bool?,
-        result: @escaping (Continuation?, Error?) -> Void
+        result: @escaping (Result<Continuation, Error>) -> Void
     )
     
     /// Fetch the continuation of the ``ResultsResponse``.
@@ -31,5 +31,5 @@ public protocol ResultsResponse: YouTubeResponse, ResultsContinuationResponse {
     func fetchContinuation(
         youtubeModel: YouTubeModel,
         useCookies: Bool?
-    ) async -> (Continuation?, Error?)
+    ) async throws -> Continuation
 }

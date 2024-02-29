@@ -12,7 +12,7 @@ public protocol AuthenticatedResponse: YouTubeResponse {
     static func sendRequest(
         youtubeModel: YouTubeModel,
         data: [HeadersList.AddQueryInfo.ContentTypes : String],
-        result: @escaping (Self?, Error?) -> ()
+        result: @escaping (Result<Self, Error>) -> ()
     )
 
     /// A function to call the request of the given YouTubeResponse. For more informations see ``YouTubeResponse/sendRequest(youtubeModel:data:useCookies:result:)-7p1m2``.
@@ -20,7 +20,7 @@ public protocol AuthenticatedResponse: YouTubeResponse {
     static func sendRequest(
         youtubeModel: YouTubeModel,
         data: [HeadersList.AddQueryInfo.ContentTypes : String]
-    ) async -> (Self?, Error?)
+    ) async throws -> Self
     
     /// Boolean indicating whether the response has a valid result or not (if it was disconnected then it couldn't end up with a valid response).
     var isDisconnected: Bool { get }
@@ -31,7 +31,7 @@ public extension AuthenticatedResponse {
     static func sendRequest(
         youtubeModel: YouTubeModel,
         data: [HeadersList.AddQueryInfo.ContentTypes : String],
-        result: @escaping (Self?, Error?) -> ()
+        result: @escaping (Result<Self, Error>) -> ()
     ) {
         if youtubeModel.cookies != "" && youtubeModel.cookies != "" {
             /// Call YouTubeModel's `sendRequest` function to have a more readable use.
@@ -42,7 +42,7 @@ public extension AuthenticatedResponse {
                 result: result
             )
         } else {
-            result(nil, "Authentification cookies not provided: youtubeModel.cookies = \(String(describing: youtubeModel.cookies))")
+            result(.failure("Authentification cookies not provided: youtubeModel.cookies = \(String(describing: youtubeModel.cookies))"))
         }
     }
     
@@ -50,15 +50,12 @@ public extension AuthenticatedResponse {
     static func sendRequest(
         youtubeModel: YouTubeModel,
         data: [HeadersList.AddQueryInfo.ContentTypes : String]
-    ) async -> (Self?, Error?) {
-        if youtubeModel.cookies != "" && youtubeModel.cookies != "A" {
-            return await withCheckedContinuation({ (continuation: CheckedContinuation<(Self?, Error?), Never>) in
-                sendRequest(youtubeModel: youtubeModel, data: data, useCookies: true, result: { result, error in
-                    continuation.resume(returning: (result, error))
-                })
+    ) async throws -> Self {
+        guard youtubeModel.cookies != "" && youtubeModel.cookies != "" else { throw "Authentification cookies not provided: youtubeModel.cookies = \(String(describing: youtubeModel.cookies))" }
+        return try await withCheckedThrowingContinuation({ (continuation: CheckedContinuation<Self, Error>) in
+            sendRequest(youtubeModel: youtubeModel, data: data, useCookies: true, result: { result in
+                continuation.resume(with: result)
             })
-        } else {
-            return (nil, "Authentification cookies not provided: youtubeModel.cookies = \(String(describing: youtubeModel.cookies))")
-        }
+        })
     }
 }

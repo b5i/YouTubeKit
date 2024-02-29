@@ -38,7 +38,7 @@ public protocol YouTubeChannel {
     func fetchInfos(
         youtubeModel: YouTubeModel,
         useCookies: Bool?,
-        result: @escaping (ChannelInfosResponse?, Error?) -> ()
+        result: @escaping (Result<ChannelInfosResponse, Error>) -> ()
     )
     
     @available(macOS 10.15, iOS 13.0, watchOS 6.0, tvOS 13.0, *)
@@ -50,5 +50,5 @@ public protocol YouTubeChannel {
     func fetchInfos(
         youtubeModel: YouTubeModel,
         useCookies: Bool?
-    ) async -> (ChannelInfosResponse?, Error?)
+    ) async throws -> ChannelInfosResponse
 }

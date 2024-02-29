@@ -12,17 +12,18 @@ public extension HistoryResponse {
     ///
     /// Requires a ``YouTubeModel`` where ``YouTubeModel/cookies`` is defined.
     func removeVideo(withSuppressToken suppressToken: String, youtubeModel: YouTubeModel, result: @escaping (Error?) -> Void) {
-        RemoveVideoFromHistroryResponse.sendRequest(youtubeModel: youtubeModel, data: [.movingVideoId: suppressToken], result: { (response: RemoveVideoFromHistroryResponse?, error: Error?) in
-            if let response = response {
+        RemoveVideoFromHistroryResponse.sendRequest(youtubeModel: youtubeModel, data: [.movingVideoId: suppressToken], result: { response in
+            switch response {
+            case .success(let response):
                 if response.isDisconnected {
-                    result("Could not connect account.")
+                    result("Failed to remove video from history because no account is connected.")
                 } else if response.success {
                     result(nil)
                 } else {
                     result("Removing video was not successful.")
                 }
-            } else {
-                result(error ?? "No error while trying to remove a video, weird...")
+            case .failure(let error):
+                result(error)
             }
         })
     }
@@ -31,10 +32,14 @@ public extension HistoryResponse {
     ///
     /// Requires a ``YouTubeModel`` where ``YouTubeModel/cookies`` is defined.
     @available(macOS 10.15, iOS 13.0, watchOS 6.0, tvOS 13.0, *)
-    func removeVideo(withSuppressToken suppressToken: String, youtubeModel: YouTubeModel) async -> Error? {
-        return await withCheckedContinuation({ (continuation: CheckedContinuation<Error?, Never>) in
+    func removeVideo(withSuppressToken suppressToken: String, youtubeModel: YouTubeModel) async throws {
+        return try await withCheckedThrowingContinuation({ (continuation: CheckedContinuation<Void, Error>) in
             removeVideo(withSuppressToken: suppressToken, youtubeModel: youtubeModel, result: { error in
-                continuation.resume(returning: error)
+                if let error = error {
+                    continuation.resume(throwing: error)
+                } else {
+                    continuation.resume()
+                }
             })
         })
     }

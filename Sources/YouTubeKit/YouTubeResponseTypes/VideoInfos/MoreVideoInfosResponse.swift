@@ -299,11 +299,11 @@ public struct MoreVideoInfosResponse: YouTubeResponse {
     /// - Parameter result: the closure to execute when the request is finished.
     ///
     /// - Note: using cookies with this request is generally not needed.
-    public func getRecommendedVideosContination(youtubeModel: YouTubeModel, result: @escaping (RecommendedVideosContinuation?, Error?) -> ()) {
+    public func getRecommendedVideosContination(youtubeModel: YouTubeModel, result: @escaping (Result<RecommendedVideosContinuation, Error>) -> ()) {
         if let recommendedVideosContinuationToken = recommendedVideosContinuationToken {
             RecommendedVideosContinuation.sendRequest(youtubeModel: youtubeModel, data: [.continuation: recommendedVideosContinuationToken], result: result)
         } else {
-            result(nil, "recommendedVideosContinuationToken of the MoreVideoInfosResponse is nil.")
+            result(.failure("recommendedVideosContinuationToken of the MoreVideoInfosResponse is nil."))
         }
     }
     
@@ -314,10 +314,10 @@ public struct MoreVideoInfosResponse: YouTubeResponse {
     ///
     /// - Note: using cookies with this request is generally not needed.
     @available(macOS 10.15, iOS 13.0, watchOS 6.0, tvOS 13.0, *)
-    public func getRecommendedVideosContination(youtubeModel: YouTubeModel) async -> (RecommendedVideosContinuation?, Error?) {
-        return await withCheckedContinuation({ (continuation: CheckedContinuation<(RecommendedVideosContinuation?, Error?), Never>) in
-            getRecommendedVideosContination(youtubeModel: youtubeModel, result: { result, error in
-                continuation.resume(returning: (result, error))
+    public func getRecommendedVideosContination(youtubeModel: YouTubeModel) async throws -> RecommendedVideosContinuation {
+        return try await withCheckedThrowingContinuation({ (continuation: CheckedContinuation<RecommendedVideosContinuation, Error>) in
+            getRecommendedVideosContination(youtubeModel: youtubeModel, result: { result in
+                continuation.resume(with: result)
             })
         })
     }

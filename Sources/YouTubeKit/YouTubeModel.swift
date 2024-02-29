@@ -82,12 +82,12 @@ public class YouTubeModel {
         responseType: ResponseType.Type,
         data: [HeadersList.AddQueryInfo.ContentTypes : String],
         useCookies: Bool? = nil,
-        result: @escaping (ResponseType?, Error?) -> ()
+        result: @escaping (Result<ResponseType, Error>) -> ()
     ) {
         /// Get request headers.
         var headers = self.getHeaders(forType: ResponseType.headersType)
         
-        guard !headers.isEmpty else { result(nil, "The headers from ID: \(ResponseType.headersType) are empty! (probably an error in the name or they are not added in YouTubeModel.shared.customHeadersFunctions)"); return}
+        guard !headers.isEmpty else { result(.failure("The headers from ID: \(ResponseType.headersType) are empty! (probably an error in the name or they are not added in YouTubeModel.shared.customHeadersFunctions)")); return}
         
         /// Check if it should append the cookies.
         if useCookies != false, ((useCookies ?? false) || alwaysUseCookies), cookies != "" {
@@ -111,10 +111,12 @@ public class YouTubeModel {
         let task = URLSession.shared.dataTask(with: request) { data, _, error in
             /// Check if the task worked and gave back data.
             if let data = data {
-                result(ResponseType.decodeData(data: data), error)
-            } else {
+                result(.success(ResponseType.decodeData(data: data)))
+            } else if let error = error {
                 /// Exectued if the data was nil so there was probably an error.
-                result(nil, error)
+                result(.failure(error))
+            } else {
+                result(.failure("Did not receive any error."))
             }
         }
         
