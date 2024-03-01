@@ -11,6 +11,8 @@ import Foundation
 public struct PlaylistInfosResponse: ResultsResponse {
     public static var headersType: HeaderTypes = .playlistHeaders
     
+    public static var parametersValidationList: ValidationList = [.browseId: .playlistIdWithVLPrefixValidator]
+    
     /// Channel(s) that own(s) the playlist.
     public var channel: [YTLittleChannelInfos] = []
     
@@ -143,6 +145,8 @@ public struct PlaylistInfosResponse: ResultsResponse {
     /// Struct representing the continuation ("load more videos" button)
     public struct Continuation: ResultsContinuationResponse {
         public static var headersType: HeaderTypes = .playlistContinuationHeaders
+        
+        public static var parametersValidationList: ValidationList = [.continuation: .existenceValidator]
         
         /// Continuation token used to fetch more videos, nil if there is no more videos to fetch.
         public var continuationToken: String?

@@ -51,6 +51,8 @@ Here is a list of the default requests supported by YouTubeKit, all the informat
 ## Make requests:
 Every possible request within YouTubeKit conforms to the protocol [YouTubeResponse](https://github.com/b5i/YouTubeKit/blob/c858d62d49946658df7c00f9380b04f3f78e32d0/Sources/YouTubeKit/YouTubeResponse.swift#L31), it contains a few useful methods: 
 - `static var headersType` is a static variable indicating the type of headers used to make the request, its documentation indicates which parameter to provide in order to make the request work.
+- `static var parametersValidationList` is a static variable indicating if further processing and validation should be done on the parameters of the request. It can be validating that a videoId has the right format or simply that a parameter is provided.
+- `static func validateRequest(data: inout RequestData) throws` is the method that will be called before sending the request over the internet. It will forward the errors given by the validators from `parametersValidationList` if there's some.
 - `static func decodeData(data: Data) -> Self` is a static method used to decode some Data and give back in instance of the `YouTubeResponse`, if the Data does not represent a proper response it will return an empty response (only nils and empty arrays).
 - `static func sendRequest()` is a static method that allows you to make request, by using async await system or closures. Its usage will be precised in the following tutorial.
 
@@ -179,6 +181,8 @@ We imagine that the JSON is of the form:
 /// Struct representing a getNameAndSurname response.
 public struct NameAndSurnameResponse: YouTubeResponse {
     public static var headersType: HeaderTypes = .customHeaders("myHeadersID") //<- the myHeadersID has to be the same as the one you defined in step 1!
+    
+    public static var parametersValidationList: ValidationList = [:] // we don't need any validators here as there's no parameters to provide.
     
     /// String representing a name.
     public var name: String = ""

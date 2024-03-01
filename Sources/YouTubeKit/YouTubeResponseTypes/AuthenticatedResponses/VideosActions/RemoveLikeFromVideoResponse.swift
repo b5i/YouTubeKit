@@ -10,6 +10,8 @@ import Foundation
 public struct RemoveLikeFromVideoResponse: AuthenticatedResponse {
     public static var headersType: HeaderTypes = .removeLikeStatusFromVideoHeaders
     
+    public static var parametersValidationList: ValidationList = [.query: .videoIdValidator]
+    
     public var isDisconnected: Bool = true
     
     public static func decodeData(data: Data) -> RemoveLikeFromVideoResponse {

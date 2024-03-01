@@ -8,39 +8,9 @@
 import Foundation
 
 public struct MoreVideoInfosResponse: YouTubeResponse {
-    // Init
-    public init(videoTitle: String? = nil,
-                viewsCount: (shortViewsCount: String?, fullViewsCount: String?) = (nil, nil),
-                timePosted: (postedDate: String?, relativePostedDate: String?) = (nil, nil),
-                channel: YTChannel? = nil,
-                videoDescription: [YouTubeDescriptionPart]? = nil,
-                teaserComment: (avatar: [YTThumbnail]?, teaserText: String?) = (nil, nil),
-                commentsContinuationToken: String? = nil,
-                commentsCount: String? = nil,
-                recommendedVideos: [any YTSearchResult] = [],
-                recommendedVideosContinuationToken: String? = nil,
-                chapters: [Chapter]? = nil,
-                likesCount: (defaultState: String?, likeButtonClickedNewValue: String?) = (nil, nil),
-                authenticatedInfos: AuthenticatedData? = nil) {
-            
-            self.videoTitle = videoTitle
-            self.viewsCount = viewsCount
-            self.timePosted = timePosted
-            self.channel = channel
-            self.videoDescription = videoDescription
-            self.teaserComment = teaserComment
-            self.commentsContinuationToken = commentsContinuationToken
-            self.commentsCount = commentsCount
-            self.recommendedVideos = recommendedVideos
-            self.recommendedVideosContinuationToken = recommendedVideosContinuationToken
-            self.chapters = chapters
-            self.likesCount = likesCount
-            self.authenticatedInfos = authenticatedInfos
-        }
-    
-    // The Rest
-    
     public static var headersType: HeaderTypes = .moreVideoInfosHeaders
+    
+    public static var parametersValidationList: ValidationList = [.query: .videoIdValidator]
     
     /// Title of the video.
     public var videoTitle: String?
@@ -99,6 +69,35 @@ public struct MoreVideoInfosResponse: YouTubeResponse {
     
     /// Data that is normally present if authentication cookies when the request was made.
     public var authenticatedInfos: AuthenticatedData?
+    
+    public init(videoTitle: String? = nil,
+                viewsCount: (shortViewsCount: String?, fullViewsCount: String?) = (nil, nil),
+                timePosted: (postedDate: String?, relativePostedDate: String?) = (nil, nil),
+                channel: YTChannel? = nil,
+                videoDescription: [YouTubeDescriptionPart]? = nil,
+                teaserComment: (avatar: [YTThumbnail]?, teaserText: String?) = (nil, nil),
+                commentsContinuationToken: String? = nil,
+                commentsCount: String? = nil,
+                recommendedVideos: [any YTSearchResult] = [],
+                recommendedVideosContinuationToken: String? = nil,
+                chapters: [Chapter]? = nil,
+                likesCount: (defaultState: String?, likeButtonClickedNewValue: String?) = (nil, nil),
+                authenticatedInfos: AuthenticatedData? = nil) {
+        
+        self.videoTitle = videoTitle
+        self.viewsCount = viewsCount
+        self.timePosted = timePosted
+        self.channel = channel
+        self.videoDescription = videoDescription
+        self.teaserComment = teaserComment
+        self.commentsContinuationToken = commentsContinuationToken
+        self.commentsCount = commentsCount
+        self.recommendedVideos = recommendedVideos
+        self.recommendedVideosContinuationToken = recommendedVideosContinuationToken
+        self.chapters = chapters
+        self.likesCount = likesCount
+        self.authenticatedInfos = authenticatedInfos
+    }
     
     public static func decodeData(data: Data) -> MoreVideoInfosResponse {
         var toReturn = MoreVideoInfosResponse()
@@ -326,6 +325,8 @@ public struct MoreVideoInfosResponse: YouTubeResponse {
     /// Struct representing the continuation of the recommended videos of the ``MoreVideoInfosResponse``.
     public struct RecommendedVideosContinuation: ResultsContinuationResponse {
         public static var headersType: HeaderTypes = .fetchMoreRecommendedVideosHeaders
+        
+        public static var parametersValidationList: ValidationList = [.continuation: .existenceValidator]
         
         public var continuationToken: String?
         

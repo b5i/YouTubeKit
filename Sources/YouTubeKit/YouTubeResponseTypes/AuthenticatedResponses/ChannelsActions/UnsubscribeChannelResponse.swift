@@ -10,6 +10,8 @@ import Foundation
 public struct UnsubscribeChannelResponse: AuthenticatedResponse {
     public static var headersType: HeaderTypes = .unsubscribeFromChannelHeaders
     
+    public static var parametersValidationList: ValidationList = [.browseId: .channelIdValidator]
+    
     public var isDisconnected: Bool = true
     
     /// Boolean indicating whether the append action was successful.

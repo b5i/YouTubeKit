@@ -10,6 +10,8 @@ import Foundation
 public struct AddVideoToPlaylistResponse: AuthenticatedResponse {
     public static var headersType: HeaderTypes = .addVideoToPlaylistHeaders
     
+    public static var parametersValidationList: ValidationList = [.browseId: .playlistIdWithoutVLPrefixValidator, .movingVideoId: .videoIdValidator]
+    
     public var isDisconnected: Bool = true
     
     /// Boolean indicating whether the append action was successful.

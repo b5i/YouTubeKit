@@ -10,6 +10,8 @@ import Foundation
 public struct CreatePlaylistResponse: AuthenticatedResponse {
     public static var headersType: HeaderTypes = .createPlaylistHeaders
     
+    public static var parametersValidationList: ValidationList = [.query: .existenceValidator, .params: .privacyValidator, .movingVideoId: .videoIdValidator]
+    
     public var isDisconnected: Bool = true
     
     /// String representing the new playlist's id.

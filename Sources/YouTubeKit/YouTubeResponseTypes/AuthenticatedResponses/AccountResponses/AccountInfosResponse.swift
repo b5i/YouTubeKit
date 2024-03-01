@@ -10,6 +10,8 @@ import Foundation
 public struct AccountInfosResponse: AuthenticatedResponse {
     public static var headersType: HeaderTypes = .userAccountHeaders
     
+    public static var parametersValidationList: ValidationList = [:]
+    
     public var isDisconnected: Bool = true
     
     /// The name of the account.

@@ -11,6 +11,8 @@ import Foundation
 public struct SearchResponse: ResultsResponse {
     public static var headersType: HeaderTypes = .search
     
+    public static var parametersValidationList: ValidationList = [.query: .existenceValidator]
+    
     /// String token that will be useful in case of a search continuation request ("load more" button).
     public var continuationToken: String?
     
@@ -102,6 +104,8 @@ public struct SearchResponse: ResultsResponse {
         
         public static var headersType: HeaderTypes = .restrictedSearch
         
+        public static var parametersValidationList: ValidationList = [.query: .existenceValidator]
+        
         /// String token that will be useful in case of a search continuation request ("load more" button).
         public var continuationToken: String?
         
@@ -152,6 +156,8 @@ public struct SearchResponse: ResultsResponse {
     /// ```
     public struct Continuation: ResultsContinuationResponse {
         public static var headersType: HeaderTypes = .searchContinuationHeaders
+        
+        public static var parametersValidationList: ValidationList = [.continuation: .existenceValidator]
         
         /// String token that will be useful in case of a search continuation request ("load more" button).
         public var continuationToken: String? = nil

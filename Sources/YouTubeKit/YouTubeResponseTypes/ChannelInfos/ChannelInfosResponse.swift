@@ -10,6 +10,8 @@ import Foundation
 public struct ChannelInfosResponse: YouTubeResponse {
     public static var headersType: HeaderTypes = .channelHeaders
     
+    public static var parametersValidationList: ValidationList = [.browseId: .channelIdValidator]
+    
     /// Array of thumbnails representing the avatar of the channel (the image in the round on YouTube's website).
     ///
     /// Usually sorted by resolution, from low to high.
@@ -351,8 +353,12 @@ public struct ChannelInfosResponse: YouTubeResponse {
     
     /// Struct representing the continuation of a certain ``ChannelContent``.
     public struct ContentContinuation<T: ChannelContent>: YouTubeResponse {
-        static public var headersType: HeaderTypes {
+        public static var headersType: HeaderTypes {
             return .channelContinuationHeaders
+        }
+        
+        public static var parametersValidationList: ValidationList {
+            return [.continuation: .existenceValidator]
         }
         
         /// Content of the continuation.

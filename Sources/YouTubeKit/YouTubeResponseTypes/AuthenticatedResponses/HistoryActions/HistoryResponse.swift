@@ -13,6 +13,8 @@ import Foundation
 public struct HistoryResponse: AuthenticatedResponse {
     public static var headersType: HeaderTypes = .historyHeaders
     
+    public static var parametersValidationList: ValidationList = [:]
+    
     /// ID of the playlist.
     public static var playlistId: String = "VLFEhistory"
     
@@ -68,6 +70,8 @@ public struct HistoryResponse: AuthenticatedResponse {
     /// Struct representing the continuation ("load more videos" button)
     public struct Continuation: YouTubeResponse {
         public static var headersType: HeaderTypes = .playlistContinuationHeaders
+        
+        public static var parametersValidationList: ValidationList = [.continuation: .existenceValidator]
         
         /// Continuation token used to fetch more videos, nil if there is no more videos to fetch.
         public var continuationToken: String?

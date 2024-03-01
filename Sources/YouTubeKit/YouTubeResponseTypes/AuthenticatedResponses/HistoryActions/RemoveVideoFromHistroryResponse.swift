@@ -10,6 +10,8 @@ import Foundation
 public struct RemoveVideoFromHistroryResponse: AuthenticatedResponse {
     public static var headersType: HeaderTypes = .deleteVideoFromHistory
     
+    public static var parametersValidationList: ValidationList = [.movingVideoId: .existenceValidator]
+    
     public var isDisconnected: Bool = true
     
     /// Success of the deletion operation.

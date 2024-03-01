@@ -10,6 +10,8 @@ import Foundation
 public struct DeletePlaylistResponse: AuthenticatedResponse {
     public static var headersType: HeaderTypes = .deletePlaylistHeaders
     
+    public static var parametersValidationList: ValidationList = [.browseId: .playlistIdWithoutVLPrefixValidator]
+    
     public var isDisconnected: Bool = true
     
     /// Boolean indicating whether the delete action was successful.

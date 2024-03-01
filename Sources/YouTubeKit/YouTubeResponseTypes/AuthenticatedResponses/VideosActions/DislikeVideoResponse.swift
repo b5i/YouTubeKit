@@ -10,6 +10,8 @@ import Foundation
 public struct DislikeVideoResponse: AuthenticatedResponse {
     public static var headersType: HeaderTypes = .dislikeVideoHeaders
     
+    public static var parametersValidationList: ValidationList = [.query: .videoIdValidator]
+    
     public var isDisconnected: Bool = true
     
     public static func decodeData(data: Data) -> DislikeVideoResponse {

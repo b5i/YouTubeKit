@@ -89,7 +89,7 @@ public enum HeaderTypes: Codable {
     /// Remove video from playlist.
     /// - Parameter movingVideoId: The videoIdInPlaylist that is removed.
     /// - Parameter playlistEditToken: The playlist's removal action token.
-    /// - Parameter browseId: The playlist's id, should be taken from ``YTPlaylist/playlistId``, make sure that it **has** "VL" as prefix.
+    /// - Parameter browseId: The playlist's id, should be taken from ``YTPlaylist/playlistId``, make sure that it **doesn't** have "VL" as prefix.
     ///
     /// - Warning: For the attributes that require a "videoIdInPlaylist", you should take the id of the video in ``PlaylistInfosResponse/videoIdsInPlaylist`` and not the default videoId.
     case removeVideoFromPlaylistHeaders
@@ -112,7 +112,7 @@ public enum HeaderTypes: Codable {
     case historyHeaders
     
     /// Delete a video from the history of the account.
-    /// - Parameter browseId: The videos's suppress token, should be taken from ``HistoryResponse/videosAndTime``'s suppressToken property.
+    /// - Parameter movingVideoId: The videos's suppress token, should be taken from ``HistoryResponse/videosAndTime``'s suppressToken property.
     case deleteVideoFromHistory
     
     /// Get more infos about a video (comment, recommanded videos, etc...).

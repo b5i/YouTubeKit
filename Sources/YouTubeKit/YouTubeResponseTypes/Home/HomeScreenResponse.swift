@@ -10,6 +10,8 @@ import Foundation
 /// Struct representing the request/response of the main YouTube webpage.
 public struct HomeScreenResponse: ResultsResponse {
     public static var headersType: HeaderTypes = .home
+    
+    public static var parametersValidationList: ValidationList = [:]
         
     /// Continuation token used to fetch more videos, nil if there is no more videos to fetch.
     ///
@@ -51,6 +53,8 @@ public struct HomeScreenResponse: ResultsResponse {
     /// Struct representing the continuation ("load more videos" button)
     public struct Continuation: ResultsContinuationResponse {
         public static var headersType: HeaderTypes = .homeVideosContinuationHeader
+        
+        public static var parametersValidationList: ValidationList = [.continuation: .existenceValidator, .visitorData: .existenceValidator]
                 
         /// Continuation token used to fetch more videos, nil if there is no more videos to fetch.
         ///

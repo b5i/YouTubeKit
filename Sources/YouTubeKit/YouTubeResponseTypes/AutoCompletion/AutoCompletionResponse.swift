@@ -13,6 +13,8 @@ import Foundation
 public struct AutoCompletionResponse: YouTubeResponse {
     public static var headersType: HeaderTypes = .autoCompletion
     
+    public static var parametersValidationList: ValidationList = [.query: .existenceValidator]
+    
     /// Text query used to get the search suggestions.
     public var initialQuery: String = ""
     

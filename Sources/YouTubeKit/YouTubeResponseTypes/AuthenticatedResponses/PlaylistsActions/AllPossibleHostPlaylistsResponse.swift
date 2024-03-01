@@ -10,6 +10,8 @@ import Foundation
 public struct AllPossibleHostPlaylistsResponse: AuthenticatedResponse {
     public static var headersType: HeaderTypes = .usersAllPlaylistsHeaders
     
+    public static var parametersValidationList: ValidationList = [.browseId: .videoIdValidator]
+    
     public var isDisconnected: Bool = true
     
     public var playlistsAndStatus: [(playlist: YTPlaylist, isVideoPresentInside: Bool)] = []

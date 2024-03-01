@@ -22,6 +22,8 @@ import JavaScriptCore
 public struct VideoInfosWithDownloadFormatsResponse: YouTubeResponse {
     public static var headersType: HeaderTypes = .videoInfosWithDownloadFormats
     
+    public static var parametersValidationList: ValidationList = [.query: .videoIdValidator]
+    
     /// Array of formats used to download the video, they usually contain both audio and video data and the download speed is higher than the ``VideoInfosWithDownloadFormatsResponse/downloadFormats``.
     public var defaultFormats: [any DownloadFormat]
     

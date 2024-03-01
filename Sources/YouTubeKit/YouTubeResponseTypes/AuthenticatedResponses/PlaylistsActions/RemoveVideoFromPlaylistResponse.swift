@@ -10,6 +10,8 @@ import Foundation
 public struct RemoveVideoFromPlaylistResponse: AuthenticatedResponse {
     public static var headersType: HeaderTypes = .removeVideoFromPlaylistHeaders
     
+    public static var parametersValidationList: ValidationList = [.movingVideoId: .existenceValidator, .playlistEditToken: .existenceValidator, .browseId: .playlistIdWithoutVLPrefixValidator]
+    
     public var isDisconnected: Bool = true
     
     /// Boolean indicating whether the remove action was successful.

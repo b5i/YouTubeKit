@@ -84,6 +84,8 @@ public class YouTubeModel {
         useCookies: Bool? = nil,
         result: @escaping (Result<ResponseType, Error>) -> ()
     ) {
+        var data = data // make them mutable
+        
         /// Get request headers.
         var headers = self.getHeaders(forType: ResponseType.headersType)
         
@@ -96,32 +98,39 @@ public class YouTubeModel {
             } else {
                 headers.headers.append(HeadersList.Header(name: "Cookie", content: cookies))
             }
-            #if canImport(CommonCrypto)
+#if canImport(CommonCrypto)
             headers.headers.append(HeadersList.Header(name: "Authorization", content: generateSAPISIDHASHForCookies(cookies)))
-            #endif
+#endif
         }
         
-        /// Create request
-        let request = HeadersList.setHeadersAgentFor(
-            content: headers,
-            data: data
-        )
-        
-        /// Create task with the request
-        let task = URLSession.shared.dataTask(with: request) { data, _, error in
-            /// Check if the task worked and gave back data.
-            if let data = data {
-                result(.success(ResponseType.decodeData(data: data)))
-            } else if let error = error {
-                /// Exectued if the data was nil so there was probably an error.
-                result(.failure(error))
-            } else {
-                result(.failure("Did not receive any error."))
+        do {
+            try ResponseType.validateRequest(data: &data)
+            
+            
+            /// Create request
+            let request = HeadersList.setHeadersAgentFor(
+                content: headers,
+                data: data
+            )
+            
+            /// Create task with the request
+            let task = URLSession.shared.dataTask(with: request) { data, _, error in
+                /// Check if the task worked and gave back data.
+                if let data = data {
+                    result(.success(ResponseType.decodeData(data: data)))
+                } else if let error = error {
+                    /// Exectued if the data was nil so there was probably an error.
+                    result(.failure(error))
+                } else {
+                    result(.failure("Did not receive any error."))
+                }
             }
+            
+            /// Start it
+            task.resume()
+        } catch {
+            result(.failure(error))
         }
-        
-        /// Start it
-        task.resume()
     }
     
     /// Custom headers that will be defined by the following methods.
