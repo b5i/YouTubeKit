@@ -10,7 +10,7 @@ import Foundation
 import FoundationNetworking
 #endif
 
-/// Main structure used to define headers, and convert them to a valid ``/Foundation/URLRequest``
+/// Main structure used to define headers, and convert them to a valid `URLRequest`.
 public struct HeadersList: Codable {
     
     public init(isEmpty: Bool = false, url: URL, method: HTTPMethod, headers: [Header], addQueryAfterParts: [AddQueryInfo]? = nil, httpBody: [String]? = nil, parameters: [ParameterToAdd]? = nil) {
@@ -163,11 +163,11 @@ public struct HeadersList: Codable {
         }
     }
     
-    /// Creates an instance of ``URLRequest`` with given headers and parameters.
+    /// Creates an instance of `URLRequest` with given headers and parameters.
     /// - Parameters:
     ///   - content: List of headers and other informations in order to make the request.
     ///   - data: a dictionnary of possible data to add in the request's body. Is keyed with ``AddQueryInfo/ContentTypes``.
-    /// - Returns: An ``URLRequest``built with the provided parameters and headers.
+    /// - Returns: An `URLRequest`built with the provided parameters and headers.
     public static func setHeadersAgentFor(
         content: HeadersList,
         data: [AddQueryInfo.ContentTypes : String]

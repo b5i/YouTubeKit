@@ -7,7 +7,7 @@
 
 import Foundation
 
-/// A struct representing the error returned when calling ``YouTubeResponse/validateRequest(data:)-45nym``
+/// A struct representing the error returned when calling ``YouTubeResponse/validateRequest(data:)``
 public struct BadRequestDataError: Error {
     /// An array of validation errors.
     public let parametersValidatorErrors: [ParameterValidator.TypedValidationError]

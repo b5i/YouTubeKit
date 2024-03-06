@@ -90,19 +90,19 @@ public struct YTVideo: YTSearchResult, YouTubeVideo, Codable {
     
     /// Channel informations.
     ///
-    /// Possibly not defined when reading in ``YTSearchResultType/Playlist-swift.struct/frontVideos`` properties.
+    /// Possibly not defined when reading in ``YTPlaylist/frontVideos`` properties.
     public var channel: YTLittleChannelInfos?
     
     /// Count of views of the video, in a shortened string.
     ///
-    /// Possibly not defined when reading in ``YTSearchResultType/Playlist-swift.struct/frontVideos`` properties.
+    /// Possibly not defined when reading in ``YTPlaylist/frontVideos`` properties.
     public var viewCount: String?
     
     /// String representing the moment when the video was posted.
     ///
     /// Usually like `posted 3 months ago`.
     ///
-    /// Possibly not defined when reading in ``YTSearchResultType/Playlist-swift.struct/frontVideos`` properties.
+    /// Possibly not defined when reading in ``YTPlaylist/frontVideos`` properties.
     public var timePosted: String?
     
     /// String representing the duration of the video.
@@ -114,7 +114,7 @@ public struct YTVideo: YTSearchResult, YouTubeVideo, Codable {
     ///
     /// Usually sorted by resolution, from low to high.
     ///
-    /// Possibly not defined when reading in ``YTSearchResultType/Playlist-swift.struct/frontVideos`` properties.
+    /// Possibly not defined when reading in ``YTPlaylist/frontVideos`` properties.
     public var thumbnails: [YTThumbnail] = []
     
     ///Not necessary here because of prepareJSON() method

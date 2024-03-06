@@ -23,9 +23,10 @@ public struct ParameterValidator {
     
     /// Combine this validator with another, if the two affect the final parameter, the validator from when this method is called will be called first.
     public func combine(with otherValidator: ParameterValidator) -> ParameterValidator {
-        return ParameterValidator(needExistence: otherValidator.needExistence || self.needExistence, validator: { parameter in
+        return ParameterValidator(needExistence: self.needExistence /* we don't do an OR operation with the other validator as the current one could introduce a default value for nil values */, validator: { parameter in
             switch self.handler(parameter) {
             case .success(let result):
+                guard otherValidator.needExistence && result == nil else { return .failure(ValidationError(reason: "Nil value.", validatorFailedNameDescriptor: "Combination of \(String(describing: self)) and \(String(describing: otherValidator))")) }
                 return otherValidator.handler(parameter)
             case .failure(let error):
                 return .failure(error)

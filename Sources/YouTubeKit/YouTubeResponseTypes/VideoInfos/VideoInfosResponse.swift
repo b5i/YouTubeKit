@@ -64,7 +64,7 @@ public struct VideoInfosResponse: YouTubeResponse {
     public var videoId: String?
     
     
-    /// Date when the video's main HLS (``VideoInfosResponse/VideoInfos-swift.struct/url``) and download formats expire.
+    /// Date when the video's main HLS (``VideoInfosResponse/streamingURL``) and download formats expire.
     public var videoURLsExpireAt: Date?
     
     /// Count of view of the video, usually an integer in the string.

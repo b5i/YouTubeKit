@@ -61,6 +61,167 @@ final class YouTubeKitTests: XCTestCase {
         }
     }
     
+    func testLogger() async throws {
+        let TEST_NAME = "Test: testLogger() -> "
+        class Logger: RequestsLogger {
+            var logs: [YouTubeKit.RequestLog] = []
+            
+            var isLogging: Bool = false
+        }
+        
+        let logger = Logger()
+        
+        YTM.logger = logger
+        
+        struct ModulableResponse: YouTubeResponse {
+            static var headersType: YouTubeKit.HeaderTypes = .home // random headers, the request's data won't be checked.
+            
+            static var parametersValidationList: ValidationList = [.browseId: .existenceValidator]
+            
+            static func decodeData(data: Data) -> ModulableResponse {
+                return ModulableResponse()
+            }
+        }
+        
+        let result1 = try? await ModulableResponse.sendRequest(youtubeModel: YTM, data: [:]) // should be nil as `browseId` has not been set
+        XCTAssertNil(result1, TEST_NAME + "result1 should be nil")
+        XCTAssertEqual(logger.logs.count, 0, TEST_NAME + "the logger shouldn't have any result in it")
+        
+        logger.startLogging()
+        
+        let result2 = try? await ModulableResponse.sendRequest(youtubeModel: YTM, data: [.browseId: ""]) // shouldn't be nil as `browseId` is set
+        XCTAssertNotNil(result2, TEST_NAME + "result2 should not be nil")
+        XCTAssertEqual(logger.logs.count, 1, TEST_NAME + "the logger should only have result2 in it")
+        
+        let result3 = try? await ModulableResponse.sendRequest(youtubeModel: YTM, data: [:]) // should be nil as `browseId` has not been set
+        XCTAssertNil(result3, TEST_NAME + "result3 should be nil")
+        XCTAssertEqual(logger.logs.count, 2, TEST_NAME + "the logger should contain exactly 2 logs")
+        
+        logger.stopLogging()
+        
+        let result4 = try? await ModulableResponse.sendRequest(youtubeModel: YTM, data: [.browseId: ""]) // shouldn't be nil as `browseId` is set
+        XCTAssertNotNil(result4, TEST_NAME + "result should not be nil")
+        XCTAssertEqual(logger.logs.count, 2, TEST_NAME + "the logger should contain exactly 2 logs")
+        
+        YTM.logger = nil
+    }
+    
+    func testDefaultValidators() {
+        let TEST_NAME = "Test: testHeadersToRequest() -> "
+        
+        func testVideoIdValidator() {
+            // an array of potential video ids and a boolean indicating if they should pass the validator's test or not
+            let videoIdsAndValidity: [(String?, Bool)] = [(nil, false), ("", false), ("dfnidf", false), ("3ryID_SwU5E", true), ("peIBCNTY8hA", true), ("OlWdMCVtKJw", true), ("OlWdMCVtKJwe3r3r", false)]
+
+            for (videoId, expectedResult) in videoIdsAndValidity {
+                switch ParameterValidator.videoIdValidator.handler(videoId) {
+                case .success(_):
+                    if !expectedResult {
+                        XCTFail(TEST_NAME + "videoId: \(String(describing: videoId)) has been marked as valid but is actually invalid.")
+                    }
+                case .failure(let error):
+                    if expectedResult {
+                        XCTFail(TEST_NAME + "videoId: \(String(describing: videoId)) has been marked as invalid but actually valid, reason: \(error.localizedDescription)")
+                    }
+                }
+            }
+        }
+        
+        func testChannelIdValidator() {
+            // an array of potential channel ids and a boolean indicating if they should pass the validator's test or not
+            let channelIdsAndValidity: [(String?, Bool)] = [(nil, false), ("", false), ("dfnidf", false), ("UCX6OQ3DkcsbYNE6H8uQQuVA", true), ("peIBCNTY8hA", false), ("UCX6OQ3DkcsbYNE6H8uQQuVAgrigrnirginr", false)]
+
+            for (channelId, expectedResult) in channelIdsAndValidity {
+                switch ParameterValidator.channelIdValidator.handler(channelId) {
+                case .success(_):
+                    if !expectedResult {
+                        XCTFail(TEST_NAME + "channelId: \(String(describing: channelId)) has been marked as valid but is actually invalid.")
+                    }
+                case .failure(let error):
+                    if expectedResult {
+                        XCTFail(TEST_NAME + "channelId: \(String(describing: channelId)) has been marked as invalid but actually valid, reason: \(error.localizedDescription)")
+                    }
+                }
+            }
+        }
+        
+        func testPlaylistIdWithVLValidator() {
+            switch ParameterValidator.playlistIdWithVLPrefixValidator.handler("...") {
+            case .success(let result):
+                if result?.hasPrefix("VL") == false {
+                    XCTFail(TEST_NAME + "Playlist id not starting with VL shouldn't pass the playlistIdWithVLPrefixValidator test without adding the prefix but got: \(String(describing: result))")
+                }
+            case .failure(_):
+                break
+            }
+            
+            switch ParameterValidator.playlistIdWithVLPrefixValidator.handler("VL...") {
+            case .success(_):
+                break
+            case .failure(let error):
+                XCTFail(TEST_NAME + "Playlist id starting with VL should pass the playlistIdWithVLPrefixValidator test but got: \(error.localizedDescription)")
+            }
+        }
+        
+        func testPlaylistIdWithoutVLValidator() {
+            switch ParameterValidator.playlistIdWithoutVLPrefixValidator.handler("VL...") {
+            case .success(let result):
+                if result?.hasPrefix("VL") == true {
+                    XCTFail(TEST_NAME + "Playlist id starting with VL shouldn't pass the playlistIdWithoutVLPrefixValidator test without removing the prefix but got: \(String(describing: result))")
+                }
+            case .failure(_):
+                break
+            }
+            
+            switch ParameterValidator.playlistIdWithoutVLPrefixValidator.handler("...") {
+            case .success(_):
+                break
+            case .failure(let error):
+                XCTFail(TEST_NAME + "Playlist id not starting with VL should pass the playlistIdWithoutVLPrefixValidator test but got: \(error.localizedDescription)")
+            }
+        }
+        
+        func testPrivacyValidator() {
+            for privacy in YTPrivacy.allCases.compactMap({$0.rawValue}) {
+                switch ParameterValidator.privacyValidator.handler(privacy) {
+                case .success(_):
+                    break
+                case .failure(let error):
+                    XCTFail(TEST_NAME + "Base privacy type: \(privacy) should pass the privacy test but got: \(error.localizedDescription)")
+                }
+            }
+            
+            switch ParameterValidator.privacyValidator.handler("Definitely not a valid privacy type") {
+            case .success(let result):
+                XCTFail(TEST_NAME + "Non-valid privacy type: \"Definitely not a valid privacy type\" shouldn't pass the privacy test but got: \(String(describing: result))")
+            case .failure(_):
+                break
+            }
+        }
+        
+        func testExistenceValidator() {
+            switch ParameterValidator.existenceValidator.handler(nil) {
+            case .success(let result):
+                XCTFail(TEST_NAME + "nil should not pass the default existence test, returned: \(String(describing: result))")
+            case .failure(_):
+                break
+            }
+            switch ParameterValidator.existenceValidator.handler("non-nil string") {
+            case .success(_):
+                break
+            case .failure(let error):
+                XCTFail(TEST_NAME + "non-nil string should pass the default existence test, returned: \(error.localizedDescription)")
+            }
+        }
+                
+        testVideoIdValidator()
+        testChannelIdValidator()
+        testPlaylistIdWithVLValidator()
+        testPlaylistIdWithoutVLValidator()
+        testPrivacyValidator()
+        testExistenceValidator()
+    }
+    
     func testHeadersToRequest() async {
         let TEST_NAME = "Test: testHeadersToRequest() -> "
         
@@ -448,7 +609,7 @@ final class YouTubeKitTests: XCTestCase {
                 
         guard !creationResponse.isDisconnected else { XCTFail(TEST_NAME + "Checking if cookies were defined"); return }
         
-        guard var createdPlaylistId = creationResponse.createdPlaylistId, let playlistCreatorId = creationResponse.playlistCreatorId else { XCTFail(TEST_NAME + "Checking if the playlist has been created."); return }
+        guard let createdPlaylistId = creationResponse.createdPlaylistId, let playlistCreatorId = creationResponse.playlistCreatorId else { XCTFail(TEST_NAME + "Checking if the playlist has been created."); return }
         
         XCTAssertNotNil(creationResponse.playlistCreatorId, TEST_NAME + "Checking if the playlist's creator has been extracted.")
         

@@ -53,6 +53,8 @@ public class YouTubeModel {
     /// Boolean indicating whether to include the ``YouTubeModel/cookies`` in the request or not, its value can be overwritten in ``YouTubeModel/sendRequest(responseType:data:useCookies:result:)`` with the `useCookies` parameter.
     public var alwaysUseCookies: Bool = false
     
+    /// The logger that will be used to store the information of the requests.
+    public var logger: RequestsLogger? = nil
     
     #if canImport(CommonCrypto)
     /// Generate the authentication hash from user's cookies required by YouTube.
@@ -113,22 +115,35 @@ public class YouTubeModel {
                 data: data
             )
             
+            let endOfRequestHandler: (Data?, Result<ResponseType, Error>) -> () = { [weak logger] responseData, responseResult in
+                switch responseResult {
+                case .success(let success):
+                    logger?.addLog(RequestLog(providedParameters: data, request: request, responseData: responseData, result: .success(success)))
+                case .failure(let error):
+                    logger?.addLog(RequestLog(providedParameters: data, request: request, responseData: responseData, result: .failure(error)))
+                }
+                result(responseResult)
+            }
+            
             /// Create task with the request
             let task = URLSession.shared.dataTask(with: request) { data, _, error in
                 /// Check if the task worked and gave back data.
                 if let data = data {
-                    result(.success(ResponseType.decodeData(data: data)))
+                    let decodedResult = ResponseType.decodeData(data: data)
+                    
+                    endOfRequestHandler(data, .success(decodedResult))
                 } else if let error = error {
                     /// Exectued if the data was nil so there was probably an error.
-                    result(.failure(error))
+                    endOfRequestHandler(data, .failure(error))
                 } else {
-                    result(.failure("Did not receive any error."))
+                    endOfRequestHandler(data, .failure("Did not receive any error."))
                 }
             }
             
             /// Start it
             task.resume()
         } catch {
+            logger?.addLog(RequestLog(providedParameters: data, request: nil, responseData: nil, result: .failure(error)))
             result(.failure(error))
         }
     }
