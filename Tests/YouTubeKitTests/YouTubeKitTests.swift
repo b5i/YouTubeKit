@@ -104,17 +104,29 @@ final class YouTubeKitTests: XCTestCase {
         XCTAssertNil(result5, TEST_NAME + "result5 should be nil")
         XCTAssertEqual(logger.logs.count, 4, TEST_NAME + "the logger should contain exactly 4 logs")
         
-        logger.stopLogging()
+        logger.setCacheSize(4)
         
-        let result6 = try? await ModulableResponse.sendRequest(youtubeModel: YTM, data: [.browseId: ""]) // shouldn't be nil as `browseId` is set
-        XCTAssertNotNil(result6, TEST_NAME + "result6 should not be nil")
+        let result6 = try? await ModulableResponse.sendRequest(youtubeModel: YTM, data: [:]) // should be nil as `browseId` has not been set
+        XCTAssertNil(result6, TEST_NAME + "result5 should be nil")
         XCTAssertEqual(logger.logs.count, 4, TEST_NAME + "the logger should contain exactly 4 logs")
         
+        logger.setCacheSize(nil)
+        
+        let result7 = try? await ModulableResponse.sendRequest(youtubeModel: YTM, data: [:]) // should be nil as `browseId` has not been set
+        XCTAssertNil(result7, TEST_NAME + "result7 should be nil")
+        XCTAssertEqual(logger.logs.count, 5, TEST_NAME + "the logger should contain exactly 5 logs")
+        
+        logger.stopLogging()
+        
+        let result8 = try? await ModulableResponse.sendRequest(youtubeModel: YTM, data: [.browseId: ""]) // shouldn't be nil as `browseId` is set
+        XCTAssertNotNil(result8, TEST_NAME + "result8 should not be nil")
+        XCTAssertEqual(logger.logs.count, 5, TEST_NAME + "the logger should contain exactly 5 logs")
+        
         logger.clearLogWithId(logger.logs.first!.id) // count is 3 so the first element should exist
-        XCTAssertEqual(logger.logs.count, 3, TEST_NAME + "the logger should contain only 3 logs after deleting the first one")
+        XCTAssertEqual(logger.logs.count, 4, TEST_NAME + "the logger should contain only 4 logs after deleting the first one")
         
         logger.clearLogsWithIds([logger.logs[0].id, logger.logs[1].id])
-        XCTAssertEqual(logger.logs.count, 1, TEST_NAME + "the logger should contain only 1 log after deleting the 2 first")
+        XCTAssertEqual(logger.logs.count, 2, TEST_NAME + "the logger should contain only 2 log after deleting the 2 first")
         
         logger.clearLogs()
         XCTAssertEqual(logger.logs.count, 0, TEST_NAME + "the logger shouldn't contain any log after clearing all of them")
