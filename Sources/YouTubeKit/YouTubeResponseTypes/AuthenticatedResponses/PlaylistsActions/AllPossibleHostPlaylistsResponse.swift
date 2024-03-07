@@ -3,6 +3,7 @@
 //
 //
 //  Created by Antoine Bollengier on 17.10.2023.
+//  Copyright © 2023 - 2024 Antoine Bollengier. All rights reserved.
 //
 
 import Foundation
@@ -16,8 +17,7 @@ public struct AllPossibleHostPlaylistsResponse: AuthenticatedResponse {
     
     public var playlistsAndStatus: [(playlist: YTPlaylist, isVideoPresentInside: Bool)] = []
 
-    public static func decodeData(data: Data) -> AllPossibleHostPlaylistsResponse {
-        let json = JSON(data)
+    public static func decodeJSON(json: JSON) -> AllPossibleHostPlaylistsResponse {
         var toReturn = AllPossibleHostPlaylistsResponse()
         
         guard !(json["responseContext"]["mainAppWebResponseContext"]["loggedOut"].bool ?? true) else { return toReturn }

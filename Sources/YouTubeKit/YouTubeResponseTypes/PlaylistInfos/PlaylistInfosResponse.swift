@@ -2,7 +2,7 @@
 //  PlaylistInfosResponse.swift
 //
 //  Created by Antoine Bollengier (github.com/b5i) on 27.06.2023.
-//  Copyright © 2023 Antoine Bollengier. All rights reserved.
+//  Copyright © 2023 - 2024 Antoine Bollengier. All rights reserved.
 //
 
 import Foundation
@@ -51,8 +51,7 @@ public struct PlaylistInfosResponse: ResultsResponse {
     
     public var visitorData: String? = nil
     
-    public static func decodeData(data: Data) -> PlaylistInfosResponse {
-        let json = JSON(data)
+    public static func decodeJSON(json: JSON) -> PlaylistInfosResponse {
         var toReturn = PlaylistInfosResponse()
         
         let playlistInfosJSON = json["header"]["playlistHeaderRenderer"]
@@ -157,9 +156,7 @@ public struct PlaylistInfosResponse: ResultsResponse {
         /// Ids related to the playlist of the videos, generally only defined when the ``YouTubeModel/cookies`` are defined, used in the request and the user owns the playlist.
         public var videoIdsInPlaylist: [String?] = []
         
-        public static func decodeData(data: Data) -> PlaylistInfosResponse.Continuation {
-            let json = JSON(data)
-            
+        public static func decodeJSON(json: JSON) -> PlaylistInfosResponse.Continuation {            
             var toReturn = Continuation()
             guard let continuationActionsArray = json["onResponseReceivedActions"].array else { return toReturn }
             for continationAction in continuationActionsArray {

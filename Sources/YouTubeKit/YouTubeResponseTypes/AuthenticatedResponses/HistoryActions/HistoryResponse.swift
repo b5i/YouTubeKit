@@ -3,6 +3,7 @@
 //
 //
 //  Created by Antoine Bollengier on 03.01.2024.
+//  Copyright © 2024 Antoine Bollengier. All rights reserved.
 //
 
 import Foundation
@@ -34,8 +35,7 @@ public struct HistoryResponse: AuthenticatedResponse {
     /// Title of the playlist.
     public var title: String?
         
-    public static func decodeData(data: Data) -> HistoryResponse {
-        let json = JSON(data)
+    public static func decodeJSON(json: JSON) -> HistoryResponse {
         var toReturn = HistoryResponse()
         
         guard !(json["responseContext"]["mainAppWebResponseContext"]["loggedOut"].bool ?? true) else { return toReturn }
@@ -79,9 +79,7 @@ public struct HistoryResponse: AuthenticatedResponse {
         /// Array of videos.
         public var videosAndTime: [HistoryBlock] = []
         
-        public static func decodeData(data: Data) -> HistoryResponse.Continuation {
-            let json = JSON(data)
-            
+        public static func decodeJSON(json: JSON) -> HistoryResponse.Continuation {            
             var toReturn = Continuation()
             guard let continuationActionsArray = json["onResponseReceivedActions"].array else { return toReturn }
             for continationAction in continuationActionsArray {

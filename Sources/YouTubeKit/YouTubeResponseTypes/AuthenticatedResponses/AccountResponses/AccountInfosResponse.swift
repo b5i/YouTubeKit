@@ -3,6 +3,7 @@
 //
 //
 //  Created by Antoine Bollengier on 15.10.2023.
+//  Copyright © 2023 - 2024 Antoine Bollengier. All rights reserved.
 //
 
 import Foundation
@@ -23,8 +24,7 @@ public struct AccountInfosResponse: AuthenticatedResponse {
     /// The channelHandle of the user, can be nil if the user does not have a channel.
     public var channelHandle: String?
         
-    public static func decodeData(data: Data) -> AccountInfosResponse {
-        let json = JSON(data)
+    public static func decodeJSON(json: JSON) -> AccountInfosResponse {
         var toReturn = AccountInfosResponse()
         
         guard !(json["responseContext"]["mainAppWebResponseContext"]["loggedOut"].bool ?? true) else { return toReturn }

@@ -2,7 +2,7 @@
 //  ChannelInfosResponse.swift
 //
 //  Created by Antoine Bollengier (github.com/b5i) on 22.06.2023.
-//  Copyright © 2023 Antoine Bollengier. All rights reserved.
+//  Copyright © 2023 - 2024 Antoine Bollengier. All rights reserved.
 //  
 
 import Foundation
@@ -133,9 +133,7 @@ public struct ChannelInfosResponse: YouTubeResponse {
     /// Count of videos that the channel posted.
     public var videosCount: String?
             
-    public static func decodeData(data: Data) -> ChannelInfosResponse {
-        let json = JSON(data)
-        
+    public static func decodeJSON(json: JSON) -> ChannelInfosResponse {
         var toReturn = ChannelInfosResponse()
         
         let channelInfos = json["header"]["c4TabbedHeaderRenderer"]
@@ -367,8 +365,7 @@ public struct ChannelInfosResponse: YouTubeResponse {
         /// Token that you will be able to use to continue the continuation, nil if there isn't
         public var newContinuationToken: String?
         
-        public static func decodeData(data: Data) -> ContentContinuation {
-            let json = JSON(data)
+        public static func decodeJSON(json: JSON) -> ContentContinuation {
             return T.decodeContinuation(json: json)
         }
     }

@@ -3,6 +3,7 @@
 //
 //
 //  Created by Antoine Bollengier on 16.10.2023.
+//  Copyright © 2023 - 2024 Antoine Bollengier. All rights reserved.
 //
 
 import Foundation
@@ -17,8 +18,7 @@ public struct RemoveVideoByIdFromPlaylistResponse: AuthenticatedResponse {
     /// Boolean indicating whether the remove action was successful.
     public var success: Bool = false
     
-    public static func decodeData(data: Data) -> RemoveVideoByIdFromPlaylistResponse {
-        let json = JSON(data)
+    public static func decodeJSON(json: JSON) -> RemoveVideoByIdFromPlaylistResponse {
         var toReturn = RemoveVideoByIdFromPlaylistResponse()
         
         guard !(json["responseContext"]["mainAppWebResponseContext"]["loggedOut"].bool ?? true), json["status"].string == "STATUS_SUCCEEDED" else { return toReturn }

@@ -3,6 +3,7 @@
 //  
 //
 //  Created by Antoine Bollengier on 25.04.23.
+//  Copyright © 2023 - 2024 Antoine Bollengier. All rights reserved.
 //
 
 import Foundation
@@ -129,9 +130,13 @@ public class YouTubeModel {
             let task = URLSession.shared.dataTask(with: request) { data, _, error in
                 /// Check if the task worked and gave back data.
                 if let data = data {
-                    let decodedResult = ResponseType.decodeData(data: data)
-                    
-                    endOfRequestHandler(data, .success(decodedResult))
+                    do {
+                        let decodedResult = try ResponseType.decodeData(data: data)
+                        
+                        endOfRequestHandler(data, .success(decodedResult))
+                    } catch let processingError {
+                        endOfRequestHandler(data, .failure(processingError))
+                    }
                 } else if let error = error {
                     /// Exectued if the data was nil so there was probably an error.
                     endOfRequestHandler(data, .failure(error))

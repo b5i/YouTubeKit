@@ -2,7 +2,7 @@
 //  FormatsResponse.swift
 //
 //  Created by Antoine Bollengier (github.com/b5i) on 20.06.2023.
-//  Copyright © 2023 Antoine Bollengier. All rights reserved.
+//  Copyright © 2023 - 2024 Antoine Bollengier. All rights reserved.
 //  
 
 import Foundation
@@ -94,16 +94,10 @@ public struct VideoInfosResponse: YouTubeResponse {
         self.viewCount = viewCount
     }
     
-    public static func decodeData(data: Data) -> VideoInfosResponse {
-        let json = JSON(data)
-
-        return decodeJSON(json)
-    }
-    
     /// Decode json to give an instance of ``VideoInfosResponse``.
     /// - Parameter json: the json to be decoded.
     /// - Returns: an instance of ``VideoInfosResponse``.
-    public static func decodeJSON(_ json: JSON) -> VideoInfosResponse {
+    public static func decodeJSON(json: JSON) -> VideoInfosResponse {
         /// Extract the dictionnaries that contains the video details and streaming data.
         let videoDetailsJSON = json["videoDetails"]
         let streamingJSON = json["streamingData"]

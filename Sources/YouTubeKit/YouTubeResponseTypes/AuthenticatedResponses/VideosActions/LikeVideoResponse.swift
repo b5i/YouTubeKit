@@ -3,6 +3,7 @@
 //  
 //
 //  Created by Antoine Bollengier on 16.10.2023.
+//  Copyright © 2023 - 2024 Antoine Bollengier. All rights reserved.
 //
 
 import Foundation
@@ -14,8 +15,7 @@ public struct LikeVideoResponse: AuthenticatedResponse {
     
     public var isDisconnected: Bool = true
     
-    public static func decodeData(data: Data) -> LikeVideoResponse {
-        let json = JSON(data)
+    public static func decodeJSON(json: JSON) -> LikeVideoResponse {
         var toReturn = LikeVideoResponse()
         
         guard !(json["responseContext"]["mainAppWebResponseContext"]["loggedOut"].bool ?? true) else { return toReturn }

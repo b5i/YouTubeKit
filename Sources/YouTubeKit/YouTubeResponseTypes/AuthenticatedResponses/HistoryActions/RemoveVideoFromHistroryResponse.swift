@@ -3,6 +3,7 @@
 //
 //
 //  Created by Antoine Bollengier on 03.01.2024.
+//  Copyright © 2024 Antoine Bollengier. All rights reserved.
 //
 
 import Foundation
@@ -17,8 +18,7 @@ public struct RemoveVideoFromHistroryResponse: AuthenticatedResponse {
     /// Success of the deletion operation.
     public var success: Bool = false
         
-    public static func decodeData(data: Data) -> RemoveVideoFromHistroryResponse {
-        let json = JSON(data)
+    public static func decodeJSON(json: JSON) -> RemoveVideoFromHistroryResponse {
         var toReturn = RemoveVideoFromHistroryResponse()
         
         guard !(json["responseContext"]["mainAppWebResponseContext"]["loggedOut"].bool ?? true) else { return toReturn }

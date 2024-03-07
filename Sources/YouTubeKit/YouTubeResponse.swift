@@ -2,7 +2,7 @@
 //  YouTubeResponse.swift
 //
 //  Created by Antoine Bollengier (github.com/b5i) on 03.06.23.
-//  Copyright © 2023 Antoine Bollengier. All rights reserved.
+//  Copyright © 2023 - 2024 Antoine Bollengier. All rights reserved.
 //  
 
 import Foundation
@@ -45,8 +45,16 @@ public protocol YouTubeResponse {
     /// A function that validates the data from a request. Throws a ``BadRequestDataError`` if it encounters one or multiple errors.
     static func validateRequest(data: inout RequestData) throws
     
-    /// A function to decode the data and create an instance of the struct.
-    static func decodeData(data: Data) -> Self
+    /// A function that decode the data to give an instance of this response and throws an error if an error was returned by YouTube's API.
+    ///
+    /// - Note: this function should only be overriden if you have to do special processing before getting the JSON from the data, for example this is the case with ``AutoCompletionResponse``. Make sure that you call the error handling method TODO: put it here if your version does not already process them.
+    static func decodeData(data: Data) throws -> Self
+    
+    /// A function to extract the response from some JSON.
+    static func decodeJSON(json: JSON) -> Self
+    
+    /// A function that throws the error from some JSON if there's one. It should be called when calling ``YouTubeResponse/decodeData(data:)``.
+    static func checkForErrors(json: JSON) throws
     
     /// A function to call the request of the given YouTubeResponse. For more informations see ``YouTubeModel/sendRequest(responseType:data:useCookies:result:)``.
     static func sendRequest(
@@ -118,6 +126,20 @@ public extension YouTubeResponse {
         
         if !errors.isEmpty {
             throw BadRequestDataError(parametersValidatorErrors: errors)
+        }
+    }
+    
+    static func decodeData(data: Data) throws -> Self {
+        let json = JSON(data)
+        
+        try self.checkForErrors(json: json)
+        
+        return self.decodeJSON(json: json)
+    }
+    
+    static func checkForErrors(json: JSON) throws {
+        if json["error"].exists() {
+            throw NetworkError(code: json["error"]["code"].intValue, message: json["error"]["message"].stringValue)
         }
     }
 }

@@ -3,6 +3,7 @@
 //
 //
 //  Created by Antoine Bollengier on 15.10.2023.
+//  Copyright © 2023 - 2024 Antoine Bollengier. All rights reserved.
 //
 
 import Foundation
@@ -41,8 +42,7 @@ public struct AccountLibraryResponse: AuthenticatedResponse {
     /// Playlist containing all the video liked by the account.
     public var likes: YTPlaylist?
             
-    public static func decodeData(data: Data) -> AccountLibraryResponse {
-        let json = JSON(data)
+    public static func decodeJSON(json: JSON) -> AccountLibraryResponse {
         var toReturn = AccountLibraryResponse()
         
         guard !(json["responseContext"]["mainAppWebResponseContext"]["loggedOut"].bool ?? true) else { return toReturn }

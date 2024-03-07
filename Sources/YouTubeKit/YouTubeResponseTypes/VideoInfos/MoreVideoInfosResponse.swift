@@ -3,6 +3,7 @@
 //
 //
 //  Created by Antoine Bollengier on 16.10.2023.
+//  Copyright © 2023 - 2024 Antoine Bollengier. All rights reserved.
 //
 
 import Foundation
@@ -99,9 +100,8 @@ public struct MoreVideoInfosResponse: YouTubeResponse {
         self.authenticatedInfos = authenticatedInfos
     }
     
-    public static func decodeData(data: Data) -> MoreVideoInfosResponse {
+    public static func decodeJSON(json: JSON) -> MoreVideoInfosResponse {
         var toReturn = MoreVideoInfosResponse()
-        let json = JSON(data)
         
         var isAccountConnected: Bool = false
         if !(json["responseContext"]["mainAppWebResponseContext"]["loggedOut"].bool ?? true) {
@@ -332,8 +332,7 @@ public struct MoreVideoInfosResponse: YouTubeResponse {
         
         public var results: [any YTSearchResult] = []
         
-        public static func decodeData(data: Data) -> RecommendedVideosContinuation {
-            let json = JSON(data)
+        public static func decodeJSON(json: JSON) -> RecommendedVideosContinuation {
             var toReturn = RecommendedVideosContinuation()
 
             for action in json["onResponseReceivedEndpoints"].arrayValue {

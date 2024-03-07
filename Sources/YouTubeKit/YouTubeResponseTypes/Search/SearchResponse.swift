@@ -2,7 +2,7 @@
 //  SearchResponse.swift
 //
 //  Created by Antoine Bollengier (github.com/b5i) on 03.06.23.
-//  Copyright © 2023 Antoine Bollengier. All rights reserved.
+//  Copyright © 2023 - 2024 Antoine Bollengier. All rights reserved.
 //  
 
 import Foundation
@@ -22,9 +22,8 @@ public struct SearchResponse: ResultsResponse {
     /// String token that will be useful in case of a search continuation request (authenticate the continuation request).
     public var visitorData: String?
     
-    public static func decodeData(data: Data) -> SearchResponse {
+    public static func decodeJSON(json: JSON) -> SearchResponse {
         var searchResponse = SearchResponse()
-        let json = JSON(data)
         
         /// Getting visitorData
         searchResponse.visitorData = json["responseContext"]["visitorData"].stringValue
@@ -115,9 +114,8 @@ public struct SearchResponse: ResultsResponse {
         /// String token that will be useful in case of a search continuation request (authenticate the continuation request).
         public var visitorData: String?
         
-        public static func decodeData(data: Data) -> SearchResponse.Restricted {
+        public static func decodeJSON(json: JSON) -> SearchResponse.Restricted {
             var searchResponse = SearchResponse.Restricted()
-            let json = JSON(data)
             
             /// Getting visitorData
             searchResponse.visitorData = json["responseContext"]["visitorData"].stringValue
@@ -165,9 +163,8 @@ public struct SearchResponse: ResultsResponse {
         /// Results of the continuation search.
         public var results: [any YTSearchResult] = []
         
-        public static func decodeData(data: Data) -> SearchResponse.Continuation {
+        public static func decodeJSON(json: JSON) -> SearchResponse.Continuation {
             var continuationResponse = SearchResponse.Continuation()
-            let json = JSON(data)
             
             ///Get the continuation token and actual search results among ads
             if let relevantContentJSON = json["onResponseReceivedCommands"][0]["appendContinuationItemsAction"]["continuationItems"].array {

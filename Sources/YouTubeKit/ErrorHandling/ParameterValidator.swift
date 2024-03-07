@@ -3,6 +3,7 @@
 //
 //
 //  Created by Antoine Bollengier on 01.03.2024.
+//  Copyright © 2024 Antoine Bollengier. All rights reserved.
 //
 
 import Foundation

@@ -2,7 +2,7 @@
 //  AutoCompletionResponse.swift
 //
 //  Created by Antoine Bollengier (github.com/b5i) on 22.06.2023.
-//  Copyright © 2023 Antoine Bollengier. All rights reserved.
+//  Copyright © 2023 - 2024 Antoine Bollengier. All rights reserved.
 //  
 
 import Foundation
@@ -21,13 +21,21 @@ public struct AutoCompletionResponse: YouTubeResponse {
     /// An array of string representing the search suggestion, usually sorted by relevance from most to least.
     public var autoCompletionEntries: [String] = []
     
-    public static func decodeData(data: Data) -> AutoCompletionResponse {
-        var response = AutoCompletionResponse()
+    public static func decodeData(data: Data) throws -> AutoCompletionResponse {
         var dataString = String(decoding: data, as: UTF8.self)
             .replacingOccurrences(of: "window.google.ac.h(", with: "")
         dataString = String(dataString.dropLast())
-        guard let dataFromDataString = dataString.data(using: .utf8) else { return response }
-        let json = JSON(dataFromDataString)
+        
+        let json = JSON(parseJSON: dataString)
+        
+        try self.checkForErrors(json: json)
+        
+        return decodeJSON(json: json)
+    }
+    
+    public static func decodeJSON(json: JSON) -> AutoCompletionResponse {
+        var response = AutoCompletionResponse()
+
         
         /// Responses are like this
         ///

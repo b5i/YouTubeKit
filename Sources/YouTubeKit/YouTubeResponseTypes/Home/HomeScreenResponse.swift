@@ -2,7 +2,7 @@
 //  HomeScreenResponse.swift
 //
 //  Created by Antoine Bollengier (github.com/b5i) on 28.06.2023.
-//  Copyright © 2023 Antoine Bollengier. All rights reserved.
+//  Copyright © 2023 - 2024 Antoine Bollengier. All rights reserved.
 //  
 
 import Foundation
@@ -26,9 +26,7 @@ public struct HomeScreenResponse: ResultsResponse {
     /// String token that is necessary to give to the continuation request in order to make it to work (it sorts of authenticate the continuation).
     public var visitorData: String?
     
-    public static func decodeData(data: Data) -> HomeScreenResponse {
-        let json = JSON(data)
-        
+    public static func decodeJSON(json: JSON) -> HomeScreenResponse {
         var toReturn = HomeScreenResponse()
         
         toReturn.visitorData = json["responseContext"]["visitorData"].string
@@ -64,9 +62,7 @@ public struct HomeScreenResponse: ResultsResponse {
         /// Videos array representing the results of the request.
         public var results: [any YTSearchResult] = []
         
-        public static func decodeData(data: Data) -> HomeScreenResponse.Continuation {
-            let json = JSON(data)
-            
+        public static func decodeJSON(json: JSON) -> HomeScreenResponse.Continuation {            
             var toReturn = Continuation()
             
             guard let continuationActionsArray = json["onResponseReceivedActions"].array else { return toReturn }

@@ -3,6 +3,7 @@
 //
 //
 //  Created by Antoine Bollengier on 16.10.2023.
+//  Copyright © 2023 - 2024 Antoine Bollengier. All rights reserved.
 //
 
 import Foundation
@@ -20,8 +21,7 @@ public struct CreatePlaylistResponse: AuthenticatedResponse {
     /// String representing the account's id.
     public var playlistCreatorId: String?
     
-    public static func decodeData(data: Data) -> CreatePlaylistResponse {
-        let json = JSON(data)
+    public static func decodeJSON(json: JSON) -> CreatePlaylistResponse {
         var toReturn = CreatePlaylistResponse()
         
         guard !(json["responseContext"]["mainAppWebResponseContext"]["loggedOut"].bool ?? true) else { return toReturn }

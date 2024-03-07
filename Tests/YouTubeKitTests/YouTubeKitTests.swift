@@ -4,7 +4,7 @@ import XCTest
 final class YouTubeKitTests: XCTestCase {
     private let YTM = YouTubeModel()
     
-    /// Keep them secret! Make sure you remove them after having tested YouTubeKit.
+    /// Keep them secret! Make sure you remove them after having tested YouTubeKit. If they're let empty, the requests requiring authentification will pass but won't be tested.
     private let cookies = ""
     
     func testCreateCustomHeaders() async throws {
@@ -35,12 +35,9 @@ final class YouTubeKitTests: XCTestCase {
             /// String representing a surname.
             var surname: String = ""
             
-            static func decodeData(data: Data) -> NameAndSurnameResponse {
+            static func decodeJSON(json: JSON) -> NameAndSurnameResponse {
                 /// Initialize an empty response.
                 var nameAndSurnameResponse = NameAndSurnameResponse()
-                // Extracts the data of the JSON, can also be done using normal JSONDecoder().decode(NameAndSurnameResponse.self, data) by making NameAndSurnameResponse conform to Codable protocol as the JSON is not very complex here.
-                
-                let json = JSON(data)
                 
                 nameAndSurnameResponse.name = json["name"].stringValue
                 nameAndSurnameResponse.surname = json["surname"].stringValue
@@ -64,6 +61,8 @@ final class YouTubeKitTests: XCTestCase {
     func testLogger() async throws {
         let TEST_NAME = "Test: testLogger() -> "
         class Logger: RequestsLogger {
+            var maximumCacheSize: Int? = nil
+            
             var logs: [YouTubeKit.RequestLog] = []
             
             var isLogging: Bool = false
@@ -78,9 +77,9 @@ final class YouTubeKitTests: XCTestCase {
             
             static var parametersValidationList: ValidationList = [.browseId: .existenceValidator]
             
-            static func decodeData(data: Data) -> ModulableResponse {
-                return ModulableResponse()
-            }
+            static func decodeData(data: Data) throws -> ModulableResponse { return ModulableResponse() }
+            
+            static func decodeJSON(json: JSON) -> ModulableResponse { return ModulableResponse() }
         }
         
         let result1 = try? await ModulableResponse.sendRequest(youtubeModel: YTM, data: [:]) // should be nil as `browseId` has not been set
@@ -97,11 +96,28 @@ final class YouTubeKitTests: XCTestCase {
         XCTAssertNil(result3, TEST_NAME + "result3 should be nil")
         XCTAssertEqual(logger.logs.count, 2, TEST_NAME + "the logger should contain exactly 2 logs")
         
+        let result4 = try? await ModulableResponse.sendRequest(youtubeModel: YTM, data: [:]) // should be nil as `browseId` has not been set
+        XCTAssertNil(result4, TEST_NAME + "result4 should be nil")
+        XCTAssertEqual(logger.logs.count, 3, TEST_NAME + "the logger should contain exactly 3 logs")
+        
+        let result5 = try? await ModulableResponse.sendRequest(youtubeModel: YTM, data: [:]) // should be nil as `browseId` has not been set
+        XCTAssertNil(result5, TEST_NAME + "result5 should be nil")
+        XCTAssertEqual(logger.logs.count, 4, TEST_NAME + "the logger should contain exactly 4 logs")
+        
         logger.stopLogging()
         
-        let result4 = try? await ModulableResponse.sendRequest(youtubeModel: YTM, data: [.browseId: ""]) // shouldn't be nil as `browseId` is set
-        XCTAssertNotNil(result4, TEST_NAME + "result should not be nil")
-        XCTAssertEqual(logger.logs.count, 2, TEST_NAME + "the logger should contain exactly 2 logs")
+        let result6 = try? await ModulableResponse.sendRequest(youtubeModel: YTM, data: [.browseId: ""]) // shouldn't be nil as `browseId` is set
+        XCTAssertNotNil(result6, TEST_NAME + "result6 should not be nil")
+        XCTAssertEqual(logger.logs.count, 4, TEST_NAME + "the logger should contain exactly 4 logs")
+        
+        logger.clearLogWithId(logger.logs.first!.id) // count is 3 so the first element should exist
+        XCTAssertEqual(logger.logs.count, 3, TEST_NAME + "the logger should contain only 3 logs after deleting the first one")
+        
+        logger.clearLogsWithIds([logger.logs[0].id, logger.logs[1].id])
+        XCTAssertEqual(logger.logs.count, 1, TEST_NAME + "the logger should contain only 1 log after deleting the 2 first")
+        
+        logger.clearLogs()
+        XCTAssertEqual(logger.logs.count, 0, TEST_NAME + "the logger shouldn't contain any log after clearing all of them")
         
         YTM.logger = nil
     }
@@ -404,6 +420,7 @@ final class YouTubeKitTests: XCTestCase {
         let TEST_NAME = "Test: testSearchResponseContinuation() -> "
         
         let requestResult = try await SearchResponse.sendRequest(youtubeModel: YTM, data: [.query: "fred again"])
+
         guard let continuationToken = requestResult.continuationToken else { XCTFail(TEST_NAME + "continuationToken is not defined"); return }
         guard let visitorData = requestResult.visitorData else { XCTFail(TEST_NAME + "visitorData is not defined"); return }
         let continuationResult = try await SearchResponse.Continuation.sendRequest(youtubeModel: YTM, data: [
@@ -435,7 +452,7 @@ final class YouTubeKitTests: XCTestCase {
     func testVideoInfosWithDownloadFormatsResponse() async throws {
         let TEST_NAME = "Test: testVideoInfosWithDownloadFormatsResponse() -> "
         
-        VideoInfosWithDownloadFormatsResponse.removePlayersFromDisk()
+        try VideoInfosWithDownloadFormatsResponse.removePlayersFromDisk()
         
         for video in [YTVideo(videoId: "3ryID_SwU5E"), YTVideo(videoId: "xUdZhqe2n7w")] as [YTVideo] {
             
@@ -524,7 +541,7 @@ final class YouTubeKitTests: XCTestCase {
         let TEST_NAME = "Test: testGetPlaylistInfos() -> "
         
         let playlist = YTPlaylist(playlistId: "VLPLw-VjHDlEOgs658kAHR_LAaILBXb-s6Q5")
-        
+                        
         var playlistInfosResult = try await playlist.fetchVideos(youtubeModel: YTM)
                 
         let playlistContinuation = try await playlistInfosResult.fetchContinuation(youtubeModel: YTM)

@@ -3,6 +3,7 @@
 //  
 //
 //  Created by Antoine Bollengier on 06.03.2024.
+//  Copyright © 2024 Antoine Bollengier. All rights reserved.
 //
 
 import Foundation
@@ -15,14 +16,19 @@ import Foundation
 ///     var logs: [RequestLog] = []
 ///
 ///     var isLogging: Bool = false
+///
+///     var maximumCacheSize: Int? = nil
 /// }
 /// ```
 /// If you want to use it as a model for a SwiftUI view you can also make a logger that conforms to the ObservableObject protocol:
 /// ```swift
 /// class MyLogger: RequestsLogger, ObservableObject {
+///
 ///     @Published var logs: [RequestLog] = []
 ///
 ///     @Published var isLogging: Bool = false
+///
+///     var maximumCacheSize: Int? = nil
 /// }
 /// ```
 ///
@@ -39,6 +45,8 @@ public protocol RequestsLogger: AnyObject {
     /// A boolean indicating whether the logging is active, if it's set to false, no additional logs will be added to the ``RequestsLogger/logs`` array.
     var isLogging: Bool { get set }
     
+    /// The maximum amount of logs that the logger should retain, old logs should be deleted first.
+    var maximumCacheSize: Int? { get set }
     
     /// Start the logging, has to at least set ``RequestsLogger/isLogging`` to true.
     func startLogging()
@@ -46,6 +54,9 @@ public protocol RequestsLogger: AnyObject {
     /// Start the logging, has to at least set ``RequestsLogger/isLogging`` to false.
     func stopLogging()
     
+    
+    /// Set the ``RequestsLogger/maximumCacheSize`` to the given size, if it's nil then no limit is applied. Be aware that if the current amount of logs exceeds the new size, the oldest logs will be deleted.
+    func setCacheSize(_ size: Int?)
     
     /// Add a log to the logger, shouldn't add a log if ``RequestsLogger/isLogging`` is set to false. Will be called when the response of the request finished processing.
     func addLog(_ log: RequestLog)

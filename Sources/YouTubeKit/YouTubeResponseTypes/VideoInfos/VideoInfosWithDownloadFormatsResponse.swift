@@ -2,7 +2,7 @@
 //  VideoInfosWithDownloadFormatsResponse.swift
 //
 //  Created by Antoine Bollengier (github.com/b5i) on 20.06.2023.
-//  Copyright © 2023 Antoine Bollengier. All rights reserved.
+//  Copyright © 2023 - 2024 Antoine Bollengier. All rights reserved.
 //
 
 import Foundation
@@ -33,69 +33,62 @@ public struct VideoInfosWithDownloadFormatsResponse: YouTubeResponse {
     /// Base video infos like if it did a ``VideoInfosResponse`` request.
     public var videoInfos: VideoInfosResponse
     
-    public static func decodeData(data: Data) -> VideoInfosWithDownloadFormatsResponse {
+    public static func decodeData(data: Data) throws -> VideoInfosWithDownloadFormatsResponse {
         ///Special processing for VideoInfosWithDownloadFormatsResponse
         
         /// The received data is not some JSON, it is an HTML file containing the JSON and other relevant informations that are necessary to process the ``DownloadFormat``.
         /// It begins by getting the player version (the player is a JS script used to manage the player on their webpage and it decodes the n-parameter).
         
-        var toReturn = VideoInfosWithDownloadFormatsResponse(defaultFormats: [], downloadFormats: [], videoInfos: .createEmpty())
-        
         let dataToString = String(decoding: data, as: UTF8.self)
         
         let preparedStringForPlayerId: [String] = dataToString.components(separatedBy: "<link rel=\"preload\" href=\"https://i.ytimg.com/generate_204\" as=\"fetch\"><link as=\"script\" rel=\"preload\" href=\"")
         
-        guard preparedStringForPlayerId.count > 1 else {
-            return toReturn
-        }
+        guard preparedStringForPlayerId.count > 1 else { throw ResponseError(step: .decodeData, reason: "Couldn't get player path.") }
         
         /// We have something like this **/s/player/playerId/player_ias.vflset/en_US/base.js**
         let playerPath: String = preparedStringForPlayerId[1].components(separatedBy: "\" nonce=\"")[0]
-                
-        let processPlayerScrappingResult = processPlayerScrapping(playerPath: playerPath)
-        switch processPlayerScrappingResult {
-        case .success(let (instructionArray, nParameter)):
-            var preparedStringForJSONData: [String] = dataToString.components(separatedBy: "var ytInitialPlayerResponse = ")
-            
-            guard preparedStringForJSONData.count > 1 else {
-                return toReturn
-            }
-            
-             preparedStringForJSONData = preparedStringForJSONData[1].components(separatedBy: ";</script><div id=\"player\"")
-            
-            preparedStringForJSONData = (preparedStringForJSONData[0] + ";") // We add a ";" so then when we look for "}}}};" we get at least one result.
-                                            .components(separatedBy: "}}}};")
-                        
-            let stringJSONData = preparedStringForJSONData[0] + "}}}}" // As we removed them in the split operation.
-                        
-            let json = JSON(stringJSONData.data(using: .utf8) ?? Data())
-            
-            toReturn.videoInfos = VideoInfosResponse.decodeJSON(json)
-            
-            // Extract the default formats.
-                                                                
-            if let downloadFormatsJSONArray = json["streamingData"]["formats"].array {
-                toReturn.defaultFormats = convertJSONToDownloadFormats(
-                    json: downloadFormatsJSONArray,
-                    instructionsArray: instructionArray,
-                    nParameterString: nParameter
-                )
-            }
-            
-            // Extract the download formats.
-                        
-            if let downloadFormatsJSONArray = json["streamingData"]["adaptiveFormats"].array {
-                toReturn.downloadFormats = convertJSONToDownloadFormats(
-                    json: downloadFormatsJSONArray,
-                    instructionsArray: instructionArray,
-                    nParameterString: nParameter
-                )
-            }
-            
-        case .failure(_):
-            break
+        
+        let (instructionArray, nParameter) = try processPlayerScrapping(playerPath: playerPath)
+        var preparedStringForJSONData: [String] = dataToString.components(separatedBy: "var ytInitialPlayerResponse = ")
+        
+        guard preparedStringForJSONData.count > 1 else { throw ResponseError(step: .decodeData, reason: "Couldn't get player's JSON data.") }
+        
+        preparedStringForJSONData = preparedStringForJSONData[1].components(separatedBy: ";</script><div id=\"player\"")
+        
+        preparedStringForJSONData = (preparedStringForJSONData[0] + ";") // We add a ";" so then when we look for "}}}};" we get at least one result.
+            .components(separatedBy: "}}}};")
+        
+        let stringJSONData = preparedStringForJSONData[0] + "}}}}" // As we removed them in the split operation.
+        
+        let json = JSON(parseJSON: stringJSONData)
+        
+        var toReturn = self.decodeJSON(json: json)
+        
+        // Extract the default formats.
+        
+        if let downloadFormatsJSONArray = json["streamingData"]["formats"].array {
+            toReturn.defaultFormats = convertJSONToDownloadFormats(
+                json: downloadFormatsJSONArray,
+                instructionsArray: instructionArray,
+                nParameterString: nParameter
+            )
+        }
+        
+        // Extract the download formats.
+        
+        if let downloadFormatsJSONArray = json["streamingData"]["adaptiveFormats"].array {
+            toReturn.downloadFormats = convertJSONToDownloadFormats(
+                json: downloadFormatsJSONArray,
+                instructionsArray: instructionArray,
+                nParameterString: nParameter
+            )
         }
         return toReturn
+    }
+    
+    /// Function that creates a ``VideoInfosWithDownloadFormatsResponse`` but that fills only the ``VideoInfosWithDownloadFormatsResponse/videoInfos`` entry and let the other propertes to nil/empty values.
+    public static func decodeJSON(json: JSON) -> VideoInfosWithDownloadFormatsResponse {
+        return VideoInfosWithDownloadFormatsResponse(defaultFormats: [], downloadFormats: [], videoInfos: VideoInfosResponse.decodeJSON(json: json))
     }
     
     /// Get an array of ``DownloadFormat`` from a JSON array.
@@ -205,12 +198,12 @@ public struct VideoInfosWithDownloadFormatsResponse: YouTubeResponse {
     /// Get the player's decoding functions to un-throttle download format links download speed.
     /// - Parameters:
     ///  - playerPath: The path of the Javascript file that represent the player's engine, usually like **base.js** on YouTube's website.
-    ///  - done: a closure potentially containing an array of ``PlayerCipherDecodeInstruction`` and a string representing the nParameter function in Javascript code.
-    private static func processPlayerScrapping(playerPath: String) -> Result<(instructions: [PlayerCipherDecodeInstruction], nParameterCode: String), String> {
-        guard let playerURL = URL(string: "https://youtube.com\(playerPath)") else { return .failure("Could not create player URL (tried: https://youtube.com\(playerPath)") }
+    ///  - Returns: a closure potentially containing an array of ``PlayerCipherDecodeInstruction`` and a string representing the nParameter function in Javascript code.
+    private static func processPlayerScrapping(playerPath: String) throws -> (instructions: [PlayerCipherDecodeInstruction], nParameterCode: String) {
+        guard let playerURL = URL(string: "https://youtube.com\(playerPath)") else { throw ResponseError(step: .processPlayerScrapping, reason: "Could not create player URL (tried: https://youtube.com\(playerPath)") }
         var preparedStringForPlayerName: [String] = playerPath.components(separatedBy: "s/player/")
         
-        guard preparedStringForPlayerName.count > 1 else { return .failure("Could not get player name.") }
+        guard preparedStringForPlayerName.count > 1 else { throw ResponseError(step: .processPlayerScrapping, reason: "Could not get player name.") }
         
         preparedStringForPlayerName = preparedStringForPlayerName[1].components(separatedBy: "/")
         
@@ -219,9 +212,9 @@ public struct VideoInfosWithDownloadFormatsResponse: YouTubeResponse {
         let documentDirectoryPath: String
         
         if #available(macOS 13, iOS 16.0, watchOS 9.0, tvOS 16.0, *) {
-            documentDirectoryPath = getDocumentDirectory().path()
+            documentDirectoryPath = try getDocumentDirectory().path()
         } else {
-            documentDirectoryPath = getDocumentDirectory().path
+            documentDirectoryPath = try getDocumentDirectory().path
         }
         
         if
@@ -230,9 +223,9 @@ public struct VideoInfosWithDownloadFormatsResponse: YouTubeResponse {
             let savedPlayerCodeData = FileManager.default.contents(atPath: documentDirectoryPath + "YouTubeKitPlayers-\(playerName).abn")
         {
             let savedPlayerCode = String(decoding: savedPlayerCodeData, as: UTF8.self)
-            return .success((savedPlayerIntructions, savedPlayerCode))
+            return (savedPlayerIntructions, savedPlayerCode)
         } else {
-            let scrapPlayerResult = scrapPlayer(playerName: playerName, playerURL: playerURL)
+            let scrapPlayerResult = try scrapPlayer(playerName: playerName, playerURL: playerURL)
             return scrapPlayerResult
         }
     }
@@ -245,94 +238,89 @@ public struct VideoInfosWithDownloadFormatsResponse: YouTubeResponse {
     private static func scrapPlayer(
         playerName: String,
         playerURL: URL
-    ) -> Result<(instructions: [PlayerCipherDecodeInstruction], nParameterCode: String), String> {
-        let downloadPlayerResult = downloadPlayer(playerURL: playerURL)
-        switch downloadPlayerResult {
-        case .success(let playerData):
-            let dataString = String(decoding: playerData, as: UTF8.self)
-            /// Separate the data by line.
-            let separatedByLinePlayer: [String] = dataString.components(separatedBy: .newlines)
-            
-            /// Dictionnary containing the names of the PlayerCipherDecodeInstruction in the player's code and link them with their corresponding PlayerCipherDecodeInstruction.
-            var knownPlayerCipherDecodeInstructions: [String : PlayerCipherDecodeInstruction] = [:]
-            
-            var instructionsArray: [PlayerCipherDecodeInstruction] = []
-            
-            var nParameterFunction: String? = nil
-            
-            for line in separatedByLinePlayer {
-                if line.contains("a=a.split(\"\");") {
-                    let functionArray: [String] = line.components(separatedBy: "=function(a){a=a.split(\"\");")
+    ) throws -> (instructions: [PlayerCipherDecodeInstruction], nParameterCode: String) {
+        let playerData = try downloadPlayer(playerURL: playerURL)
+        let dataString = String(decoding: playerData, as: UTF8.self)
+        /// Separate the data by line.
+        let separatedByLinePlayer: [String] = dataString.components(separatedBy: .newlines)
+        
+        /// Dictionnary containing the names of the PlayerCipherDecodeInstruction in the player's code and link them with their corresponding PlayerCipherDecodeInstruction.
+        var knownPlayerCipherDecodeInstructions: [String : PlayerCipherDecodeInstruction] = [:]
+        
+        var instructionsArray: [PlayerCipherDecodeInstruction] = []
+        
+        var nParameterFunction: String? = nil
+        
+        for line in separatedByLinePlayer {
+            if line.contains("a=a.split(\"\");") {
+                let functionArray: [String] = line.components(separatedBy: "=function(a){a=a.split(\"\");")
+                
+                guard functionArray.count > 1 else { throw ResponseError(step: .scrapPlayer, reason: "Could not get n-parameter instructions.") }
+                var instructionsString: String = functionArray[1]
+                //var functionName: String = functionArray[0]
+                
+                instructionsString = instructionsString.components(separatedBy: "return a.join(\"\")};")[0]
+                
+                let instructionsStringArray = instructionsString.split(separator: ";")
+                
+                for instruction in instructionsStringArray {
+                    var preparedCurrentInstructionName = instruction.components(separatedBy: "(a,")
+                    guard preparedCurrentInstructionName.count > 1 else { continue }
                     
-                    guard functionArray.count > 1 else { return .failure("Could not get n-parameter instructions.") }
-                    var instructionsString: String = functionArray[1]
-                    //var functionName: String = functionArray[0]
+                    guard let currentIntParameter = Int(preparedCurrentInstructionName[1].components(separatedBy: ")")[0]) else { continue }
                     
-                    instructionsString = instructionsString.components(separatedBy: "return a.join(\"\")};")[0]
+                    preparedCurrentInstructionName = preparedCurrentInstructionName[0].components(separatedBy: ".")
+                    guard preparedCurrentInstructionName.count > 1 else { continue }
                     
-                    let instructionsStringArray = instructionsString.split(separator: ";")
+                    let currentFunctionName = preparedCurrentInstructionName.last
                     
-                    for instruction in instructionsStringArray {
-                        var preparedCurrentInstructionName = instruction.components(separatedBy: "(a,")
-                        guard preparedCurrentInstructionName.count > 1 else { continue }
-                        
-                        guard let currentIntParameter = Int(preparedCurrentInstructionName[1].components(separatedBy: ")")[0]) else { continue }
-                        
-                        preparedCurrentInstructionName = preparedCurrentInstructionName[0].components(separatedBy: ".")
-                        guard preparedCurrentInstructionName.count > 1 else { continue }
-                        
-                        let currentFunctionName = preparedCurrentInstructionName.last
-                        
-                        guard let currentFunctionName = currentFunctionName else { continue }
-                        
-                        if knownPlayerCipherDecodeInstructions[currentFunctionName] == nil {
-                            knownPlayerCipherDecodeInstructions[currentFunctionName] = PlayerCipherDecodeInstruction.getInstructionTypeByName(
-                                currentFunctionName, separatedByLinesPlayerScript:
-                                    separatedByLinePlayer
-                            )
-                        }
-                        
-                        switch knownPlayerCipherDecodeInstructions[currentFunctionName] {
-                        case .swap(_):
-                            instructionsArray.append(.swap(currentIntParameter))
-                        case .splice(_):
-                            instructionsArray.append(.splice(currentIntParameter))
-                        default:
-                            instructionsArray.append(knownPlayerCipherDecodeInstructions[currentFunctionName] ?? .unknown)
-                        }
-                    }
-                    let documentDirectoryPath: String
+                    guard let currentFunctionName = currentFunctionName else { continue }
                     
-                    if #available(macOS 13, iOS 16.0, watchOS 9.0, tvOS 16.0, *) {
-                        documentDirectoryPath = getDocumentDirectory().path()
-                    } else {
-                        documentDirectoryPath = getDocumentDirectory().path
-                    }
-                    do {
-                        FileManager.default.createFile(
-                            atPath: documentDirectoryPath + "YouTubeKitPlayers-\(playerName).ab",
-                            contents: try JSONEncoder().encode(instructionsArray)
+                    if knownPlayerCipherDecodeInstructions[currentFunctionName] == nil {
+                        knownPlayerCipherDecodeInstructions[currentFunctionName] = PlayerCipherDecodeInstruction.getInstructionTypeByName(
+                            currentFunctionName, separatedByLinesPlayerScript:
+                                separatedByLinePlayer
                         )
-                        
-                        let nParameterFunctionData: Data = extractNParameterFunction(fromFileText: dataString)
-                        
-                        FileManager.default.createFile(
-                            atPath: documentDirectoryPath + "YouTubeKitPlayers-\(playerName).abn",
-                            contents: nParameterFunctionData
-                        )
-                        
-                        nParameterFunction = String(decoding: nParameterFunctionData, as: UTF8.self)
-                    } catch {}
-                    break
+                    }
+                    
+                    switch knownPlayerCipherDecodeInstructions[currentFunctionName] {
+                    case .swap(_):
+                        instructionsArray.append(.swap(currentIntParameter))
+                    case .splice(_):
+                        instructionsArray.append(.splice(currentIntParameter))
+                    default:
+                        instructionsArray.append(knownPlayerCipherDecodeInstructions[currentFunctionName] ?? .unknown)
+                    }
                 }
+                let documentDirectoryPath: String
+                
+                if #available(macOS 13, iOS 16.0, watchOS 9.0, tvOS 16.0, *) {
+                    documentDirectoryPath = try getDocumentDirectory().path()
+                } else {
+                    documentDirectoryPath = try getDocumentDirectory().path
+                }
+                do {
+                    FileManager.default.createFile(
+                        atPath: documentDirectoryPath + "YouTubeKitPlayers-\(playerName).ab",
+                        contents: try JSONEncoder().encode(instructionsArray)
+                    )
+                    
+                    let nParameterFunctionData: Data = extractNParameterFunction(fromFileText: dataString)
+                    
+                    FileManager.default.createFile(
+                        atPath: documentDirectoryPath + "YouTubeKitPlayers-\(playerName).abn",
+                        contents: nParameterFunctionData
+                    )
+                    
+                    nParameterFunction = String(decoding: nParameterFunctionData, as: UTF8.self)
+                } catch {}
+                break
             }
-            if let nParameterFunction = nParameterFunction {
-                return .success((instructionsArray, nParameterFunction))
-            } else {
-                return .failure("Could not extract the n-parameter function.")
-            }
-        case .failure(let failure):
-            return .failure(failure)
+        }
+        if let nParameterFunction = nParameterFunction {
+            return (instructionsArray, nParameterFunction)
+        } else {
+            throw ResponseError(step: .scrapPlayer, reason: "Could not extract the n-parameter function.")
         }
     }
     
@@ -340,13 +328,19 @@ public struct VideoInfosWithDownloadFormatsResponse: YouTubeResponse {
     /// - Parameters:
     ///   - playerURL: URL of the player
     /// - Returns: either Data or a String representing the error depending on the download successfulness.
-    private static func downloadPlayer(playerURL: URL) -> Result<Data, String> {
+    private static func downloadPlayer(playerURL: URL) throws -> Data {
         let downloadOperation = DownloadPlayerOperation(playerURL: playerURL)
         downloadOperation.start()
         downloadOperation.waitUntilFinished()
         
+        guard let result = downloadOperation.result else { throw ResponseError(step: .downloadPlayer, reason: "Download operation did not return a result.") }
         
-        return downloadOperation.result ?? .failure("Download operation did not return a result.")
+        switch result {
+        case .success(let success):
+            return success
+        case .failure(let error):
+            throw ResponseError(step: .downloadPlayer, reason: "DownloadOperation failed with error: \(error)")
+        }
     }
     
     /// Operation used to download the player.
@@ -361,7 +355,7 @@ public struct VideoInfosWithDownloadFormatsResponse: YouTubeResponse {
         
         private var task: URLSessionDataTask?
         
-        var result: Result<Data, String>? {
+        var result: Result<Data, Error>? {
             didSet {
                 if result != nil {
                     self.task = nil
@@ -382,7 +376,7 @@ public struct VideoInfosWithDownloadFormatsResponse: YouTubeResponse {
                 if let data = data {
                     self.result = .success(data)
                 } else {
-                    self.result = .failure(error?.localizedDescription ?? "Player download failed but no error was emitted.")
+                    self.result = .failure(error ?? "Player download failed but no error was emitted.")
                 }
                 semaphore.signal()
             })
@@ -631,8 +625,8 @@ public struct VideoInfosWithDownloadFormatsResponse: YouTubeResponse {
     }
     
     /// Remove all player mappings from disk.
-    public static func removePlayersFromDisk() {
-        let playersDirectory = getDocumentDirectory()
+    public static func removePlayersFromDisk() throws {
+        let playersDirectory = try getDocumentDirectory()
         let filesInDir = FileManager.default.enumerator(atPath: playersDirectory.absoluteString)
         guard let filesInDir = filesInDir else { return }
         for file in filesInDir {
@@ -648,7 +642,24 @@ public struct VideoInfosWithDownloadFormatsResponse: YouTubeResponse {
     
     /// Get the document directory from the project that is using ``YouTubeKit``
     /// - Returns: The URL of this document directory.
-    private static func getDocumentDirectory() -> URL {
-        return FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
+    private static func getDocumentDirectory() throws -> URL {
+        guard let url = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first else { throw ResponseError(step: .getDocumentDirectory, reason: "Failed to get the documentsDirectory.") }
+        return url
+    }
+    
+    public struct ResponseError: Error {
+        /// The step where the error occured.
+        public var step: StepType
+        
+        /// A string explaining the reason why the error was thrown.
+        public var reason: String
+        
+        public enum StepType {
+            case decodeData
+            case processPlayerScrapping
+            case scrapPlayer
+            case downloadPlayer
+            case getDocumentDirectory
+        }
     }
 }
