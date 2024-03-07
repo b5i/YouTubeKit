@@ -141,9 +141,11 @@ YTM.alwaysUseCookies = true
 
 ### Debugging requests/responses
 YouTubeKit has a built-in way to actively debug requests/responses at runtime.
-1. For that, create your type of `RequestLogger` and add it to the `logger` property of your `YouTubeModel`.
+1. For that, create your type of `RequestsLogger` and add it to the `logger` property of your `YouTubeModel`.
 ```swift
 class Logger: RequestsLogger {
+    var loggedTypes: [any YouTubeResponse.Type]? = nil
+
     var logs: [YouTubeKit.RequestLog] = []
             
     var isLogging: Bool = false

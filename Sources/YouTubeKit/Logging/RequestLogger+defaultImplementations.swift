@@ -1,5 +1,5 @@
 //
-//  RequestLogger+defaultImplementations.swift
+//  RequestsLogger+defaultImplementations.swift
 //  
 //
 //  Created by Antoine Bollengier on 06.03.2024.
@@ -20,19 +20,25 @@ public extension RequestsLogger {
     
     func setCacheSize(_ size: Int?) {
         self.maximumCacheSize = size
-        if var size = size {
+        if let size = size {
             self.removeFirstLogsWith(limit: size)
         }
     }
     
     
-    func addLog(_ log: RequestLog) {
-        if self.isLogging && (self.maximumCacheSize ?? 1) > 0 {
-            if var maximumCacheSize = self.maximumCacheSize {
-                self.removeFirstLogsWith(limit: max(maximumCacheSize - 1, 0))
-            }
-            self.logs.append(log)
+    func addLog(_ log: any GenericRequestLog) {
+        func compareTypes<T: GenericRequestLog, U: YouTubeResponse>(log1: T, log2: U.Type) -> Bool {
+            let newRequest: RequestLog<U>
+            return type(of: log1) == type(of: newRequest)
         }
+        
+        guard self.isLogging, (self.maximumCacheSize ?? 1) > 0 else { return }
+        guard (self.loggedTypes?.contains(where: { compareTypes(log1: log, log2: $0) }) ?? true) else { return }
+        
+        if let maximumCacheSize = self.maximumCacheSize {
+            self.removeFirstLogsWith(limit: max(maximumCacheSize - 1, 0))
+        }
+        self.logs.append(log)
     }
     
     

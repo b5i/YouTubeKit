@@ -61,9 +61,11 @@ final class YouTubeKitTests: XCTestCase {
     func testLogger() async throws {
         let TEST_NAME = "Test: testLogger() -> "
         class Logger: RequestsLogger {
+            var loggedTypes: [any YouTubeResponse.Type]? = nil
+            
             var maximumCacheSize: Int? = nil
             
-            var logs: [YouTubeKit.RequestLog] = []
+            var logs: [any GenericRequestLog] = []
             
             var isLogging: Bool = false
         }
@@ -122,7 +124,7 @@ final class YouTubeKitTests: XCTestCase {
         XCTAssertNotNil(result8, TEST_NAME + "result8 should not be nil")
         XCTAssertEqual(logger.logs.count, 5, TEST_NAME + "the logger should contain exactly 5 logs")
         
-        logger.clearLogWithId(logger.logs.first!.id) // count is 3 so the first element should exist
+        logger.clearLogWithId(logger.logs.first!.id) // count is 4 so the first element should exist
         XCTAssertEqual(logger.logs.count, 4, TEST_NAME + "the logger should contain only 4 logs after deleting the first one")
         
         logger.clearLogsWithIds([logger.logs[0].id, logger.logs[1].id])
@@ -130,6 +132,21 @@ final class YouTubeKitTests: XCTestCase {
         
         logger.clearLogs()
         XCTAssertEqual(logger.logs.count, 0, TEST_NAME + "the logger shouldn't contain any log after clearing all of them")
+        
+        logger.startLogging()
+        
+        let _ = try await HomeScreenResponse.sendRequest(youtubeModel: YTM, data: [:])
+        XCTAssertEqual(logger.logs.count, 1, TEST_NAME + "the logger should contain 1 log")
+        
+        logger.loggedTypes = [SearchResponse.self] // so not the HomeScreenResponse and it shouldn't be logged
+        
+        let _ = try await HomeScreenResponse.sendRequest(youtubeModel: YTM, data: [:])
+        XCTAssertEqual(logger.logs.count, 1, TEST_NAME + "the logger should contain 1 log")
+        
+        logger.loggedTypes = [HomeScreenResponse.self]
+        
+        let _ = try await HomeScreenResponse.sendRequest(youtubeModel: YTM, data: [:])
+        XCTAssertEqual(logger.logs.count, 2, TEST_NAME + "the logger should contain 2 log")
         
         YTM.logger = nil
     }

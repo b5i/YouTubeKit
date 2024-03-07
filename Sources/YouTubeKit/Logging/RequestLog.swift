@@ -8,14 +8,21 @@
 
 import Foundation
 
-/// A structure representing a log.
-public struct RequestLog: Identifiable {
-    public typealias RequestParameters = [HeadersList.AddQueryInfo.ContentTypes : String]
-    
-    /// The id of the log, can be used to remove it from ``RequestsLogger/logs`` using ``RequestsLogger/clearLogWithId(_:)-9itbf`` or ``RequestsLogger/clearLogsWithIds(_:)-24y22``.
-    public let id = UUID()
+/// A protocol whose sole purpose is to have the ability to store the logs into an array in ``RequestsLogger/logs``.
+public protocol GenericRequestLog {    
+    /// The id of the log, can be used to remove it from ``RequestsLogger/logs`` using ``RequestsLogger/clearLogWithId(_:)`` or ``RequestsLogger/clearLogsWithIds(_:)``.
+    var id: UUID { get }
     
     /// The date when the request has been finished (data has been received and processed).
+    var date: Date { get }
+ }
+
+/// A structure representing a log.
+public struct RequestLog<ResponseType: YouTubeResponse>: Identifiable, GenericRequestLog {
+    public typealias RequestParameters = [HeadersList.AddQueryInfo.ContentTypes : String]
+
+    public let id = UUID()
+    
     public let date = Date()
     
     /// The request parameters provided in ``YouTubeModel/sendRequest(responseType:data:useCookies:result:)``.
@@ -27,10 +34,12 @@ public struct RequestLog: Identifiable {
     /// The raw data from the response.
     public let responseData: Data?
     
-    /// The processed result or an error if there was one during the process.
-    public let result: Result<any YouTubeResponse, Error>
+    public let expectedResultType = ResponseType.self
     
-    public init(providedParameters: RequestParameters, request: URLRequest?, responseData: Data?, result: Result<any YouTubeResponse, Error>) {
+    /// The processed result or an error if there was one during the process.
+    public let result: Result<ResponseType, Error>
+    
+    public init(providedParameters: RequestParameters, request: URLRequest?, responseData: Data?, result: Result<ResponseType, Error>) {
         self.providedParameters = providedParameters
         self.request = request
         self.responseData = responseData

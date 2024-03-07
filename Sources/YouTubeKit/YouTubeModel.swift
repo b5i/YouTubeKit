@@ -121,7 +121,7 @@ public class YouTubeModel {
                 case .success(let success):
                     logger?.addLog(RequestLog(providedParameters: data, request: request, responseData: responseData, result: .success(success)))
                 case .failure(let error):
-                    logger?.addLog(RequestLog(providedParameters: data, request: request, responseData: responseData, result: .failure(error)))
+                    logger?.addLog(RequestLog<ResponseType>(providedParameters: data, request: request, responseData: responseData, result: .failure(error)))
                 }
                 result(responseResult)
             }
@@ -148,7 +148,7 @@ public class YouTubeModel {
             /// Start it
             task.resume()
         } catch {
-            logger?.addLog(RequestLog(providedParameters: data, request: nil, responseData: nil, result: .failure(error)))
+            logger?.addLog(RequestLog<ResponseType>(providedParameters: data, request: nil, responseData: nil, result: .failure(error)))
             result(.failure(error))
         }
     }
