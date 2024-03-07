@@ -53,7 +53,7 @@ Every possible request within YouTubeKit conforms to the protocol [YouTubeRespon
 - `static var headersType` is a static variable indicating the type of headers used to make the request, its documentation indicates which parameter to provide in order to make the request work.
 - `static var parametersValidationList` is a static variable indicating if further processing and validation should be done on the parameters of the request. It can be validating that a videoId has the right format or simply that a parameter is provided.
 - `static func validateRequest(data: inout RequestData) throws` is the method that will be called before sending the request over the internet. It will forward the errors given by the validators from `parametersValidationList` if there's some.
-- `static func decodeData(data: Data) throws -> Self` is a static method used to decode some Data and give back in instance of the `YouTubeResponse`. Except for some special cases (if the raw data can't directly be converted into JSON for instance), you generally won't need to override the default implementation of this method.
+- `static func decodeData(data: Data) throws -> Self` is a static method used to decode some Data and give back in instance of the `YouTubeResponse`. Except for some special cases (if the raw data can't directly be converted into JSON for instance), you won't need to override the default implementation of this method.
 - `static func decodeJSON(json: JSON) -> Self` is a static method used to decode some JSON and give back in instance of the `YouTubeResponse`, if the JSON does not represent a proper response it will return an empty response (only nils and empty arrays).
 - `static func checkForErrors(json: JSON) throws` is a static method that should be called before calling `decodeJSON(json: JSON)` to avoid trying to decode some JSON that represents an error. Except for some special cases (errors returned for this request are in a non-standart format), you won't need to override the default implementation.
 - `static func sendRequest()` is a static method that allows you to make request, by using async await system or closures. Its usage will be precised in the following tutorial.
@@ -159,7 +159,7 @@ YTM.logger = logger
 ```swift
 logger.startLogging()
 ```
-3. Make requests using YouTubeKit, a full log of every request that has finished when `logger.isLogging` was true is stored in `logger.logs` by chronological order. Be aware that enabling logging can consume a lot of RAM as the logger stores a lot of raw informations. Therefore, make sure that you regularly clear the ``RequestsLogger/logs`` using `logger.clearLogs`, disable logging when it's not needed or set a reasonable cache limit.
+3. A full log of every request that has finished when `logger.isLogging` is true is stored in `logger.logs` by chronological order. Be aware that enabling logging can consume a lot of RAM as the logger stores a lot of raw informations. Therefore, make sure that you regularly clear the ``logger.logs`` using `logger.clearLogs`, disable logging when it's not needed or set a reasonable cache limit using `logger.setCacheSize()`.
 
 ### Custom request calls
 A lot of structures and protocol have custom request calls (shortcuts to various `YouTubeResponse`), here is a few examples:
