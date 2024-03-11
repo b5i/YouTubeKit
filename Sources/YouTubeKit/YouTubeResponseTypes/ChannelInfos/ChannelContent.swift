@@ -14,11 +14,13 @@ public protocol ChannelContent {
     
     /// Decode from a "tab" YouTube JSON dictionnary a ChannelContent
     /// - Parameter data: JSON encoded in Data representing a "tabRenderer".
+    /// - Parameter channelInfos: A piece of information about the channel that will be used to complete the informations in the results that are often missing.
     /// - Returns: a ChannelContent
     static func decodeJSONFromTab(_ data: Data, channelInfos: YTLittleChannelInfos?) -> Self?
     
     /// Decode from a "tab" YouTube JSON dictionnary a ChannelContent
     /// - Parameter data: some JSON representing a "tabRenderer".
+    /// - Parameter channelInfos: A piece of information about the channel that will be used to complete the informations in the results that are often missing.
     /// - Returns: a ChannelContent
     static func decodeJSONFromTab(_ json: JSON, channelInfos: YTLittleChannelInfos?) -> Self?
     

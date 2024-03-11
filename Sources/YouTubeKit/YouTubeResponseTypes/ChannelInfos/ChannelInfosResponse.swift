@@ -309,6 +309,8 @@ public struct ChannelInfosResponse: YouTubeResponse {
     ///   - youtubeModel: the ``YouTubeModel`` that will be used to get the request headers.
     ///   - useCookies: boolean that precises if the request should include the model's ``YouTubeModel/cookies``, if set to nil, the value will be taken from ``YouTubeModel/alwaysUseCookies``. The cookies will be added to the `Cookie` HTTP header if one is already present or a new one will be created if not.
     ///   - result: a ``ChannelInfosResponse/ContentContinuation`` representing the result (see definition) or/and an Error indicating why it failed.
+    ///
+    /// - Note: (For ``ListableChannelContent`` continuations) The elements from the continuation's contents usually don't contain the channel's information. You can still add them by calling ``ListableChannelContent/addChannelInfos(_:)`` or ``mergeListableChannelContentContinuation(_:)`` on the continuation with the information of the channel.
     public func getChannelContentContinuation<T: ChannelContent>(
         _: T.Type,
         youtubeModel: YouTubeModel,
@@ -330,12 +332,15 @@ public struct ChannelInfosResponse: YouTubeResponse {
         )
     }
     
-    @available(macOS 10.15, iOS 13.0, watchOS 6.0, tvOS 13.0, *)
+    
     /// Get the continuation results for a certain ChannelContent.
     /// - Parameters:
     ///    - youtubeModel: the ``YouTubeModel`` that will be used to get the request headers.
     ///    - useCookies: boolean that precises if the request should include the model's ``YouTubeModel/cookies``, if set to nil, the value will be taken from ``YouTubeModel/alwaysUseCookies``. The cookies will be added to the `Cookie` HTTP header if one is already present or a new one will be created if not.
     /// - Returns: a ``ChannelInfosResponse/ContentContinuation`` representing the result (see definition) or/and an Error indicating why it failed.
+    ///
+    /// - Note: (For ``ListableChannelContent`` continuations) The elements from the continuation's contents usually don't contain the channel's information. You can still add them by calling ``ListableChannelContent/addChannelInfos(_:)`` or ``mergeListableChannelContentContinuation(_:)`` on the continuation with the information of the channel.
+    @available(macOS 10.15, iOS 13.0, watchOS 6.0, tvOS 13.0, *)
     public func getChannelContentContinuation<T: ChannelContent>(
         _: T.Type,
         youtubeModel: YouTubeModel,
@@ -372,13 +377,12 @@ public struct ChannelInfosResponse: YouTubeResponse {
         
     /// Struct representing the "Videos" tab in a channel's webpage on YouTube's website.
     public struct Videos: ListableChannelContent {
-        
         public static var type: ChannelInfosResponse.RequestTypes = .videos
-                
+            
+        public static var itemsTypes: [any YTSearchResult.Type] = [YTVideo.self]
+        
         public var items: [any YTSearchResult] = []
-        
-        public var itemsTypes: [any YTSearchResult.Type] = [YTVideo.self]
-        
+                
         public static func canDecode(json: JSON) -> Bool {
             return isTabOfSelfType(json: json)
         }
@@ -388,7 +392,7 @@ public struct ChannelInfosResponse: YouTubeResponse {
             var toReturn = Videos()
             for video in videosArray {
                 let videoJSON = video["richItemRenderer"]["content"]["videoRenderer"]
-                if YTVideo.canBeDecoded(json: videoJSON), var decodedVideo = YTVideo.decodeJSON(json: videoJSON) {
+                if var decodedVideo = YTVideo.decodeJSON(json: videoJSON) {
                     if let channelInfos = channelInfos {
                         decodedVideo.channel = channelInfos
                     }
@@ -432,10 +436,10 @@ public struct ChannelInfosResponse: YouTubeResponse {
     public struct Shorts: ListableChannelContent {
         public static var type: ChannelInfosResponse.RequestTypes = .shorts
         
+        public static var itemsTypes: [any YTSearchResult.Type] = [YTVideo.self]
+
         public var items: [any YTSearchResult] = []
-        
-        public var itemsTypes: [any YTSearchResult.Type] = [YTVideo.self]
-        
+                
         public static func canDecode(json: JSON) -> Bool {
             return isTabOfSelfType(json: json)
         }
@@ -489,10 +493,10 @@ public struct ChannelInfosResponse: YouTubeResponse {
     public struct Directs: ListableChannelContent {
         public static var type: ChannelInfosResponse.RequestTypes = .directs
         
+        public static var itemsTypes: [any YTSearchResult.Type] = [YTVideo.self]
+
         public var items: [any YTSearchResult] = []
-        
-        public var itemsTypes: [any YTSearchResult.Type] = [YTVideo.self]
-        
+                
         public static func canDecode(json: JSON) -> Bool {
             return isTabOfSelfType(json: json)
         }
@@ -546,10 +550,10 @@ public struct ChannelInfosResponse: YouTubeResponse {
     public struct Playlists: ListableChannelContent {
         public static var type: ChannelInfosResponse.RequestTypes = .playlists
         
+        public static var itemsTypes: [any YTSearchResult.Type] = [YTPlaylist.self]
+
         public var items: [any YTSearchResult] = []
-        
-        public var itemsTypes: [any YTSearchResult.Type] = [YTPlaylist.self]
-        
+                
         public static func canDecode(json: JSON) -> Bool {
             return isTabOfSelfType(json: json)
         }
@@ -650,7 +654,13 @@ public struct ChannelInfosResponse: YouTubeResponse {
     public mutating func mergeListableChannelContentContinuation<T>(_ continuation: ContentContinuation<T>) where T: ListableChannelContent {
         self.channelContentContinuationStore[T.type] = continuation.newContinuationToken
         guard var newChannelContent = self.channelContentStore[T.type] as? (any ListableChannelContent) else { return }
-        newChannelContent.items.append(contentsOf: continuation.contents?.items ?? [])
+        
+        var mutableContinuation = continuation
+        if let channelId = self.channelId {
+            mutableContinuation.contents?.addChannelInfos(.init(channelId: channelId, name: self.name, thumbnails: self.avatarThumbnails))
+        }
+        
+        newChannelContent.items.append(contentsOf: mutableContinuation.contents?.items ?? [])
         self.channelContentStore[T.type] = newChannelContent
     }
     
