@@ -66,7 +66,7 @@ public struct MoreVideoInfosResponse: YouTubeResponse {
     /// String representing the count of likes the video has.
     ///
     /// `defaultState` represents the count of like without the user's like (if he did like) and `clickedState` represents the new count of likes after the user clicked on the like button.
-    public var likesCount: (defaultState: String?, likeButtonClickedNewValue: String?)
+    public var likesCount: (defaultState: String?, clickedState: String?)
     
     /// Data that is normally present if authentication cookies when the request was made.
     public var authenticatedInfos: AuthenticatedData?
@@ -82,7 +82,7 @@ public struct MoreVideoInfosResponse: YouTubeResponse {
                 recommendedVideos: [any YTSearchResult] = [],
                 recommendedVideosContinuationToken: String? = nil,
                 chapters: [Chapter]? = nil,
-                likesCount: (defaultState: String?, likeButtonClickedNewValue: String?) = (nil, nil),
+                likesCount: (defaultState: String?, clickedState: String?) = (nil, nil),
                 authenticatedInfos: AuthenticatedData? = nil) {
         
         self.videoTitle = videoTitle
@@ -135,7 +135,7 @@ public struct MoreVideoInfosResponse: YouTubeResponse {
                         if toReturn.likesCount.defaultState == nil {
                             toReturn.likesCount.defaultState = button["segmentedLikeDislikeButtonRenderer"]["likeButton"]["toggleButtonRenderer"]["defaultText"]["simpleText"].string
                         }
-                        toReturn.likesCount.likeButtonClickedNewValue = button["segmentedLikeDislikeButtonRenderer"]["likeButton"]["toggleButtonRenderer"]["toggledText"]["simpleText"].string
+                        toReturn.likesCount.clickedState = button["segmentedLikeDislikeButtonRenderer"]["likeButton"]["toggleButtonRenderer"]["toggledText"]["simpleText"].string
                         break
                     } else if button["segmentedLikeDislikeButtonViewModel"].exists() { // new button
                         let likeStatus = button["segmentedLikeDislikeButtonViewModel"]["likeButtonViewModel"]["likeButtonViewModel"]["likeStatusEntity"]["likeStatus"].stringValue
@@ -149,8 +149,8 @@ public struct MoreVideoInfosResponse: YouTubeResponse {
                                 toReturn.authenticatedInfos?.likeStatus = .nothing
                             }
                         }
-                        toReturn.likesCount.defaultState = button["segmentedLikeDislikeButtonViewModel"]["likeCountEntity"]["likeCountIfIndifferent"]["content"].string ?? /* usually because there is no account connected */ button["segmentedLikeDislikeButtonViewModel"]["likeButtonViewModel"]["likeButtonViewModel"]["toggleButtonViewModel"]["toggleButtonViewModel"]["toggledButtonViewModel"]["buttonViewModel"]["title"].string
-                        toReturn.likesCount.likeButtonClickedNewValue = button["segmentedLikeDislikeButtonViewModel"]["likeCountEntity"]["likeCountIfLiked"]["content"].string ?? /* usually because there is no account connected */ button["segmentedLikeDislikeButtonViewModel"]["likeButtonViewModel"]["likeButtonViewModel"]["toggleButtonViewModel"]["toggleButtonViewModel"]["defaultButtonViewModel"]["buttonViewModel"]["title"].string
+                        toReturn.likesCount.defaultState = button["segmentedLikeDislikeButtonViewModel"]["likeCountEntity"]["likeCountIfLiked"]["content"].string ?? /* usually because there is no account connected */ button["segmentedLikeDislikeButtonViewModel"]["likeButtonViewModel"]["likeButtonViewModel"]["toggleButtonViewModel"]["toggleButtonViewModel"]["defaultButtonViewModel"]["buttonViewModel"]["title"].string
+                        toReturn.likesCount.clickedState = button["segmentedLikeDislikeButtonViewModel"]["likeCountEntity"]["likeCountIfIndifferent"]["content"].string ?? /* usually because there is no account connected */ button["segmentedLikeDislikeButtonViewModel"]["likeButtonViewModel"]["likeButtonViewModel"]["toggleButtonViewModel"]["toggleButtonViewModel"]["toggledButtonViewModel"]["buttonViewModel"]["title"].string
                         break
                     }
                 }
