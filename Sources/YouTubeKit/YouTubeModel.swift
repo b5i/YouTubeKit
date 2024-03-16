@@ -241,6 +241,8 @@ public class YouTubeModel {
             return getHistoryHeaders()
         case .deleteVideoFromHistory:
             return deleteVideoFromHistoryHeaders()
+        case .historyContinuationHeaders:
+            return getHistoryContinuationHeaders()
         case .moreVideoInfosHeaders:
             return moreVideoInfos()
         case .fetchMoreRecommendedVideosHeaders:
@@ -999,6 +1001,40 @@ public class YouTubeModel {
                 addQueryAfterParts: [],
                 httpBody: [
                     "{\"context\":{\"client\":{\"hl\":\"\(self.selectedLocaleLanguageCode)\",\"gl\":\"\(self.selectedLocaleCountryCode.uppercased())\",\"userAgent\":\"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.2 Safari/605.1.15,gzip(gfe)\",\"clientName\":\"WEB\",\"clientVersion\":\"2.20230120.00.00\",\"acceptHeader\":\"text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8\",\"mainAppWebInfo\":{\"webDisplayMode\":\"WEB_DISPLAY_MODE_BROWSER\",\"isWebNativeShareAvailable\":true}},\"user\":{\"lockedSafetyMode\":false},\"request\":{\"useSsl\":true,\"internalExperimentFlags\":[],\"consistencyTokenJars\":[]}},\"browseId\":\"FEhistory\"}"
+                ],
+                parameters: [
+                    .init(name: "prettyPrint", content: "false")
+                ]
+            )
+        }
+    }
+    
+    /// Get headers to get the continuation of a `getHistoryContinuationHeaders()` ("more results" button).
+    /// - Returns: The headers for this request.
+    func getHistoryContinuationHeaders() -> HeadersList {
+        if let headers = self.customHeaders[.historyContinuationHeaders] {
+            return headers
+        } else {
+            return HeadersList(
+                url: URL(string: "https://www.youtube.com/youtubei/v1/browse")!,
+                method: .POST,
+                headers: [
+                    .init(name: "Accept", content: "*/*"),
+                    .init(name: "Accept-Encoding", content: "gzip, deflate, br"),
+                    .init(name: "Host", content: "www.youtube.com"),
+                    .init(name: "User-Agent", content: "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.1 Safari/605.1.15"),
+                    .init(name: "Accept-Language", content: "\(self.selectedLocale);q=0.9"),
+                    .init(name: "Origin", content: "https://www.youtube.com/"),
+                    .init(name: "Referer", content: "https://www.youtube.com/"),
+                    .init(name: "Content-Type", content: "application/json"),
+                    .init(name: "X-Origin", content: "https://www.youtube.com")
+                ],
+                addQueryAfterParts: [
+                    .init(index: 0, encode: false, content: .continuation)
+                ],
+                httpBody: [
+                    "{\"context\":{\"client\":{\"hl\":\"\(self.selectedLocaleLanguageCode)\",\"gl\":\"\(self.selectedLocaleCountryCode.uppercased())\",\"userAgent\":\"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.2 Safari/605.1.15,gzip(gfe)\",\"clientName\":\"WEB\",\"clientVersion\":\"2.20230120.00.00\",\"acceptHeader\":\"text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8\",\"mainAppWebInfo\":{\"webDisplayMode\":\"WEB_DISPLAY_MODE_BROWSER\",\"isWebNativeShareAvailable\":true}},\"user\":{\"lockedSafetyMode\":false},\"request\":{\"useSsl\":true,\"internalExperimentFlags\":[],\"consistencyTokenJars\":[]}},\"continuation\":\"",
+                    "\"}"
                 ],
                 parameters: [
                     .init(name: "prettyPrint", content: "false")

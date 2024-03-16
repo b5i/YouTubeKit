@@ -111,6 +111,10 @@ public enum HeaderTypes: Codable {
     /// Get the history of the account.
     case historyHeaders
     
+    /// Get the history's continuation.
+    /// - Parameter continuation: The continuation token, should be taken from ``HistoryResponse/continuationToken``.
+    case historyContinuationHeaders
+    
     /// Delete a video from the history of the account.
     /// - Parameter movingVideoId: The videos's suppress token, should be taken from ``HistoryResponse/videosAndTime``'s suppressToken property.
     case deleteVideoFromHistory

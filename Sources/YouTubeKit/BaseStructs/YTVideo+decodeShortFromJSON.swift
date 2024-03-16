@@ -9,7 +9,7 @@ import Foundation
 
 public extension YTVideo {
     /// Process the JSON and give a decoded version of it.
-    /// - Parameter json: the JSON to be decoded.
+    /// - Parameter json: the JSON to be decoded, should have a "videoId" directly in it.
     /// - Returns: An instance of YTVideo, that is actually representing a short.
     ///
     /// The informations about shorts are very little compared to the informations you would get with a normal video.

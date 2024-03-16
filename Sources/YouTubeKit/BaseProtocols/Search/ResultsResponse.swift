@@ -7,7 +7,7 @@
 
 import Foundation
 
-public protocol ResultsResponse: YouTubeResponse, ResultsContinuationResponse {
+public protocol ResultsResponse: ResultsContinuationResponse {
     associatedtype Continuation: ResultsContinuationResponse
     
     /// String token that is necessary to give to the continuation request in order to make it to work (it sorts of authenticate the continuation).
