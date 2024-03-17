@@ -1,5 +1,5 @@
 //
-//  ResultsResponse+fetchContinuation.swift
+//  ContinuableResponse+fetchContinuation.swift
 //
 //
 //  Created by Antoine Bollengier on 17.10.2023.
@@ -8,7 +8,7 @@
 
 import Foundation
 
-public extension ResultsResponse {
+public extension ContinuableResponse {
     func fetchContinuation(youtubeModel: YouTubeModel, useCookies: Bool? = nil, result: @escaping (Result<Continuation, Error>) -> Void) {
         if let continuationToken = continuationToken {
             if let visitorData = visitorData {

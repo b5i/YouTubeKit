@@ -9,7 +9,7 @@
 import Foundation
 
 /// Struct representing a HistoryResponse to get the infos and the videos from the account's history.
-public struct HistoryResponse: AuthenticatedResponse {
+public struct HistoryResponse: AuthenticatedContinuableResponse {
     public static var headersType: HeaderTypes = .historyHeaders
     
     public static var parametersValidationList: ValidationList = [:]
@@ -22,13 +22,15 @@ public struct HistoryResponse: AuthenticatedResponse {
     /// Continuation token used to fetch more videos, nil if there is no more videos to fetch.
     public var continuationToken: String?
     
+    public var visitorData: String? = nil
+    
     /// Array of groups of videos and their "watched" date.
     ///
     /// Example:
     /// ```swift
-    /// var videosAndTime = [HistoryBlock(groupTitle: "Today", contentsArray: [A few videos or shorts]), (groupTitle: "Yesterday", contentsArray: [A few videos too])]
+    /// var results = [HistoryBlock(groupTitle: "Today", contentsArray: [A few videos or shorts]), (groupTitle: "Yesterday", contentsArray: [A few videos too])]
     /// ```
-    public var historyParts: [HistoryBlock] = []
+    public var results: [HistoryBlock] = []
     
     /// Title of the playlist.
     public var title: String?
@@ -50,7 +52,7 @@ public struct HistoryResponse: AuthenticatedResponse {
             if contentGroup["itemSectionRenderer"].exists() {
                 let videoGroup = contentGroup["itemSectionRenderer"]
 
-                toReturn.historyParts.append(self.decodeHistoryBlock(historyBlockJSON: videoGroup))
+                toReturn.results.append(self.decodeHistoryBlock(historyBlockJSON: videoGroup))
             } else if contentGroup["continuationItemRenderer"].exists() {
                 toReturn.continuationToken = contentGroup["continuationItemRenderer"]["continuationEndpoint"]["continuationCommand"]["token"].string
             }
@@ -80,15 +82,8 @@ public struct HistoryResponse: AuthenticatedResponse {
         return toAppend
     }
     
-    /// Merge a ``PlaylistInfosResponse/Continuation`` to this instance of ``PlaylistInfosResponse``.
-    /// - Parameter continuation: the ``PlaylistInfosResponse/Continuation`` that will be merged.
-    public mutating func mergeWithContinuation(_ continuation: Continuation) {
-        self.continuationToken = continuation.continuationToken
-        self.historyParts.append(contentsOf: continuation.historyParts)
-    }
-    
     /// Struct representing the continuation ("load more videos" button)
-    public struct Continuation: AuthenticatedResponse {
+    public struct Continuation: AuthenticatedResponse, ResponseContinuation {
         public static var headersType: HeaderTypes = .historyContinuationHeaders
         
         public static var parametersValidationList: ValidationList = [.continuation: .existenceValidator]
@@ -99,7 +94,7 @@ public struct HistoryResponse: AuthenticatedResponse {
         public var continuationToken: String?
         
         /// Array of history blocks.
-        public var historyParts: [HistoryBlock] = []
+        public var results: [HistoryBlock] = []
         
         public static func decodeJSON(json: JSON) -> HistoryResponse.Continuation {
             var toReturn = Continuation()
@@ -115,7 +110,7 @@ public struct HistoryResponse: AuthenticatedResponse {
                     if contentGroup["itemSectionRenderer"].exists() {
                         let videoGroup = contentGroup["itemSectionRenderer"]
 
-                        toReturn.historyParts.append(HistoryResponse.decodeHistoryBlock(historyBlockJSON: videoGroup))
+                        toReturn.results.append(HistoryResponse.decodeHistoryBlock(historyBlockJSON: videoGroup))
                     } else if contentGroup["continuationItemRenderer"].exists() {
                         toReturn.continuationToken = contentGroup["continuationItemRenderer"]["continuationEndpoint"]["continuationCommand"]["token"].string
                     }

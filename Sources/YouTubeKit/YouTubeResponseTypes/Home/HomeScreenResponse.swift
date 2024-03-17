@@ -8,7 +8,7 @@
 import Foundation
 
 /// Struct representing the request/response of the main YouTube webpage.
-public struct HomeScreenResponse: ResultsResponse {
+public struct HomeScreenResponse: ContinuableResponse {
     public static var headersType: HeaderTypes = .home
     
     public static var parametersValidationList: ValidationList = [:]
@@ -18,10 +18,8 @@ public struct HomeScreenResponse: ResultsResponse {
     /// It should normally never be nil because this is the main webpage with infinite results
     public var continuationToken: String?
     
-    /// ``YTSearchResult`` array representing the results of the request.
-    ///
-    /// There's normally only ``YTVideo`` in the home screen.
-    public var results: [any YTSearchResult] = []
+    /// An array representing the videos from the home screen, can be empty if no cookies were provided.
+    public var results: [YTVideo] = []
     
     /// String token that is necessary to give to the continuation request in order to make it to work (it sorts of authenticate the continuation).
     public var visitorData: String?
@@ -49,7 +47,7 @@ public struct HomeScreenResponse: ResultsResponse {
     }
     
     /// Struct representing the continuation ("load more videos" button)
-    public struct Continuation: ResultsContinuationResponse {
+    public struct Continuation: ResponseContinuation {
         public static var headersType: HeaderTypes = .homeVideosContinuationHeader
         
         public static var parametersValidationList: ValidationList = [.continuation: .existenceValidator, .visitorData: .existenceValidator]
@@ -60,7 +58,7 @@ public struct HomeScreenResponse: ResultsResponse {
         public var continuationToken: String?
         
         /// Videos array representing the results of the request.
-        public var results: [any YTSearchResult] = []
+        public var results: [YTVideo] = []
         
         public static func decodeJSON(json: JSON) -> HomeScreenResponse.Continuation {            
             var toReturn = Continuation()

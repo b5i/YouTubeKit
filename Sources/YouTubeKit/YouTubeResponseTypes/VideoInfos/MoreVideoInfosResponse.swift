@@ -323,7 +323,7 @@ public struct MoreVideoInfosResponse: YouTubeResponse {
     
     
     /// Struct representing the continuation of the recommended videos of the ``MoreVideoInfosResponse``.
-    public struct RecommendedVideosContinuation: ResultsContinuationResponse {
+    public struct RecommendedVideosContinuation: ResponseContinuation {
         public static var headersType: HeaderTypes = .fetchMoreRecommendedVideosHeaders
         
         public static var parametersValidationList: ValidationList = [.continuation: .existenceValidator]

@@ -182,7 +182,7 @@ A lot of structures and protocol have custom request calls (shortcuts to various
     
         1. `fetchInfos` that can be used to retrieve various informations about the channel.
         
-    3. `ResultsResponse` (`HomeScreenResponse`, `SearchResponse`, `PlaylistInfosResponse` are conform to it) has:
+    3. `ContinuableResponse` (`HomeScreenResponse`, `SearchResponse`, `PlaylistInfosResponse` are conform to it) has:
     
         1. `mergeContinuation` to merge the continuations easily.
         

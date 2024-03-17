@@ -8,7 +8,7 @@
 import Foundation
 
 /// Struct representing a PlaylistInfosResponse to get the infos and the videos from a playlist.
-public struct PlaylistInfosResponse: ResultsResponse {
+public struct PlaylistInfosResponse: ContinuableResponse {
     public static var headersType: HeaderTypes = .playlistHeaders
     
     public static var parametersValidationList: ValidationList = [.browseId: .playlistIdWithVLPrefixValidator]
@@ -20,7 +20,7 @@ public struct PlaylistInfosResponse: ResultsResponse {
     public var continuationToken: String?
     
     /// Videos of the playlists.
-    public var results: [any YTSearchResult] = []
+    public var results: [YTVideo] = []
             
     /// Description of the playlist.
     public var playlistDescription: String?
@@ -137,12 +137,12 @@ public struct PlaylistInfosResponse: ResultsResponse {
     /// - Parameter continuation: the ``PlaylistInfosResponse/Continuation`` that will be merged.
     public mutating func mergeWithContinuation(_ continuation: Continuation) {
         self.continuationToken = continuation.continuationToken
-        self.results.append(contentsOf: continuation.results.filter({$0 as? YTVideo != nil}) as! [YTVideo])
+        self.results.append(contentsOf: continuation.results)
         self.videoIdsInPlaylist?.append(contentsOf: continuation.videoIdsInPlaylist)
     }
     
     /// Struct representing the continuation ("load more videos" button)
-    public struct Continuation: ResultsContinuationResponse {
+    public struct Continuation: ResponseContinuation {
         public static var headersType: HeaderTypes = .playlistContinuationHeaders
         
         public static var parametersValidationList: ValidationList = [.continuation: .existenceValidator]
@@ -151,7 +151,7 @@ public struct PlaylistInfosResponse: ResultsResponse {
         public var continuationToken: String?
         
         /// Array of videos.
-        public var results: [any YTSearchResult] = []
+        public var results: [YTVideo] = []
         
         /// Ids related to the playlist of the videos, generally only defined when the ``YouTubeModel/cookies`` are defined, used in the request and the user owns the playlist.
         public var videoIdsInPlaylist: [String?] = []

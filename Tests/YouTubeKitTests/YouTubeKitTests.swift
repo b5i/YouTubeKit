@@ -729,7 +729,7 @@ final class YouTubeKitTests: XCTestCase {
          */
         let finalPlaylist = try await PlaylistInfosResponse.sendRequest(youtubeModel: YTM, data: [.browseId: createdPlaylistId], useCookies: true)
         
-        guard finalPlaylist.results.filter({$0 as? YTVideo != nil}).map({($0 as! YTVideo).videoId}) == [secondVideoToAddId, firstVideoToAddId, secondVideoToAddId, thirdVideoToAddId] else { XCTFail(TEST_NAME + "Checking if all the addings and moves were correctly executed."); return }
+        guard finalPlaylist.results.map({$0.videoId}) == [secondVideoToAddId, firstVideoToAddId, secondVideoToAddId, thirdVideoToAddId] else { XCTFail(TEST_NAME + "Checking if all the addings and moves were correctly executed."); return }
         
         // Removing part
         let removeVideoResponse = try await RemoveVideoFromPlaylistResponse.sendRequest(youtubeModel: YTM, data: [.movingVideoId: thirdVideoIdInPlaylist, .playlistEditToken: "CAFAAQ%3D%3D", .browseId: createdPlaylistId], useCookies: true) // playlistEditToken is hardcoded here, could lead to some error
@@ -743,7 +743,7 @@ final class YouTubeKitTests: XCTestCase {
         // Checking the playlist
         let finalPlaylist2 = try await PlaylistInfosResponse.sendRequest(youtubeModel: YTM, data: [.browseId: createdPlaylistId], useCookies: true)
         
-        guard finalPlaylist2.results.filter({$0 as? YTVideo != nil}).map({($0 as! YTVideo).videoId}) == [firstVideoToAddId] else { XCTFail(TEST_NAME + "Checking if all the removing were correctly executed."); return }
+        guard finalPlaylist2.results.map({$0.videoId}) == [firstVideoToAddId] else { XCTFail(TEST_NAME + "Checking if all the removing were correctly executed."); return }
         
         // Deleting the playlist
         
@@ -760,22 +760,22 @@ final class YouTubeKitTests: XCTestCase {
         let historyResponse = try await HistoryResponse.sendRequest(youtubeModel: YTM, data: [:], useCookies: true)
                 
         XCTAssertNotNil(historyResponse.title, TEST_NAME + "Checking if historyResponse.title has been extracted.")
-        XCTAssertNotEqual(historyResponse.historyParts.count, 0, TEST_NAME + "Checking if historyResponse.videosAndTime is not empty.")
+        XCTAssertNotEqual(historyResponse.results.count, 0, TEST_NAME + "Checking if historyResponse.videosAndTime is not empty.")
         
-        guard let firstVideoToken = (historyResponse.historyParts.first?.contentsArray.first(where: {$0 as? HistoryResponse.HistoryBlock.VideoWithToken != nil}) as! HistoryResponse.HistoryBlock.VideoWithToken).suppressToken else { XCTFail(TEST_NAME + "Could not find a video with a suppressToken in the history"); return }
+        guard let firstVideoToken = (historyResponse.results.first?.contentsArray.first(where: {$0 as? HistoryResponse.HistoryBlock.VideoWithToken != nil}) as! HistoryResponse.HistoryBlock.VideoWithToken).suppressToken else { XCTFail(TEST_NAME + "Could not find a video with a suppressToken in the history"); return }
         
         try await historyResponse.removeVideo(withSuppressToken: firstVideoToken, youtubeModel: YTM)
         
-        if let shortsBlock = (historyResponse.historyParts.first?.contentsArray.first(where: {$0 as? HistoryResponse.HistoryBlock.ShortsBlock != nil}) as? HistoryResponse.HistoryBlock.ShortsBlock) {
+        if let shortsBlock = (historyResponse.results.first?.contentsArray.first(where: {$0 as? HistoryResponse.HistoryBlock.ShortsBlock != nil}) as? HistoryResponse.HistoryBlock.ShortsBlock) {
             XCTAssertNotNil(shortsBlock.suppressTokens.compactMap({$0}), TEST_NAME + "Checking if suppressTokens of ShortBlock is not full of nil values.")
         }
         
-        if let continuationToken = historyResponse.continuationToken {
-            let continuationResponse = try await HistoryResponse.Continuation.sendRequest(youtubeModel: YTM, data: [.continuation: continuationToken])
+        if historyResponse.continuationToken != nil {
+            let continuationResponse = try await historyResponse.fetchContinuation(youtubeModel: YTM)
             
-            XCTAssertNotEqual(continuationResponse.historyParts.count, 0, TEST_NAME + "Checking if continuationResponse.historyParts is not empty.")
+            XCTAssertNotEqual(continuationResponse.results.count, 0, TEST_NAME + "Checking if continuationResponse.historyParts is not empty.")
             
-            if let shortsBlock = (continuationResponse.historyParts.first?.contentsArray.first(where: {$0 as? HistoryResponse.HistoryBlock.ShortsBlock != nil}) as? HistoryResponse.HistoryBlock.ShortsBlock) {
+            if let shortsBlock = (continuationResponse.results.first?.contentsArray.first(where: {$0 as? HistoryResponse.HistoryBlock.ShortsBlock != nil}) as? HistoryResponse.HistoryBlock.ShortsBlock) {
                 XCTAssertNotNil(shortsBlock.suppressTokens.compactMap({$0}), TEST_NAME + "Checking if suppressTokens of ShortBlock is not full of nil values.")
             }
         }

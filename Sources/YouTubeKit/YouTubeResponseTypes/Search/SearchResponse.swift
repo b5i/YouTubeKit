@@ -8,7 +8,7 @@
 import Foundation
 
 /// Struct representing a search response.
-public struct SearchResponse: ResultsResponse {
+public struct SearchResponse: ContinuableResponse {
     public static var headersType: HeaderTypes = .search
     
     public static var parametersValidationList: ValidationList = [.query: .existenceValidator]
@@ -98,7 +98,7 @@ public struct SearchResponse: ResultsResponse {
     }
     
     /// Struct representing the ``SearchResponse`` but restricted to Creative Commons copyrighted videos.
-    public struct Restricted: ResultsResponse {    
+    public struct Restricted: ContinuableResponse {    
         public typealias Continuation = SearchResponse.Continuation
         
         public static var headersType: HeaderTypes = .restrictedSearch
@@ -152,7 +152,7 @@ public struct SearchResponse: ResultsResponse {
     /// let mySearchResponseContinuation: SearchResponse.Continuation = ...
     /// mySearchResponse.mergeContinuation(mySearchResponseContinuation)
     /// ```
-    public struct Continuation: ResultsContinuationResponse {
+    public struct Continuation: ResponseContinuation {
         public static var headersType: HeaderTypes = .searchContinuationHeaders
         
         public static var parametersValidationList: ValidationList = [.continuation: .existenceValidator]
