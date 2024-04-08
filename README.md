@@ -56,7 +56,7 @@ Every possible request within YouTubeKit conforms to the protocol [YouTubeRespon
 - `static func decodeData(data: Data) throws -> Self` is a static method used to decode some Data and give back in instance of the `YouTubeResponse`. Except for some special cases (if the raw data can't directly be converted into JSON for instance), you won't need to override the default implementation of this method.
 - `static func decodeJSON(json: JSON) -> Self` is a static method used to decode some JSON and give back in instance of the `YouTubeResponse`, if the JSON does not represent a proper response it will return an empty response (only nils and empty arrays).
 - `static func checkForErrors(json: JSON) throws` is a static method that should be called before calling `decodeJSON(json: JSON)` to avoid trying to decode some JSON that represents an error. Except for some special cases (errors returned for this request are in a non-standart format), you won't need to override the default implementation.
-- `static func sendRequest()` is a static method that allows you to make request, by using async await system or closures. Its usage will be precised in the following tutorial.
+- `static func sendNonThrowingRequest()` and `static func sendThrowingRequest()` are static methods that allows you to make requests, by using async await system or closures. Its usage will be precised in the following tutorial.
 
 With YouTubeKit you can make a large variety of requests to the YouTube API, new request types are added often and you can even create your own in [Custom requests/responses](#custom-requests-and-responses).
 
@@ -88,7 +88,7 @@ With YouTubeKit you can make a large variety of requests to the YouTube API, new
 
 4. Execute the request with (e.g. a `SearchResponse` request)
   ```swift
-  SearchResponse.sendRequest(youtubeModel: YTM, data: dataParameters, result: { result, error in
+  SearchResponse.sendNonThrowingRequest(youtubeModel: YTM, data: dataParameters, result: { result, error in
     switch result {
     case .success(let response):
         /// Process here the result.
@@ -101,7 +101,7 @@ With YouTubeKit you can make a large variety of requests to the YouTube API, new
   ```
   you can also send the request without explicitly declaring `dataParameters` like this:
   ```swift
-  SearchResponse.sendRequest(youtubeModel: YTM, data: [.query: textQuery], result: { result in
+  SearchResponse.sendNonThrowingRequest(youtubeModel: YTM, data: [.query: textQuery], result: { result in
     switch result {
     case .success(let response):
         /// Process here the result.
@@ -114,7 +114,7 @@ With YouTubeKit you can make a large variety of requests to the YouTube API, new
   ```
   and even use the async/throws API like this:
   ```swift
-  let result = try await SearchResponse.sendRequest(youtubeModel: YTM, data: [.query: textQuery])
+  let result = try await SearchResponse.sendThrowingRequest(youtubeModel: YTM, data: [.query: textQuery])
   switch result {
   case .success(let response):
         /// Process here the result.
@@ -251,15 +251,15 @@ public struct NameAndSurnameResponse: YouTubeResponse {
     }
 }
 ```
-3. And to exectute it you just have to call `func sendRequest<ResponseType: YouTubeResponse>(
-    responseType: ResponseType.Type,
+3. And to exectute it you just have to call `func sendRequest(
+    youtubeModel: YouTubeModel,
     data: [HeadersList.AddQueryInfo.ContentTypes : String],
     result: @escaping (Result<ResponseType, Error>) -> ()
 )`
 e.g,
 ```swift
 /// We continue with our example:
-NameAndSurnameResponse.sendRequest(youtubeModel: YTM, data: [:], result: { result in
+NameAndSurnameResponse.sendNonThrowingRequest(youtubeModel: YTM, data: [:], result: { result in
     switch result {
     case .success(let response):
         /// Process here the result.

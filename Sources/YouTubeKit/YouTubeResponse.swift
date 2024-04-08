@@ -64,7 +64,7 @@ public protocol YouTubeResponse {
         result: @escaping (Result<Self, Error>) -> ()
     )
     
-    /// A function to call the request of the given YouTubeResponse. For more informations see ``YouTubeResponse/sendRequest(youtubeModel:data:useCookies:result:)``.
+    /// A function to call the request of the given YouTubeResponse. For more informations see ``YouTubeModel/sendRequest(responseType:data:useCookies:result:)``.
     @available(macOS 10.15, iOS 13.0, watchOS 6.0, tvOS 13.0, *)
     static func sendThrowingRequest(
         youtubeModel: YouTubeModel,
@@ -72,7 +72,7 @@ public protocol YouTubeResponse {
         useCookies: Bool?
     ) async throws -> Self
     
-    /// A function to call the request of the given YouTubeResponse. For more informations see ``YouTubeResponse/sendRequest(youtubeModel:data:useCookies:result:)``.
+    /// A function to call the request of the given YouTubeResponse. For more informations see ``YouTubeModel/sendRequest(responseType:data:useCookies:result:)``.
     @available(macOS 10.15, iOS 13.0, watchOS 6.0, tvOS 13.0, *)
     static func sendNonThrowingRequest(
         youtubeModel: YouTubeModel,
@@ -90,7 +90,7 @@ public protocol YouTubeResponse {
         result: @escaping (Self?, Error?) -> ()
     )
 
-    /// A function to call the request of the given YouTubeResponse. For more informations see ``YouTubeResponse/sendRequest(youtubeModel:data:useCookies:result:)``.
+    /// A function to call the request of the given YouTubeResponse. For more informations see ``YouTubeModel/sendRequest(responseType:data:useCookies:result:)``.
     @available(*, deprecated, message: "This method will be removed in a future version of YouTubeKit, please use sendRequest(youtubeModel: YouTubeModel, data: RequestData, useCookies: Bool?) async throws -> Self or sendRequest(youtubeModel: YouTubeModel, data: RequestData, useCookies: Bool?) async -> Result<Self, Error> instead.") // safer and better to use the throws or the result API instead of a tuple
     @available(macOS 10.15, iOS 13.0, watchOS 6.0, tvOS 13.0, *)
     static func sendRequest(

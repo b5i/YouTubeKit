@@ -16,14 +16,14 @@ public protocol AuthenticatedResponse: YouTubeResponse {
         result: @escaping (Result<Self, Error>) -> ()
     )
 
-    /// A function to call the request of the given YouTubeResponse. For more informations see ``YouTubeResponse/sendRequest(youtubeModel:data:useCookies:result:)``.
+    /// A function to call the request of the given YouTubeResponse. For more informations see ``YouTubeModel/sendRequest(responseType:data:useCookies:result:)``.
     @available(macOS 10.15, iOS 13.0, watchOS 6.0, tvOS 13.0, *)
     static func sendNonThrowingRequest(
         youtubeModel: YouTubeModel,
         data: [HeadersList.AddQueryInfo.ContentTypes : String]
     ) async -> Result<Self, Error>
     
-    /// A function to call the request of the given YouTubeResponse. For more informations see ``YouTubeResponse/sendRequest(youtubeModel:data:useCookies:result:)``.
+    /// A function to call the request of the given YouTubeResponse. For more informations see ``YouTubeModel/sendRequest(responseType:data:useCookies:result:)``.
     @available(macOS 10.15, iOS 13.0, watchOS 6.0, tvOS 13.0, *)
     static func sendThrowingRequest(
         youtubeModel: YouTubeModel,
