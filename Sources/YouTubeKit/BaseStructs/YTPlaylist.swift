@@ -71,9 +71,8 @@ public struct YTPlaylist: YTSearchResult {
     /// ```swift
     /// let YTM = YouTubeModel()
     /// let playlistId: String = ...
-    /// PlaylistInfosResponse.sendRequest(youtubeModel: YTM, data: [.query : playlistId], result: { result, error in
+    /// PlaylistInfosResponse.sendNonThrowingRequest(youtubeModel: YTM, data: [.query : playlistId], result: { result in
     ///      print(result)
-    ///      print(error)
     /// })
     /// ```
     public var playlistId: String

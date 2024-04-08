@@ -56,9 +56,8 @@ public struct VideoInfosResponse: YouTubeResponse {
     /// ```swift
     /// let YTM = YouTubeModel()
     /// let videoId: String = ...
-    /// VideoInfosResponse.sendRequest(youtubeModel: YTM, data: [.query : videoId], result: { result, error in
+    /// VideoInfosResponse.sendNonThrowingRequest(youtubeModel: YTM, data: [.query : videoId], result: { result in
     ///      print(result)
-    ///      print(error)
     /// })
     /// ```
     public var videoId: String?

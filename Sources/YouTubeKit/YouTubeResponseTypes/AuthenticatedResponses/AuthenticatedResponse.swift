@@ -10,7 +10,7 @@ import Foundation
 
 public protocol AuthenticatedResponse: YouTubeResponse {
     /// A function to call the request of the given YouTubeResponse. For more informations see ``YouTubeModel/sendRequest(responseType:data:useCookies:result:)``.
-    static func sendRequest(
+    static func sendNonThrowingRequest(
         youtubeModel: YouTubeModel,
         data: [HeadersList.AddQueryInfo.ContentTypes : String],
         result: @escaping (Result<Self, Error>) -> ()
@@ -18,7 +18,14 @@ public protocol AuthenticatedResponse: YouTubeResponse {
 
     /// A function to call the request of the given YouTubeResponse. For more informations see ``YouTubeResponse/sendRequest(youtubeModel:data:useCookies:result:)``.
     @available(macOS 10.15, iOS 13.0, watchOS 6.0, tvOS 13.0, *)
-    static func sendRequest(
+    static func sendNonThrowingRequest(
+        youtubeModel: YouTubeModel,
+        data: [HeadersList.AddQueryInfo.ContentTypes : String]
+    ) async -> Result<Self, Error>
+    
+    /// A function to call the request of the given YouTubeResponse. For more informations see ``YouTubeResponse/sendRequest(youtubeModel:data:useCookies:result:)``.
+    @available(macOS 10.15, iOS 13.0, watchOS 6.0, tvOS 13.0, *)
+    static func sendThrowingRequest(
         youtubeModel: YouTubeModel,
         data: [HeadersList.AddQueryInfo.ContentTypes : String]
     ) async throws -> Self
@@ -29,7 +36,7 @@ public protocol AuthenticatedResponse: YouTubeResponse {
 
 public extension AuthenticatedResponse {
     
-    static func sendRequest(
+    static func sendNonThrowingRequest(
         youtubeModel: YouTubeModel,
         data: [HeadersList.AddQueryInfo.ContentTypes : String],
         result: @escaping (Result<Self, Error>) -> ()
@@ -48,13 +55,25 @@ public extension AuthenticatedResponse {
     }
     
     @available(macOS 10.15, iOS 13.0, watchOS 6.0, tvOS 13.0, *)
-    static func sendRequest(
+    static func sendNonThrowingRequest(
+        youtubeModel: YouTubeModel,
+        data: [HeadersList.AddQueryInfo.ContentTypes : String]
+    ) async -> Result<Self, Error> {
+        do {
+            return .success(try await self.sendThrowingRequest(youtubeModel: youtubeModel, data: data))
+        } catch {
+            return .failure(error)
+        }
+    }
+    
+    @available(macOS 10.15, iOS 13.0, watchOS 6.0, tvOS 13.0, *)
+    static func sendThrowingRequest(
         youtubeModel: YouTubeModel,
         data: [HeadersList.AddQueryInfo.ContentTypes : String]
     ) async throws -> Self {
         guard youtubeModel.cookies != "" && youtubeModel.cookies != "" else { throw "Authentification cookies not provided: youtubeModel.cookies = \(String(describing: youtubeModel.cookies))" }
         return try await withCheckedThrowingContinuation({ (continuation: CheckedContinuation<Self, Error>) in
-            sendRequest(youtubeModel: youtubeModel, data: data, useCookies: true, result: { result in
+            sendNonThrowingRequest(youtubeModel: youtubeModel, data: data, useCookies: true, result: { result in
                 continuation.resume(with: result)
             })
         })

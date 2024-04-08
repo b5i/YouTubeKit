@@ -13,14 +13,20 @@ struct SwiftUIView: View {
     var body: some View {
         TextField("Search", text: $text)
         Button {
-            SearchResponse.sendRequest(youtubeModel: YTM, data: [.query : text], result: { result, error in
-                print(result)
-                print(error)
+            SearchResponse.sendNonThrowingRequest(youtubeModel: YTM, data: [.query : text], result: { result in
+                switch result {
+                case .success(let response):
+                    print("Got a response! \(String(describing: response))")
+                case .failure(let error):
+                    print("Failed to get a response: \(error.localizedDescription)")
+                }
             })
-            /// You can also use async await system
+            /// You can also use async await system or even using throws
             /*
             Task {
-                let (result, error) = await SearchResponse.sendRequest(youtubeModel: YTM, data: [.query : text])
+                let result = await SearchResponse.sendNonThrowingRequest(youtubeModel: YTM, data: [.query : text])
+                // or
+                let result = try await SearchResponse.sendThrowingRequest(youtubeModel: YTM, data: [.query : text])
             }
             */
         } label: {

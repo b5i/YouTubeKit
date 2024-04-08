@@ -32,6 +32,11 @@ public struct HistoryResponse: AuthenticatedContinuableResponse {
     /// ```
     public var results: [HistoryBlock] = []
     
+    @available(*, deprecated, renamed: "results")
+    public var videosAndTime: [HistoryBlock] {
+        return results
+    }
+    
     /// Title of the playlist.
     public var title: String?
     
@@ -141,6 +146,30 @@ public struct HistoryResponse: AuthenticatedContinuableResponse {
         /// An array of the videos that have been watched in the part of time indicated by the HistoryResponse/HistoryBlock/groupTitle.
         public var contentsArray: [any HistoryBlockContent]
         
+        @available(*, deprecated, renamed: "contentsArray")
+        public var videosArray: [VideoWithToken] {
+            return contentsArray.map({ block in
+                if let block = block as? VideoWithToken {
+                    return [block]
+                } else if let block = block as? ShortsBlock {
+                    var finalArray: [VideoWithToken] = []
+                    for (offset, short) in block.shorts.enumerated() {
+                        finalArray.append(VideoWithToken(video: short, suppressToken: block.suppressTokens[offset]))
+                    }
+                    return finalArray
+                } else {
+                    return []
+                }
+            }).reduce([], {
+                var finalArray: [VideoWithToken] = []
+                
+                finalArray.append(contentsOf: $0)
+                finalArray.append(contentsOf: $1)
+                
+                return finalArray
+            })
+        }
+            
         /// Struct representing a video and the token that should be used to suppress it from the history.
         public struct VideoWithToken: HistoryBlockContent, Identifiable {
             public var id: Int { return video.hashValue + (suppressToken?.hashValue ?? 0) }

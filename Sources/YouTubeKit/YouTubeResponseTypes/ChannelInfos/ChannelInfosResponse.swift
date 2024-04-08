@@ -61,7 +61,7 @@ public struct ChannelInfosResponse: YouTubeResponse {
     /// ```swift
     /// let YTM = YouTubeModel()
     /// let channelId: String = ...
-    /// ChannelInfosResponse.sendRequest(youtubeModel: YTM, data: [.browseId : channelId], result: { result in
+    /// ChannelInfosResponse.sendNonThrowingRequest(youtubeModel: YTM, data: [.browseId : channelId], result: { result in
     ///     switch result {
     ///     case .success(let response):
     ///         print(response)
@@ -226,7 +226,7 @@ public struct ChannelInfosResponse: YouTubeResponse {
     /// ```swift
     /// let YTM = YouTubeModel()
     /// let myInstance: ChannelInfosResponse = ...
-    /// myInstance.getChannelContent(type: .wantedType, youtubeModel: YTM) { newInstance in
+    /// myInstance.getChannelContent(forType: .wantedType, youtubeModel: YTM) { newInstance in
     ///     switch result {
     ///     case .success(let newInstance):
     ///         myInstance.copyProperties(of: newInstance) /// Will update to the properties of the newInstance
@@ -240,7 +240,7 @@ public struct ChannelInfosResponse: YouTubeResponse {
     /// ```swift
     /// let YTM = YouTubeModel()
     /// let myInstance: ChannelInfosResponse = ...
-    /// myInstance.getChannelContent(type: .wantedType, youtubeModel: YTM) { result in
+    /// myInstance.getChannelContent(forType: .wantedType, youtubeModel: YTM) { result in
     ///     switch result {
     ///     case .success(let newInstance):
     ///         myInstance.channelContentStore.merge(newInstance.channelContentStore, uniquingKeysWith: { (_, new) in new }) /// Will merge the two instances results and keep the most recent data.
@@ -249,13 +249,13 @@ public struct ChannelInfosResponse: YouTubeResponse {
     ///     }
     /// }
     /// ```
-    public func getChannelContent(type: RequestTypes, youtubeModel: YouTubeModel, useCookies: Bool? = nil, result: @escaping (Result<ChannelInfosResponse, Error>) -> ()) {
+    public func getChannelContent(forType type: RequestTypes, youtubeModel: YouTubeModel, useCookies: Bool? = nil, result: @escaping (Result<ChannelInfosResponse, Error>) -> ()) {
         guard
             let params = requestParams[type]
         else { result(.failure("Something between returnType or params haven't been added where it should, returnType in ChannelInfosResponse.requestTypes and params in ChannelInfosResponse.requestParams")); return }
         guard let channelId = self.channelId else { result(.failure("Channel ID is nil")); return}
         
-        ChannelInfosResponse.sendRequest(youtubeModel: youtubeModel, data: [.browseId: channelId, .params: params], useCookies: useCookies, result: { channelResponse in
+        ChannelInfosResponse.sendNonThrowingRequest(youtubeModel: youtubeModel, data: [.browseId: channelId, .params: params], useCookies: useCookies, result: { channelResponse in
             result(channelResponse)
         })
     }
@@ -270,7 +270,7 @@ public struct ChannelInfosResponse: YouTubeResponse {
     /// ```swift
     /// let YTM = YouTubeModel()
     /// let myInstance: ChannelInfosResponse = ...
-    /// myInstance.getChannelContent(type: .wantedType, youtubeModel: YTM) { result in
+    /// myInstance.getChannelContent(forType: .wantedType, youtubeModel: YTM) { result in
     ///     switch result {
     ///     case .success(let response):
     ///         myInstance.copyProperties(of: newInstance) /// Will update to the properties of the newInstance
@@ -285,7 +285,7 @@ public struct ChannelInfosResponse: YouTubeResponse {
     /// ```swift
     /// let YTM = YouTubeModel()
     /// let myInstance: ChannelInfosResponse = ...
-    /// myInstance.getChannelContent(type: .wantedType, youtubeModel: YTM) { result in
+    /// myInstance.getChannelContent(forType: .wantedType, youtubeModel: YTM) { result in
     ///     switch result {
     ///     case .success(let response):
     ///          myInstance.channelContentStore.merge(newInstance.channelContentStore, uniquingKeysWith: { (_, new) in new }) /// Will merge the two instances results and keep the most recent data.
@@ -296,9 +296,9 @@ public struct ChannelInfosResponse: YouTubeResponse {
     /// }
     /// ```
     @available(macOS 10.15, iOS 13.0, watchOS 6.0, tvOS 13.0, *)
-    public func getChannelContent(type: RequestTypes, youtubeModel: YouTubeModel) async throws -> ChannelInfosResponse {
+    public func getThrowingChannelContent(forType type: RequestTypes, youtubeModel: YouTubeModel, useCookies: Bool? = nil) async throws -> ChannelInfosResponse {
         return try await withCheckedThrowingContinuation({ (continuation: CheckedContinuation<ChannelInfosResponse, Error>) in
-            getChannelContent(type: type, youtubeModel: youtubeModel, result: { channelContent in
+            self.getChannelContent(forType: type, youtubeModel: youtubeModel, useCookies: useCookies, result: { channelContent in
                 continuation.resume(with: channelContent)
             })
         })
@@ -324,14 +324,13 @@ public struct ChannelInfosResponse: YouTubeResponse {
             /// Get the continuation token from this requestType
             let continuationToken = channelContentContinuationStore.first(where: {$0.key == requestType})?.value
             else { result(.failure("There is no continuation token for this type (\(T.self)")); return }
-        ContentContinuation.sendRequest(
+        ContentContinuation.sendNonThrowingRequest(
             youtubeModel: youtubeModel,
             data: [.continuation: continuationToken], 
             useCookies: useCookies,
             result: result
         )
     }
-    
     
     /// Get the continuation results for a certain ChannelContent.
     /// - Parameters:
@@ -341,18 +340,143 @@ public struct ChannelInfosResponse: YouTubeResponse {
     ///
     /// - Note: (For ``ListableChannelContent`` continuations) The elements from the continuation's contents usually don't contain the channel's information. You can still add them by calling ``ListableChannelContent/addChannelInfos(_:)`` or ``mergeListableChannelContentContinuation(_:)`` on the continuation with the information of the channel.
     @available(macOS 10.15, iOS 13.0, watchOS 6.0, tvOS 13.0, *)
-    public func getChannelContentContinuation<T: ChannelContent>(
+    public func getThrowingChannelContentContinuation<T: ChannelContent>(
         _: T.Type,
         youtubeModel: YouTubeModel,
         useCookies: Bool? = nil
     ) async throws -> ContentContinuation<T> {
         return try await withCheckedThrowingContinuation({ (continuation: CheckedContinuation<ContentContinuation<T>, Error>) in
-            getChannelContentContinuation(T.self, youtubeModel: youtubeModel, useCookies: useCookies, result: { result in
+            self.getChannelContentContinuation(T.self, youtubeModel: youtubeModel, useCookies: useCookies, result: { result in
                 continuation.resume(with: result)
             })
         })
     }
     
+    
+    // Deprecated methods
+    
+    @available(*, deprecated, message: "This method will be removed in a future version of YouTubeKit, please use getChannelContent(type: RequestTypes, youtubeModel: YouTubeModel, useCookies: Bool? = nil, result: @escaping (Result<ChannelInfosResponse, Error>) -> ()) instead.") // safer and better to use the result API instead of a tuple
+    /// Get a content from a channel, the content represents one of the tabs you see when browsing on YouTube's website in a channel's webpage. For example: Home, Videos, Shorts, Playlists etc...
+    /// - Parameters:
+    ///   - type: Type of content requested, (the tab of the wanted content).
+    ///   - youtubeModel: the ``YouTubeModel`` that will be used to get the request headers.
+    ///   - useCookies: boolean that precises if the request should include the model's ``YouTubeModel/cookies``, if set to nil, the value will be taken from ``YouTubeModel/alwaysUseCookies``. The cookies will be added to the `Cookie` HTTP header if one is already present or a new one will be created if not.
+    ///   - result: An instance of ``ChannelInfosResponse`` containing the result and updated channel properties or/and an error.
+    ///
+    /// You can update your instance of ``ChannelInfosResponse``with the new one by using ``ChannelInfosResponse/copyProperties(of:)`` with the new instance ``ChannelInfosResponse`` that this method returns.
+    /// ```swift
+    /// let YTM = YouTubeModel()
+    /// let myInstance: ChannelInfosResponse = ...
+    /// myInstance.getChannelContent(type: .wantedType, youtubeModel: YTM) { newInstance, error in
+    ///     if let newInstance = newInstance {
+    ///         myInstance.copyProperties(of: newInstance) /// Will update to the properties of the newInstance
+    ///     }
+    /// }
+    /// ```
+    ///
+    /// You can also merge the ``ChannelInfosResponse/channelContentStore`` that contains all the fetched tab data, by using:
+    /// ```swift
+    /// let YTM = YouTubeModel()
+    /// let myInstance: ChannelInfosResponse = ...
+    /// myInstance.getChannelContent(type: .wantedType, youtubeModel: YTM) { newInstance, error in
+    ///     if let newInstance = newInstance {
+    ///         myInstance.channelContentStore.merge(newInstance.channelContentStore, uniquingKeysWith: { (_, new) in new }) /// Will merge the two instances results and keep the most recent data.
+    ///     }
+    /// }
+    /// ```
+    public func getChannelContent(type: RequestTypes, youtubeModel: YouTubeModel, useCookies: Bool? = nil, result: @escaping (ChannelInfosResponse?, Error?) -> ()) {
+        self.getChannelContent(forType: type, youtubeModel: youtubeModel, useCookies: useCookies, result: { returning in
+            switch returning {
+            case .success(let response):
+                result(response, nil)
+            case .failure(let error):
+                result(nil, error)
+            }
+        })
+    }
+    
+    @available(*, deprecated, message: "This method will be removed in a future version of YouTubeKit, please use getChannelContent(type: RequestTypes, youtubeModel: YouTubeModel) async throws -> ChannelInfosResponse instead.") // safer and better to use the throws API instead of a tuple
+    /// Get a content from a channel, the content represents one of the tabs you see when browsing on YouTube's website in a channel's webpage. For example: Home, Videos, Shorts, Playlists etc...
+    /// - Parameters:
+    ///   - type: Type of content requested, (the tab of the wanted content).
+    ///   - youtubeModel: the ``YouTubeModel`` that will be used to get the request headers.
+    /// - Returns: An instance of ``ChannelInfosResponse`` containing the result and updated channel properties or/and an error.
+    ///
+    /// You can update your instance of ``ChannelInfosResponse``with the new one by using ``ChannelInfosResponse/copyProperties(of:)`` with the new instance ``ChannelInfosResponse`` that this method returns.
+    /// ```swift
+    /// let YTM = YouTubeModel()
+    /// let myInstance: ChannelInfosResponse = ...
+    /// myInstance.getChannelContent(type: .wantedType, youtubeModel: YTM) { newInstance, error in
+    ///     if let newInstance = newInstance {
+    ///         myInstance.copyProperties(of: newInstance) /// Will update to the properties of the newInstance
+    ///     }
+    /// }
+    /// ```
+    ///
+    /// You can also merge the ``ChannelInfosResponse/channelContentStore`` that contains all the fetched tab data, by using:
+    /// ```swift
+    /// let YTM = YouTubeModel()
+    /// let myInstance: ChannelInfosResponse = ...
+    /// myInstance.getChannelContent(type: .wantedType, youtubeModel: YTM) { newInstance, error in
+    ///     if let newInstance = newInstance {
+    ///         myInstance.channelContentStore.merge(newInstance.channelContentStore, uniquingKeysWith: { (_, new) in new }) /// Will merge the two instances results and keep the most recent data.
+    ///     }
+    /// }
+    /// ```
+    @available(macOS 10.15, iOS 13.0, watchOS 6.0, tvOS 13.0, *)
+    public func getChannelContent(type: RequestTypes, youtubeModel: YouTubeModel) async -> (ChannelInfosResponse?, Error?) {
+        do {
+            let result = try await self.getThrowingChannelContent(forType: type, youtubeModel: youtubeModel)
+            return (result, nil)
+        } catch {
+            return (nil, error)
+        }
+    }
+    
+    @available(*, deprecated, message: "This method will be removed in a future version of YouTubeKit, please use getChannelContentContinuation<T: ChannelContent>(_: T.Type, youtubeModel: YouTubeModel, useCookies: Bool? = nil, result: @escaping (Result<ContentContinuation<T>, Error>) -> Void) instead.") // safer and better to use the throws API instead of a tuple
+    /// Get the continuation results for a certain ChannelContent.
+    /// - Parameters:
+    ///   - youtubeModel: the ``YouTubeModel`` that will be used to get the request headers.
+    ///   - useCookies: boolean that precises if the request should include the model's ``YouTubeModel/cookies``, if set to nil, the value will be taken from ``YouTubeModel/alwaysUseCookies``. The cookies will be added to the `Cookie` HTTP header if one is already present or a new one will be created if not.
+    ///   - result: a ``ChannelInfosResponse/ContentContinuation`` representing the result (see definition) or/and an Error indicating why it failed.
+    public func getChannelContentContinuation<T: ChannelContent>(
+        _: T.Type,
+        youtubeModel: YouTubeModel,
+        useCookies: Bool? = nil,
+        result: @escaping (ContentContinuation<T>?, Error?
+        ) -> ()) {
+        self.getChannelContentContinuation(T.self, youtubeModel: youtubeModel, useCookies: useCookies, result: { returning in
+            switch returning {
+            case .success(let response):
+                result(response, nil)
+            case .failure(let error):
+                result(nil, error)
+            }
+        })
+    }
+    
+    @available(*, deprecated, message: "This method will be removed in a future version of YouTubeKit, please use public func getChannelContentContinuation<T: ChannelContent>(_: T.Type, youtubeModel: YouTubeModel, useCookies: Bool? = nil) async throws -> ContentContinuation<T> instead.") // safer and better to use the throws API instead of a tuple
+    @available(macOS 10.15, iOS 13.0, watchOS 6.0, tvOS 13.0, *)
+    /// Get the continuation results for a certain ChannelContent.
+    /// - Parameters:
+    ///    - youtubeModel: the ``YouTubeModel`` that will be used to get the request headers.
+    ///    - useCookies: boolean that precises if the request should include the model's ``YouTubeModel/cookies``, if set to nil, the value will be taken from ``YouTubeModel/alwaysUseCookies``. The cookies will be added to the `Cookie` HTTP header if one is already present or a new one will be created if not.
+    /// - Returns: a ``ChannelInfosResponse/ContentContinuation`` representing the result (see definition) or/and an Error indicating why it failed.
+    public func getChannelContentContinuation<T: ChannelContent>(
+        _: T.Type,
+        youtubeModel: YouTubeModel,
+        useCookies: Bool? = nil
+    ) async -> (ContentContinuation<T>?, Error?) {
+        do {
+            let result = try await self.getThrowingChannelContentContinuation(T.self, youtubeModel: youtubeModel, useCookies: useCookies)
+            return (result, nil)
+        } catch {
+            return (nil, error)
+        }
+    }
+    
+    
+    // ContentContinuation
     
     /// Struct representing the continuation of a certain ``ChannelContent``.
     public struct ContentContinuation<T: ChannelContent>: YouTubeResponse {

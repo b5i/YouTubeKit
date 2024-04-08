@@ -13,7 +13,7 @@ public extension HistoryResponse {
     ///
     /// Requires a ``YouTubeModel`` where ``YouTubeModel/cookies`` is defined.
     func removeVideo(withSuppressToken suppressToken: String, youtubeModel: YouTubeModel, result: @escaping (Error?) -> Void) {
-        RemoveVideoFromHistroryResponse.sendRequest(youtubeModel: youtubeModel, data: [.movingVideoId: suppressToken], result: { response in
+        RemoveVideoFromHistroryResponse.sendNonThrowingRequest(youtubeModel: youtubeModel, data: [.movingVideoId: suppressToken], result: { response in
             switch response {
             case .success(let response):
                 if response.isDisconnected {
@@ -33,7 +33,7 @@ public extension HistoryResponse {
     ///
     /// Requires a ``YouTubeModel`` where ``YouTubeModel/cookies`` is defined.
     @available(macOS 10.15, iOS 13.0, watchOS 6.0, tvOS 13.0, *)
-    func removeVideo(withSuppressToken suppressToken: String, youtubeModel: YouTubeModel) async throws {
+    func removeVideoThrowing(withSuppressToken suppressToken: String, youtubeModel: YouTubeModel) async throws {
         return try await withCheckedThrowingContinuation({ (continuation: CheckedContinuation<Void, Error>) in
             removeVideo(withSuppressToken: suppressToken, youtubeModel: youtubeModel, result: { error in
                 if let error = error {
@@ -41,6 +41,19 @@ public extension HistoryResponse {
                 } else {
                     continuation.resume()
                 }
+            })
+        })
+    }
+    
+    
+    /// Remove the video from the account's history.
+    ///
+    /// Requires a ``YouTubeModel`` where ``YouTubeModel/cookies`` is defined.
+    @available(macOS 10.15, iOS 13.0, watchOS 6.0, tvOS 13.0, *)
+    func removeVideo(withSuppressToken suppressToken: String, youtubeModel: YouTubeModel) async -> Error? {
+        return await withCheckedContinuation({ (continuation: CheckedContinuation<Error?, Never>) in
+            removeVideo(withSuppressToken: suppressToken, youtubeModel: youtubeModel, result: { error in
+                continuation.resume(returning: error)
             })
         })
     }

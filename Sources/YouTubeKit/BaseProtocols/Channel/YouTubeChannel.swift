@@ -15,9 +15,8 @@ public protocol YouTubeChannel {
     /// ```swift
     /// let YTM = YouTubeModel()
     /// let channelId: String = ...
-    /// ChannelInfosResponse.sendRequest(youtubeModel: YTM, data: [.browseId : channelId], result: { result, error in
+    /// ChannelInfosResponse.sendNonThrowingRequest(youtubeModel: YTM, data: [.browseId : channelId], result: { result in
     ///      print(result)
-    ///      print(error)
     /// })
     /// ```
     var channelId: String { get set }
@@ -48,7 +47,7 @@ public protocol YouTubeChannel {
     /// - Parameter youtubeModel: the model to use to execute the request.
     /// - Parameter useCookies: boolean that precises if the request should include the model's ``YouTubeModel/cookies``, if set to nil, the value will be taken from ``YouTubeModel/alwaysUseCookies``. The cookies will be added to the `Cookie` HTTP header if one is already present or a new one will be created if not.
     /// - Returns: A ``MoreVideoInfosResponse`` or an error.
-    func fetchInfos(
+    func fetchInfosThrowing(
         youtubeModel: YouTubeModel,
         useCookies: Bool?
     ) async throws -> ChannelInfosResponse

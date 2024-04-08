@@ -300,7 +300,7 @@ public struct MoreVideoInfosResponse: YouTubeResponse {
     /// - Note: using cookies with this request is generally not needed.
     public func getRecommendedVideosContination(youtubeModel: YouTubeModel, result: @escaping (Result<RecommendedVideosContinuation, Error>) -> ()) {
         if let recommendedVideosContinuationToken = recommendedVideosContinuationToken {
-            RecommendedVideosContinuation.sendRequest(youtubeModel: youtubeModel, data: [.continuation: recommendedVideosContinuationToken], result: result)
+            RecommendedVideosContinuation.sendNonThrowingRequest(youtubeModel: youtubeModel, data: [.continuation: recommendedVideosContinuationToken], result: result)
         } else {
             result(.failure("recommendedVideosContinuationToken of the MoreVideoInfosResponse is nil."))
         }
@@ -313,12 +313,47 @@ public struct MoreVideoInfosResponse: YouTubeResponse {
     ///
     /// - Note: using cookies with this request is generally not needed.
     @available(macOS 10.15, iOS 13.0, watchOS 6.0, tvOS 13.0, *)
-    public func getRecommendedVideosContination(youtubeModel: YouTubeModel) async throws -> RecommendedVideosContinuation {
+    public func getRecommendedVideosContinationThrowing(youtubeModel: YouTubeModel) async throws -> RecommendedVideosContinuation {
         return try await withCheckedThrowingContinuation({ (continuation: CheckedContinuation<RecommendedVideosContinuation, Error>) in
             getRecommendedVideosContination(youtubeModel: youtubeModel, result: { result in
                 continuation.resume(with: result)
             })
         })
+    }
+    
+    
+    @available(*, deprecated, message: "This method will be removed in a future version of YouTubeKit, please use getRecommendedVideosContination(youtubeModel: YouTubeModel, result: @escaping (Result<RecommendedVideosContinuation, Error>) -> ()) instead.") // safer and better to use the Result API instead of a tuple
+    /// Get the continuation of the recommended videos.
+    ///
+    /// - Parameter youtubeModel: the model to use to execute the request.
+    /// - Parameter result: the closure to execute when the request is finished.
+    ///
+    /// - Note: using cookies with this request is generally not needed.
+    public func getRecommendedVideosContination(youtubeModel: YouTubeModel, result: @escaping (RecommendedVideosContinuation?, Error?) -> ()) {
+        self.getRecommendedVideosContination(youtubeModel: youtubeModel, result: { returning in
+            switch returning {
+            case .success(let response):
+                result(response, nil)
+            case .failure(let error):
+                result(nil, error)
+            }
+        })
+    }
+    
+    @available(*, deprecated, message: "This method will be removed in a future version of YouTubeKit, please use getRecommendedVideosContination(youtubeModel: YouTubeModel) async throws -> RecommendedVideosContinuation instead.") // safer and better to use the throws API instead of a tuple
+    /// Get the continuation of the recommended videos.
+    ///
+    /// - Parameter youtubeModel: the model to use to execute the request.
+    /// - Returns: A ``MoreVideoInfosResponse/RecommendedVideosContinuation`` or an error.
+    ///
+    /// - Note: using cookies with this request is generally not needed.
+    @available(macOS 10.15, iOS 13.0, watchOS 6.0, tvOS 13.0, *)
+    public func getRecommendedVideosContination(youtubeModel: YouTubeModel) async -> (RecommendedVideosContinuation?, Error?) {
+        do {
+            return await (try self.getRecommendedVideosContinationThrowing(youtubeModel: youtubeModel), nil)
+        } catch {
+            return (nil, error)
+        }
     }
     
     
@@ -334,7 +369,7 @@ public struct MoreVideoInfosResponse: YouTubeResponse {
         
         public static func decodeJSON(json: JSON) -> RecommendedVideosContinuation {
             var toReturn = RecommendedVideosContinuation()
-
+            
             for action in json["onResponseReceivedEndpoints"].arrayValue {
                 if action["appendContinuationItemsAction"].exists() {
                     for element in action["appendContinuationItemsAction"]["continuationItems"].arrayValue {

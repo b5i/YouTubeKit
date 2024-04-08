@@ -8,7 +8,7 @@
 import Foundation
 
 /// Structure representing the base informations about a YouTube channel, including its name and ID. Basic implementation of the ``YouTubeChannel`` protocol.
-public struct YTLittleChannelInfos: Codable, YouTubeChannel, Hashable {
+public struct YTLittleChannelInfos: Codable, YouTubeChannel, Hashable {    
     public init(channelId: String, name: String? = nil, thumbnails: [YTThumbnail] = []) {
         self.channelId = channelId
         self.name = name

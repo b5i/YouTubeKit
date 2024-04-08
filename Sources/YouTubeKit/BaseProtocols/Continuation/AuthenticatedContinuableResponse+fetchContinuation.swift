@@ -11,7 +11,7 @@ import Foundation
 public extension AuthenticatedContinuableResponse {
     func fetchContinuation(youtubeModel: YouTubeModel, result: @escaping (Result<Continuation, Error>) -> Void) {
         if let continuationToken = continuationToken {
-            Continuation.sendRequest(youtubeModel: youtubeModel, data: [.continuation: continuationToken], result: result)
+            Continuation.sendNonThrowingRequest(youtubeModel: youtubeModel, data: [.continuation: continuationToken], result: result)
         } else {
             result(.failure("Continuation token is not defined."))
         }

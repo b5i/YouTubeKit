@@ -16,19 +16,17 @@ public protocol YouTubeVideo {
     /// ```swift
     /// let YTM = YouTubeModel()
     /// let videoId: String = ...
-    /// VideoInfosResponse.sendRequest(youtubeModel: YTM, data: [.query : videoId], result: { result, error in
+    /// VideoInfosResponse.sendNonThrowingRequest(youtubeModel: YTM, data: [.query : videoId], result: { result in
     ///      print(result)
-    ///      print(error)
     /// })
     /// ```
     ///
-    /// Or even simpler, use the built-in `getInfos()` method
+    /// Or even simpler, use the built-in `fetchStreamingInfos()` method
     /// ```swift
     /// let YTM = YouTubeModel()
     /// let video: some YouTubeVideo = ...
-    /// video.getInfos(youtubeModel: YTM, infos: { result, error in
+    /// video.fetchStreamingInfos(youtubeModel: YTM, infos: { result in
     ///     print(result)
-    ///     print(error)
     /// })
     /// ```
     var videoId: String { get set }
@@ -73,7 +71,7 @@ public protocol YouTubeVideo {
     ///   - youtubeModel: the ``YouTubeModel`` that has to be used to know which headers to use.
     ///   - useCookies: boolean that precises if the request should include the model's ``YouTubeModel/cookies``, if set to nil, the value will be taken from ``YouTubeModel/alwaysUseCookies``. The cookies will be added to the `Cookie` HTTP header if one is already present or a new one will be created if not.
     /// - Returns: A ``VideoInfosResponse`` or an error.
-    func fetchStreamingInfos(
+    func fetchStreamingInfosThrowing(
         youtubeModel: YouTubeModel,
         useCookies: Bool?
     ) async throws -> VideoInfosResponse
@@ -95,7 +93,7 @@ public protocol YouTubeVideo {
     ///    - youtubeModel: the ``YouTubeModel`` that has to be used to know which headers to use.
     ///    - useCookies: boolean that precises if the request should include the model's ``YouTubeModel/cookies``, if set to nil, the value will be taken from ``YouTubeModel/alwaysUseCookies``. The cookies will be added to the `Cookie` HTTP header if one is already present or a new one will be created if not.
     /// - Returns: A ``VideoInfosWithDownloadFormatsResponse`` or an error.
-    func fetchStreamingInfosWithDownloadFormats(
+    func fetchStreamingInfosWithDownloadFormatsThrowing(
         youtubeModel: YouTubeModel,
         useCookies: Bool?
     ) async throws -> VideoInfosWithDownloadFormatsResponse
@@ -117,7 +115,7 @@ public protocol YouTubeVideo {
     /// - Parameter youtubeModel: the model to use to execute the request.
     /// - Parameter useCookies: boolean that precises if the request should include the model's ``YouTubeModel/cookies``, if set to nil, the value will be taken from ``YouTubeModel/alwaysUseCookies``. The cookies will be added to the `Cookie` HTTP header if one is already present or a new one will be created if not.
     /// - Returns: A ``MoreVideoInfosResponse`` or an error.
-    func fetchMoreInfos(
+    func fetchMoreInfosThrowing(
         youtubeModel: YouTubeModel,
         useCookies: Bool?
     ) async throws -> MoreVideoInfosResponse
@@ -130,7 +128,7 @@ public protocol YouTubeVideo {
     
     /// Get all the user's playlists and if the video is already inside or not.
     @available(macOS 10.15, iOS 13.0, watchOS 6.0, tvOS 13.0, *)
-    func fetchAllPossibleHostPlaylists(youtubeModel: YouTubeModel) async throws -> AllPossibleHostPlaylistsResponse
+    func fetchAllPossibleHostPlaylistsThrowing(youtubeModel: YouTubeModel) async throws -> AllPossibleHostPlaylistsResponse
     
     /// Like the video.
     ///
@@ -144,7 +142,13 @@ public protocol YouTubeVideo {
     /// Like the video.
     ///
     /// Requires a ``YouTubeModel`` where ``YouTubeModel/cookies`` is defined.
-    func likeVideo(youtubeModel: YouTubeModel) async throws
+    func likeVideoThrowing(youtubeModel: YouTubeModel) async throws
+    
+    @available(macOS 10.15, iOS 13.0, watchOS 6.0, tvOS 13.0, *)
+    /// Like the video.
+    ///
+    /// Requires a ``YouTubeModel`` where ``YouTubeModel/cookies`` is defined.
+    func likeVideo(youtubeModel: YouTubeModel) async -> Error?
     
     /// Dislike the video.
     ///
@@ -158,7 +162,13 @@ public protocol YouTubeVideo {
     /// Dislike the video.
     ///
     /// Requires a ``YouTubeModel`` where ``YouTubeModel/cookies`` is defined.
-    func dislikeVideo(youtubeModel: YouTubeModel) async throws
+    func dislikeVideoThrowing(youtubeModel: YouTubeModel) async throws
+    
+    @available(macOS 10.15, iOS 13.0, watchOS 6.0, tvOS 13.0, *)
+    /// Dislike the video.
+    ///
+    /// Requires a ``YouTubeModel`` where ``YouTubeModel/cookies`` is defined.
+    func dislikeVideo(youtubeModel: YouTubeModel) async -> Error?
     
     /// Remove the like/dislike from the video.
     ///
@@ -172,5 +182,11 @@ public protocol YouTubeVideo {
     /// Remove the like/dislike from the video.
     ///
     /// Requires a ``YouTubeModel`` where ``YouTubeModel/cookies`` is defined.
-    func removeLikeFromVideo(youtubeModel: YouTubeModel) async throws
+    func removeLikeFromVideoThrowing(youtubeModel: YouTubeModel) async throws
+    
+    @available(macOS 10.15, iOS 13.0, watchOS 6.0, tvOS 13.0, *)
+    /// Remove the like/dislike from the video.
+    ///
+    /// Requires a ``YouTubeModel`` where ``YouTubeModel/cookies`` is defined.
+    func removeLikeFromVideo(youtubeModel: YouTubeModel) async -> Error?
 }

@@ -29,7 +29,7 @@ public protocol ContinuableResponse: ResponseContinuation {
     
     /// Fetch the continuation of the ``ContinuableResponse``.
     @available(macOS 10.15, iOS 13.0, watchOS 6.0, tvOS 13.0, *)
-    func fetchContinuation(
+    func fetchContinuationThrowing(
         youtubeModel: YouTubeModel,
         useCookies: Bool?
     ) async throws -> Continuation

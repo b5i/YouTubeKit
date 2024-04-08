@@ -8,7 +8,7 @@
 import Foundation
 
 /// Struct representing the request/response of the main YouTube webpage.
-public struct HomeScreenResponse: ContinuableResponse {
+public struct HomeScreenResponse: ContinuableResponse {    
     public static var headersType: HeaderTypes = .home
     
     public static var parametersValidationList: ValidationList = [:]

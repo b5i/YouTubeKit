@@ -55,27 +55,54 @@ public protocol YouTubeResponse {
     
     /// A function that throws the error from some JSON if there's one. It should be called when calling ``YouTubeResponse/decodeData(data:)``.
     static func checkForErrors(json: JSON) throws
-    
+
     /// A function to call the request of the given YouTubeResponse. For more informations see ``YouTubeModel/sendRequest(responseType:data:useCookies:result:)``.
-    static func sendRequest(
+    static func sendNonThrowingRequest(
         youtubeModel: YouTubeModel,
         data: RequestData,
         useCookies: Bool?,
         result: @escaping (Result<Self, Error>) -> ()
     )
-
+    
     /// A function to call the request of the given YouTubeResponse. For more informations see ``YouTubeResponse/sendRequest(youtubeModel:data:useCookies:result:)``.
     @available(macOS 10.15, iOS 13.0, watchOS 6.0, tvOS 13.0, *)
-    static func sendRequest(
+    static func sendThrowingRequest(
         youtubeModel: YouTubeModel,
         data: RequestData,
         useCookies: Bool?
     ) async throws -> Self
+    
+    /// A function to call the request of the given YouTubeResponse. For more informations see ``YouTubeResponse/sendRequest(youtubeModel:data:useCookies:result:)``.
+    @available(macOS 10.15, iOS 13.0, watchOS 6.0, tvOS 13.0, *)
+    static func sendNonThrowingRequest(
+        youtubeModel: YouTubeModel,
+        data: RequestData,
+        useCookies: Bool?
+    ) async -> Result<Self, Error>
+    
+    
+    @available(*, deprecated, message: "This method will be removed in a future version of YouTubeKit, please use sendRequest(youtubeModel: YouTubeModel, data: RequestData, useCookies: Bool?, result: @escaping (Result<Self, Error>) -> ()) instead.") // safer and better to use the Result API instead of a tuple
+    /// A function to call the request of the given YouTubeResponse. For more informations see ``YouTubeModel/sendRequest(responseType:data:useCookies:result:)``.
+    static func sendRequest(
+        youtubeModel: YouTubeModel,
+        data: [HeadersList.AddQueryInfo.ContentTypes : String],
+        useCookies: Bool?,
+        result: @escaping (Self?, Error?) -> ()
+    )
+
+    /// A function to call the request of the given YouTubeResponse. For more informations see ``YouTubeResponse/sendRequest(youtubeModel:data:useCookies:result:)``.
+    @available(*, deprecated, message: "This method will be removed in a future version of YouTubeKit, please use sendRequest(youtubeModel: YouTubeModel, data: RequestData, useCookies: Bool?) async throws -> Self or sendRequest(youtubeModel: YouTubeModel, data: RequestData, useCookies: Bool?) async -> Result<Self, Error> instead.") // safer and better to use the throws or the result API instead of a tuple
+    @available(macOS 10.15, iOS 13.0, watchOS 6.0, tvOS 13.0, *)
+    static func sendRequest(
+        youtubeModel: YouTubeModel,
+        data: [HeadersList.AddQueryInfo.ContentTypes : String],
+        useCookies: Bool?
+    ) async -> (Self?, Error?)
 }
 
 public extension YouTubeResponse {
     
-    static func sendRequest(
+    static func sendNonThrowingRequest(
         youtubeModel: YouTubeModel,
         data: RequestData,
         useCookies: Bool? = nil,
@@ -91,14 +118,67 @@ public extension YouTubeResponse {
     }
     
     @available(macOS 10.15, iOS 13.0, watchOS 6.0, tvOS 13.0, *)
-    static func sendRequest(
+    static func sendThrowingRequest(
         youtubeModel: YouTubeModel,
         data: RequestData,
         useCookies: Bool? = nil
     ) async throws -> Self {
         return try await withCheckedThrowingContinuation({ (continuation: CheckedContinuation<Self, Error>) in
-            sendRequest(youtubeModel: youtubeModel, data: data, useCookies: useCookies, result: { result in
+            self.sendNonThrowingRequest(youtubeModel: youtubeModel, data: data, useCookies: useCookies, result: { result in
                 continuation.resume(with: result)
+            })
+        })
+    }
+    
+    @available(macOS 10.15, iOS 13.0, watchOS 6.0, tvOS 13.0, *)
+    static func sendNonThrowingRequest(
+        youtubeModel: YouTubeModel,
+        data: RequestData,
+        useCookies: Bool? = nil
+    ) async -> Result<Self, Error> {
+        return await withCheckedContinuation({ (continuation: CheckedContinuation<Result<Self, Error>, Never>) in
+            self.sendNonThrowingRequest(youtubeModel: youtubeModel, data: data, useCookies: useCookies, result: { result in
+                continuation.resume(returning: result)
+            })
+        })
+    }
+    
+    
+    @available(*, deprecated, message: "This method will be removed in a future version of YouTubeKit, please use sendRequest(youtubeModel: YouTubeModel, data: RequestData, useCookies: Bool?, result: @escaping (Result<Self, Error>) -> ()) instead.") // safer and better to use the Result API instead of a tuple
+    static func sendRequest(
+        youtubeModel: YouTubeModel,
+        data: [HeadersList.AddQueryInfo.ContentTypes : String],
+        useCookies: Bool? = nil,
+        result: @escaping (Self?, Error?) -> ()
+    ) {
+        self.sendNonThrowingRequest(
+            youtubeModel: youtubeModel,
+            data: data,
+            useCookies: useCookies,
+            result: { returning in
+                do {
+                    result(try returning.get(), nil)
+                } catch {
+                    result(nil, error)
+                }
+            }
+        )
+    }
+    
+    @available(*, deprecated, message: "This method will be removed in a future version of YouTubeKit, please use sendRequest(youtubeModel: YouTubeModel, data: RequestData, useCookies: Bool?) async throws -> Self or sendRequest(youtubeModel: YouTubeModel, data: RequestData, useCookies: Bool?) async -> Result<Self, Error> instead.") // safer and better to use the throws or the result API instead of a tuple
+    @available(macOS 10.15, iOS 13.0, watchOS 6.0, tvOS 13.0, *)
+    static func sendRequest(
+        youtubeModel: YouTubeModel,
+        data: [HeadersList.AddQueryInfo.ContentTypes : String],
+        useCookies: Bool? = nil
+    ) async -> (Self?, Error?) {
+        return await withCheckedContinuation({ (continuation: CheckedContinuation<(Self?, Error?), Never>) in
+            self.sendNonThrowingRequest(youtubeModel: youtubeModel, data: data, useCookies: useCookies, result: { result in
+                do {
+                    continuation.resume(returning: (try result.get(), nil))
+                } catch {
+                    continuation.resume(returning: (nil, error))
+                }
             })
         })
     }

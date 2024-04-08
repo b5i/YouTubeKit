@@ -625,19 +625,24 @@ public struct VideoInfosWithDownloadFormatsResponse: YouTubeResponse {
     }
     
     /// Remove all player mappings from disk.
-    public static func removePlayersFromDisk() throws {
+    public static func removePlayerFilesFromDisk() throws {
         let playersDirectory = try getDocumentDirectory()
         let filesInDir = FileManager.default.enumerator(atPath: playersDirectory.absoluteString)
         guard let filesInDir = filesInDir else { return }
         for file in filesInDir {
             if let file = file as? URL {
                 if file.absoluteString.hasSuffix(".ab") || file.absoluteString.hasSuffix(".abn") {
-                    do {
-                        try FileManager.default.removeItem(at: file)
-                    } catch {}
+                    try FileManager.default.removeItem(at: file)
                 }
             }
         }
+    }
+    
+    /// Remove all player mappings from disk.
+    public static func removePlayersFromDisk() {
+        do {
+            try self.removePlayerFilesFromDisk()
+        } catch {}
     }
     
     /// Get the document directory from the project that is using ``YouTubeKit``

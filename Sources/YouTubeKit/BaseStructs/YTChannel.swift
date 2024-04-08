@@ -65,9 +65,8 @@ public struct YTChannel: YTSearchResult, YouTubeChannel {
     /// ```swift
     /// let YTM = YouTubeModel()
     /// let channelId: String = ...
-    /// ChannelInfosResponse.sendRequest(youtubeModel: YTM, data: [.browseId : channelId], result: { result, error in
+    /// ChannelInfosResponse.sendNonThrowingRequest(youtubeModel: YTM, data: [.browseId : channelId], result: { result in
     ///      print(result)
-    ///      print(error)
     /// })
     /// ```
     public var channelId: String
