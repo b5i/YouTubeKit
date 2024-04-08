@@ -115,7 +115,7 @@ public struct MoreVideoInfosResponse: YouTubeResponse {
                 let videoPrimaryInfos = contentPart["videoPrimaryInfoRenderer"]
                 toReturn.videoTitle = videoPrimaryInfos["title"]["runs"].arrayValue.map({$0["text"].stringValue}).joined()
                 toReturn.viewsCount.fullViewsCount = videoPrimaryInfos["viewCount"]["videoViewCountRenderer"]["viewCount"]["simpleText"].string
-                toReturn.viewsCount.shortViewsCount = videoPrimaryInfos["viewCount"]["videoViewCountRenderer"]["shortViewCount"]["simpleText"].string
+                toReturn.viewsCount.shortViewsCount = videoPrimaryInfos["viewCount"]["videoViewCountRenderer"]["extraShortViewCount"]["simpleText"].string ?? videoPrimaryInfos["viewCount"]["videoViewCountRenderer"]["shortViewCount"]["simpleText"].string
                 toReturn.timePosted.postedDate = videoPrimaryInfos["dateText"]["simpleText"].string
                 toReturn.timePosted.relativePostedDate = videoPrimaryInfos["relativeDateText"]["simpleText"].string
                 for button in videoPrimaryInfos["videoActions"]["menuRenderer"]["topLevelButtons"].arrayValue {

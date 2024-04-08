@@ -5,7 +5,7 @@ final class YouTubeKitTests: XCTestCase {
     private let YTM = YouTubeModel()
     
     /// Keep them secret! Make sure you remove them after having tested YouTubeKit. If they're let empty, the requests requiring authentification will pass but won't be tested.
-    private let cookies = ""
+    private let cookies = "SAPISID=OblGCnd6X6O-YY3Y/AJ8Qk7nHXQIH0Y0uE; __Secure-1PAPISID=OblGCnd6X6O-YY3Y/AJ8Qk7nHXQIH0Y0uE; __Secure-1PSID=g.a000fwiNReqdz13FnBfuTeeMfHneE6jN6B4vcCwXv2e2dbdhsjKG_rp72xpm-7EVQwk2r98QnAACgYKAS4SAQASFQHGX2Mi36etpA8gEtnQsl6TY9Ca7RoVAUF8yKoktnbCxWosRHDy1gsM_RN60076"
     
     func testCreateCustomHeaders() async throws {
         let TEST_NAME = "Test: testCreateCustomHeaders() -> "
@@ -785,7 +785,7 @@ final class YouTubeKitTests: XCTestCase {
         let TEST_NAME = "Test: testMoreVideoInfosResponse() -> "
         YTM.cookies = cookies
 
-        let video = YTVideo(videoId: "nVoMKVU1FAg")
+        let video = YTVideo(videoId: "S1dN1NY36cY")
 
         var moreVideoInfosResponse = try await video.fetchMoreInfos(youtubeModel: YTM, useCookies: true)
                 

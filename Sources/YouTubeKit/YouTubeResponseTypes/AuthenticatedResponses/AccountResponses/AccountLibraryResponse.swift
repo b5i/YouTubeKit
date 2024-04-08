@@ -65,7 +65,8 @@ public struct AccountLibraryResponse: AuthenticatedResponse {
                 for libraryContentItem in libraryTab["tabRenderer"]["content"]["sectionListRenderer"]["contents"].arrayValue {
                     for libraryContentItemContents in libraryContentItem["itemSectionRenderer"]["contents"].arrayValue {
                         if libraryContentItem["itemSectionRenderer"]["targetId"].string == "library-playlists-shelf" {
-                            for playlist in libraryContentItemContents["shelfRenderer"]["content"]["horizontalListRenderer"]["items"].arrayValue {
+                            let playlistsListRenderer = libraryContentItemContents["shelfRenderer"]["content"]["horizontalListRenderer"]["items"].array ?? libraryContentItemContents["shelfRenderer"]["content"]["gridRenderer"]["items"].arrayValue
+                            for playlist in playlistsListRenderer {
                                 if let decodedPlaylist = YTPlaylist.decodeJSON(json: playlist["gridPlaylistRenderer"]) {
                                     toReturn.playlists.append(decodedPlaylist)
                                 }
@@ -106,7 +107,8 @@ public struct AccountLibraryResponse: AuthenticatedResponse {
     private static func decodeDefaultPlaylist(playlist: inout YTPlaylist, json: JSON) {
         playlist.title = json["title"]["runs"].arrayValue.map({return $0["text"].stringValue}).joined(separator: " ")
         playlist.videoCount = json["titleAnnotation"]["simpleText"].string
-        for frontVideo in json["content"]["horizontalListRenderer"]["items"].arrayValue {
+        let frontVideosListRenderer = json["content"]["horizontalListRenderer"]["items"].array ?? json["content"]["gridRenderer"]["items"].arrayValue
+        for frontVideo in frontVideosListRenderer {
             if let video = YTVideo.decodeJSON(json: frontVideo["gridVideoRenderer"]) {
                 playlist.frontVideos.append(video)
             }
