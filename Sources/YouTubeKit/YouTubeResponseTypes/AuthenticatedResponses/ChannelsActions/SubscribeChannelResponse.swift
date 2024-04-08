@@ -21,7 +21,6 @@ public struct SubscribeChannelResponse: AuthenticatedResponse {
     public var channelId: String?
     
     public static func decodeJSON(json: JSON) -> SubscribeChannelResponse {
-        let json = JSON(json)
         var toReturn = SubscribeChannelResponse()
         
         guard !(json["responseContext"]["mainAppWebResponseContext"]["loggedOut"].bool ?? true) else { return toReturn }

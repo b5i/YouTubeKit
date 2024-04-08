@@ -8,6 +8,7 @@
 import Foundation
 
 public extension ChannelContent {
+    @available(*, deprecated, message: "This method will be removed in a future version of YouTubeKit, please use canDecode(json: JSON) instead. You can convert your Data into JSON by calling the JSON(_ data: Data) initializer.") // deprecated as you can't really find some tab JSON in raw data.
     static func canDecode(data: Data) -> Bool {
         return canDecode(json: JSON(data))
     }

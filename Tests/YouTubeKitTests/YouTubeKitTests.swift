@@ -5,7 +5,7 @@ final class YouTubeKitTests: XCTestCase {
     private let YTM = YouTubeModel()
     
     /// Keep them secret! Make sure you remove them after having tested YouTubeKit. If they're let empty, the requests requiring authentification will pass but won't be tested.
-    private let cookies = "SAPISID=OblGCnd6X6O-YY3Y/AJ8Qk7nHXQIH0Y0uE; __Secure-1PAPISID=OblGCnd6X6O-YY3Y/AJ8Qk7nHXQIH0Y0uE; __Secure-1PSID=g.a000fwiNReqdz13FnBfuTeeMfHneE6jN6B4vcCwXv2e2dbdhsjKG_rp72xpm-7EVQwk2r98QnAACgYKAS4SAQASFQHGX2Mi36etpA8gEtnQsl6TY9Ca7RoVAUF8yKoktnbCxWosRHDy1gsM_RN60076"
+    private let cookies = ""
     
     func testCreateCustomHeaders() async throws {
         let TEST_NAME = "Test: testCreateCustomHeaders() -> "
@@ -448,16 +448,22 @@ final class YouTubeKitTests: XCTestCase {
     func testSearchResponseContinuation() async throws {
         let TEST_NAME = "Test: testSearchResponseContinuation() -> "
         
-        let requestResult = try await SearchResponse.sendRequest(youtubeModel: YTM, data: [.query: "fred again"])
+        var searchResult = try await SearchResponse.sendRequest(youtubeModel: YTM, data: [.query: "fred again"])
 
-        guard let continuationToken = requestResult.continuationToken else { XCTFail(TEST_NAME + "continuationToken is not defined"); return }
-        guard let visitorData = requestResult.visitorData else { XCTFail(TEST_NAME + "visitorData is not defined"); return }
+        guard let continuationToken = searchResult.continuationToken else { XCTFail(TEST_NAME + "continuationToken is not defined"); return }
+        guard let visitorData = searchResult.visitorData else { XCTFail(TEST_NAME + "visitorData is not defined"); return }
         let continuationResult = try await SearchResponse.Continuation.sendRequest(youtubeModel: YTM, data: [
             .continuation: continuationToken,
             .visitorData: visitorData
         ])
         XCTAssertNotEqual(continuationResult.continuationToken, "", TEST_NAME + "Checking continuationToken for SearchResponse.Contination.")
         XCTAssertNotEqual(continuationResult.results.count, 0, TEST_NAME + "Checking if continuation results aren't empty.")
+        
+        let expectedFinalVideosCount = searchResult.results.count + continuationResult.results.count
+        
+        searchResult.mergeContinuation(continuationResult)
+        XCTAssertEqual(searchResult.results.count, expectedFinalVideosCount, TEST_NAME + "Checking the number of videos of the searchResult after merging the continuation.")
+        XCTAssertEqual(searchResult.continuationToken, continuationResult.continuationToken, TEST_NAME + "Checking if the continuationToken of the continuationResult has overriden the old one from searchResult in searchResult.")
     }
     
     func testVideoInfosResponse() async throws {
@@ -589,7 +595,7 @@ final class YouTubeKitTests: XCTestCase {
             // Could fail because sometimes YouTube gives an empty page telling you to start browsing. We check this case here.
             if !(homeMenuResult.results.count == 0 && homeMenuResult.visitorData != nil) {
                 XCTFail(TEST_NAME + "Checking if homeMenuResult.continuationToken is defined.");
-            }
+            } // else: YouTube might not give any result nor continuation if no account is connected (you'd have to activate the history).
             return
         }
         
@@ -602,7 +608,6 @@ final class YouTubeKitTests: XCTestCase {
         let videosCount = homeMenuResult.results.count + homeMenuContinuationResult.results.count
         
         homeMenuResult.mergeContinuation(homeMenuContinuationResult)
-        
         XCTAssertEqual(homeMenuResult.results.count, videosCount, TEST_NAME + "Checking if the merge operation was successful (videos count).")
         XCTAssertEqual(homeMenuResult.continuationToken, homeMenuContinuationResult.continuationToken, TEST_NAME + "Checking if the merge operation was successful (continuationToken).")
     }
