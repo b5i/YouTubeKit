@@ -296,7 +296,7 @@ public struct ChannelInfosResponse: YouTubeResponse {
     /// }
     /// ```
     @available(macOS 10.15, iOS 13.0, watchOS 6.0, tvOS 13.0, *)
-    public func getThrowingChannelContent(forType type: RequestTypes, youtubeModel: YouTubeModel, useCookies: Bool? = nil) async throws -> ChannelInfosResponse {
+    public func getChannelContentThrowing(forType type: RequestTypes, youtubeModel: YouTubeModel, useCookies: Bool? = nil) async throws -> ChannelInfosResponse {
         return try await withCheckedThrowingContinuation({ (continuation: CheckedContinuation<ChannelInfosResponse, Error>) in
             self.getChannelContent(forType: type, youtubeModel: youtubeModel, useCookies: useCookies, result: { channelContent in
                 continuation.resume(with: channelContent)
@@ -340,7 +340,7 @@ public struct ChannelInfosResponse: YouTubeResponse {
     ///
     /// - Note: (For ``ListableChannelContent`` continuations) The elements from the continuation's contents usually don't contain the channel's information. You can still add them by calling ``ListableChannelContent/addChannelInfos(_:)`` or ``mergeListableChannelContentContinuation(_:)`` on the continuation with the information of the channel.
     @available(macOS 10.15, iOS 13.0, watchOS 6.0, tvOS 13.0, *)
-    public func getThrowingChannelContentContinuation<T: ChannelContent>(
+    public func getChannelContentContinuationThrowing<T: ChannelContent>(
         _: T.Type,
         youtubeModel: YouTubeModel,
         useCookies: Bool? = nil
@@ -426,7 +426,7 @@ public struct ChannelInfosResponse: YouTubeResponse {
     @available(macOS 10.15, iOS 13.0, watchOS 6.0, tvOS 13.0, *)
     public func getChannelContent(type: RequestTypes, youtubeModel: YouTubeModel) async -> (ChannelInfosResponse?, Error?) {
         do {
-            let result = try await self.getThrowingChannelContent(forType: type, youtubeModel: youtubeModel)
+            let result = try await self.getChannelContentThrowing(forType: type, youtubeModel: youtubeModel)
             return (result, nil)
         } catch {
             return (nil, error)
@@ -468,7 +468,7 @@ public struct ChannelInfosResponse: YouTubeResponse {
         useCookies: Bool? = nil
     ) async -> (ContentContinuation<T>?, Error?) {
         do {
-            let result = try await self.getThrowingChannelContentContinuation(T.self, youtubeModel: youtubeModel, useCookies: useCookies)
+            let result = try await self.getChannelContentContinuationThrowing(T.self, youtubeModel: youtubeModel, useCookies: useCookies)
             return (result, nil)
         } catch {
             return (nil, error)

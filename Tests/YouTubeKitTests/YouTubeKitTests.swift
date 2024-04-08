@@ -526,48 +526,48 @@ final class YouTubeKitTests: XCTestCase {
         /// Testing ChannelContent fetching, Videos, Shorts, Directs and Playlists
         
         ///Videos
-        var videoRequestResult = try await mainRequestResult.getThrowingChannelContent(forType: .videos, youtubeModel: YTM)
+        var videoRequestResult = try await mainRequestResult.getChannelContentThrowing(forType: .videos, youtubeModel: YTM)
                 
         XCTAssertEqual(videoRequestResult.name, videoResult.channel?.name, TEST_NAME + "Checking if videoRequestResult.name is equal to videoResult.channel.name")
         XCTAssertEqual(videoRequestResult.channelId, videoResult.channel?.channelId, TEST_NAME + "Checking if videoRequestResult.channelId is equal to videoResult.channel.channelId")
         
         /// Test continuation
-        let videoRequestContinuationResult = try await videoRequestResult.getThrowingChannelContentContinuation(ChannelInfosResponse.Videos.self, youtubeModel: YTM)
+        let videoRequestContinuationResult = try await videoRequestResult.getChannelContentContinuationThrowing(ChannelInfosResponse.Videos.self, youtubeModel: YTM)
         
         videoRequestResult.mergeListableChannelContentContinuation(videoRequestContinuationResult)
         
         /// Shorts
-        let shortsRequestResult = try await mainRequestResult.getThrowingChannelContent(forType: .shorts, youtubeModel: YTM)
+        let shortsRequestResult = try await mainRequestResult.getChannelContentThrowing(forType: .shorts, youtubeModel: YTM)
                 
         XCTAssertEqual(shortsRequestResult.name, videoResult.channel?.name, TEST_NAME + "Checking if shortsRequestResult.name is equal to videoResult.channel.name")
         XCTAssertEqual(shortsRequestResult.channelId, videoResult.channel?.channelId, TEST_NAME + "Checking if shortsRequestResult.channelId is equal to videoResult.channel.channelId")
                 
         /// Test continuation
-        let shortsRequestContinuationResult = try await shortsRequestResult.getThrowingChannelContentContinuation(ChannelInfosResponse.Shorts.self, youtubeModel: YTM)
+        let shortsRequestContinuationResult = try await shortsRequestResult.getChannelContentContinuationThrowing(ChannelInfosResponse.Shorts.self, youtubeModel: YTM)
         
         videoRequestResult.mergeListableChannelContentContinuation(shortsRequestContinuationResult)
         
                 
         /// Directs
-        let directsRequestResult = try await mainRequestResult.getThrowingChannelContent(forType: .directs, youtubeModel: YTM)
+        let directsRequestResult = try await mainRequestResult.getChannelContentThrowing(forType: .directs, youtubeModel: YTM)
                 
         XCTAssertEqual(directsRequestResult.name, videoResult.channel?.name, TEST_NAME + "Checking if directsRequestResult.name is equal to videoResult.channel.name")
         XCTAssertEqual(directsRequestResult.channelId, videoResult.channel?.channelId, TEST_NAME + "Checking if directsRequestResult.channelId is equal to videoResult.channel.channelId")
         
         /// Test continuation
-        let directsRequestContinuationResult = try await directsRequestResult.getThrowingChannelContentContinuation(ChannelInfosResponse.Directs.self, youtubeModel: YTM)
+        let directsRequestContinuationResult = try await directsRequestResult.getChannelContentContinuationThrowing(ChannelInfosResponse.Directs.self, youtubeModel: YTM)
         
         videoRequestResult.mergeListableChannelContentContinuation(directsRequestContinuationResult)
         
                 
         /// Playlists
-        let playlistsRequestResult = try await mainRequestResult.getThrowingChannelContent(forType: .playlists, youtubeModel: YTM)
+        let playlistsRequestResult = try await mainRequestResult.getChannelContentThrowing(forType: .playlists, youtubeModel: YTM)
                 
         XCTAssertEqual(playlistsRequestResult.name, videoResult.channel?.name, TEST_NAME + "Checking if playlistsRequestResult.name is equal to videoResult.channel.name")
         XCTAssertEqual(playlistsRequestResult.channelId, videoResult.channel?.channelId, TEST_NAME + "Checking if playlistsRequestResult.channelId is equal to videoResult.channel.channelId")
         
         /// Test continuation
-        let playlistRequestContinuationResult = try await playlistsRequestResult.getThrowingChannelContentContinuation(ChannelInfosResponse.Playlists.self, youtubeModel: YTM)
+        let playlistRequestContinuationResult = try await playlistsRequestResult.getChannelContentContinuationThrowing(ChannelInfosResponse.Playlists.self, youtubeModel: YTM)
         
         videoRequestResult.mergeListableChannelContentContinuation(playlistRequestContinuationResult)
     }

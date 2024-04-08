@@ -172,15 +172,11 @@ public extension YouTubeResponse {
         data: [HeadersList.AddQueryInfo.ContentTypes : String],
         useCookies: Bool? = nil
     ) async -> (Self?, Error?) {
-        return await withCheckedContinuation({ (continuation: CheckedContinuation<(Self?, Error?), Never>) in
-            self.sendNonThrowingRequest(youtubeModel: youtubeModel, data: data, useCookies: useCookies, result: { result in
-                do {
-                    continuation.resume(returning: (try result.get(), nil))
-                } catch {
-                    continuation.resume(returning: (nil, error))
-                }
-            })
-        })
+        do {
+            return await (try self.sendThrowingRequest(youtubeModel: youtubeModel, data: data, useCookies: useCookies), nil)
+        } catch {
+            return (nil, error)
+        }
     }
 }
 
