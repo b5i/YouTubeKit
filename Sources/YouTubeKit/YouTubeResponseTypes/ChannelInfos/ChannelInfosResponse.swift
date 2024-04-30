@@ -132,41 +132,21 @@ public struct ChannelInfosResponse: YouTubeResponse {
     
     /// Count of videos that the channel posted.
     public var videosCount: String?
+    
+    /// A short description of the channel.
+    public var shortDescription: String?
+    
+    /// The keywords of the channel.
+    public var keywords: [String]?
             
     public static func decodeJSON(json: JSON) -> ChannelInfosResponse {
         var toReturn = ChannelInfosResponse()
         
-        let channelInfos = json["header"]["c4TabbedHeaderRenderer"]
-        
-        toReturn.channelId = channelInfos["channelId"].string
-        
-        /// Create a new json to replace the "avatar" dictionnary key to the "thumbnail" for the extraction with ``YTThumbnail/appendThumbnails(json:thumbnailList:)`` to work.
-        YTThumbnail.appendThumbnails(json: channelInfos["avatar"], thumbnailList: &toReturn.avatarThumbnails)
-        
-        YTThumbnail.appendThumbnails(json: channelInfos["banner"], thumbnailList: &toReturn.bannerThumbnails)
-        
-        if let badgesList = channelInfos["badges"].array {
-            for badge in badgesList {
-                if let badgeName = badge["metadataBadgeRenderer"]["style"].string {
-                    toReturn.badges.append(badgeName)
-                }
-            }
-        }
-        
-        toReturn.isSubcribeButtonEnabled = channelInfos["subscribeButton"]["subscribeButtonRenderer"]["enabled"].bool
-        
-        toReturn.name = channelInfos["title"].string
-        if let handle = channelInfos["channelHandleText"]["runs"].array?.first?["text"].string, !handle.isEmpty {
-            toReturn.handle = handle
+        if json["header"]["pageHeaderRenderer"].exists() {
+            toReturn.extractChannelInfosFromPageHeaderRenderer(json: json)
         } else {
-            toReturn.handle = channelInfos["navigationEndpoint"]["browseEndpoint"]["canonicalBaseUrl"].string?.replacingOccurrences(of: "/", with: "") // Need to remove the first slash because the string is like "/@ChannelHandle"
+            toReturn.extractChannelInfosFromC4TabbedHeaderRenderer(json: json)
         }
-        
-        toReturn.subscribeStatus = channelInfos["subscribeButton"]["subscribeButtonRenderer"]["subscribed"].bool
-        
-        toReturn.subscribersCount = channelInfos["subscriberCountText"]["simpleText"].string
-        
-        toReturn.videosCount = channelInfos["videosCountText"]["runs"].arrayValue.map({$0["text"].stringValue}).joined()
         
         /// Time to get the params to be able to make channel content requests.
         
@@ -203,6 +183,88 @@ public struct ChannelInfosResponse: YouTubeResponse {
         }
                 
         return toReturn
+    }
+    
+    // TODO: remove that possibility in the future if it's definitely not used anymore
+    private mutating func extractChannelInfosFromC4TabbedHeaderRenderer(json: JSON) {
+        let channelInfos = json["header"]["c4TabbedHeaderRenderer"]
+        
+        
+        self.channelId = channelInfos["channelId"].string
+        
+        /// Create a new json to replace the "avatar" dictionnary key to the "thumbnail" for the extraction with ``YTThumbnail/appendThumbnails(json:thumbnailList:)`` to work.
+        YTThumbnail.appendThumbnails(json: channelInfos["avatar"], thumbnailList: &self.avatarThumbnails)
+        
+        YTThumbnail.appendThumbnails(json: channelInfos["banner"], thumbnailList: &self.bannerThumbnails)
+        
+        if let badgesList = channelInfos["badges"].array {
+            for badge in badgesList {
+                if let badgeName = badge["metadataBadgeRenderer"]["style"].string {
+                    self.badges.append(badgeName)
+                }
+            }
+        }
+        
+        self.isSubcribeButtonEnabled = channelInfos["subscribeButton"]["subscribeButtonRenderer"]["enabled"].bool
+        
+        self.name = channelInfos["title"].string
+        if let handle = channelInfos["channelHandleText"]["runs"].array?.first?["text"].string, !handle.isEmpty {
+            self.handle = handle
+        } else {
+            self.handle = channelInfos["navigationEndpoint"]["browseEndpoint"]["canonicalBaseUrl"].string?.replacingOccurrences(of: "/", with: "") // Need to remove the first slash because the string is like "/@ChannelHandle"
+        }
+        
+        self.subscribeStatus = channelInfos["subscribeButton"]["subscribeButtonRenderer"]["subscribed"].bool
+        
+        self.subscribersCount = channelInfos["subscriberCountText"]["simpleText"].string
+        
+        self.videosCount = channelInfos["videosCountText"]["runs"].arrayValue.map({$0["text"].stringValue}).joined()
+    }
+    
+    private mutating func extractChannelInfosFromPageHeaderRenderer(json: JSON) {
+        let channelInfos = json["header"]["pageHeaderRenderer"]["content"]["pageHeaderViewModel"]
+        let metadata = json["metadata"]["channelMetadataRenderer"]
+        
+        let subscribeButton: JSON? = channelInfos["actions"]["flexibleActionsViewModel"]["actionsRows"].arrayValue.reduce([] as [JSON], {var mutArray = $0; mutArray.append(contentsOf: $1["actions"].arrayValue); return mutArray}).first(where: {$0["subscribeButtonViewModel"].exists()})?["subscribeButtonViewModel"]
+        
+        self.channelId = metadata["externalId"].string ?? subscribeButton?["channelId"].string
+        
+        /// Create a new json to replace the "avatar" dictionnary key to the "thumbnail" for the extraction with ``YTThumbnail/appendThumbnails(json:thumbnailList:)`` to work.
+        YTThumbnail.appendThumbnails(json: channelInfos["image"]["decoratedAvatarViewModel"]["avatar"]["avatarViewModel"], thumbnailList: &self.avatarThumbnails)
+        
+        YTThumbnail.appendThumbnails(json: channelInfos["banner"]["imageBannerViewModel"], thumbnailList: &self.bannerThumbnails)
+        
+        /* badges are disabled for the moment
+        if let badgesList = channelInfos["badges"].array {
+            for badge in badgesList {
+                if let badgeName = badge["metadataBadgeRenderer"]["style"].string {
+                    self.badges.append(badgeName)
+                }
+            }
+        }
+         */
+        
+        self.isSubcribeButtonEnabled = !(subscribeButton?["disableSubscribeButton"].bool ?? true) // TODO: add notificationBell
+        
+        self.name = channelInfos["title"]["dynamicTextViewModel"]["text"]["content"].string ?? metadata["title"].string
+        
+        /*
+         metadata -> contentMetadataViewModel -> [metadataRows] -> [metadataParts] -> text -> content
+         */
+        self.handle = channelInfos["metadata"]["metadataRows"].arrayValue
+            .first(where: {$0.arrayValue.contains(where: {$0["metadataParts"].arrayValue.contains(where: {$0["text"]["content"].stringValue.starts(with: "@")})})})?.arrayValue // [metadataRows]
+            .first(where: {$0["metadataParts"].arrayValue.contains(where: {$0["text"]["content"].stringValue.starts(with: "@")})})?.arrayValue // [metadataParts]
+            .first(where: {$0["text"]["content"].stringValue.starts(with: "@")})?["text"]["content"].string // content
+        
+        //self.subscribeStatus = channelInfos["subscribeButton"]["subscribeButtonRenderer"]["subscribed"].bool TODO: broken at the moment
+        
+        self.subscribersCount = channelInfos["metadata"]["metadataRows"].arrayValue.count > 1 ? channelInfos["metadata"]["metadataRows"].arrayValue[1]["metadataParts"].arrayValue.first?["text"]["content"].string : nil
+        
+        self.videosCount =  channelInfos["metadata"]["metadataRows"].arrayValue.count > 1 ? channelInfos["metadata"]["metadataRows"].arrayValue[1]["metadataParts"].arrayValue.count > 1 ? channelInfos["metadata"]["metadataRows"].arrayValue[1]["metadataParts"].arrayValue[1]["text"]["content"].string : nil : nil
+        
+        self.shortDescription = metadata["description"].string
+        
+        self.keywords = metadata["keywords"].string?.components(separatedBy: " ")
     }
     
     /// Types of request you can do to retrieve some of the channel's content, channel's tabs on YouTube's website.
