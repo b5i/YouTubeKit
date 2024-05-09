@@ -614,7 +614,7 @@ public struct ChannelInfosResponse: YouTubeResponse {
         
         public static func isTabOfSelfType(json: JSON) -> Bool {
             guard let tabURL = json["tabRenderer"]["endpoint"]["commandMetadata"]["webCommandMetadata"]["url"].string else { return false }
-            return tabURL.components(separatedBy: "/").last == "videos"
+            return tabURL.ytkFirstGroupMatch(for: "[\\S]*\\/([\\S]*)") == "videos" // last component of the path
         }
     }
     
@@ -671,7 +671,7 @@ public struct ChannelInfosResponse: YouTubeResponse {
         
         public static func isTabOfSelfType(json: JSON) -> Bool {
             guard let tabURL = json["tabRenderer"]["endpoint"]["commandMetadata"]["webCommandMetadata"]["url"].string else { return false }
-            return tabURL.components(separatedBy: "/").last == "shorts"
+            return tabURL.ytkFirstGroupMatch(for: "[\\S]*\\/([\\S]*)") == "shorts" // last component of the path
         }
     }
     
@@ -728,7 +728,7 @@ public struct ChannelInfosResponse: YouTubeResponse {
         
         public static func isTabOfSelfType(json: JSON) -> Bool {
             guard let tabURL = json["tabRenderer"]["endpoint"]["commandMetadata"]["webCommandMetadata"]["url"].string else { return false }
-            return tabURL.components(separatedBy: "/").last == "streams"
+            return tabURL.ytkFirstGroupMatch(for: "[\\S]*\\/([\\S]*)") == "streams" // last component of the path
         }
     }
     
@@ -809,7 +809,7 @@ public struct ChannelInfosResponse: YouTubeResponse {
         
         public static func isTabOfSelfType(json: JSON) -> Bool {
             guard let tabURL = json["tabRenderer"]["endpoint"]["commandMetadata"]["webCommandMetadata"]["url"].string else { return false }
-            return tabURL.components(separatedBy: "/").last == "playlists"
+            return tabURL.ytkFirstGroupMatch(for: "[\\S]*\\/([\\S]*)") == "playlists" // last component of the path
         }
     }
     

@@ -28,16 +28,14 @@ public class YouTubeModel {
     ///
     /// e.g. fr-CH (where fr is the langague code for "french" and CH represents Switzerland as a country), it would return "fr".
     public var selectedLocaleLanguageCode: String {
-        selectedLocale.components(separatedBy: "-")[0].lowercased()
+        return selectedLocale.ytkFirstGroupMatch(for: "([^\\s|-]*)")?.lowercased() ?? ""
     }
     
     /// Get the country code for ``YouTubeModel/selectedLocale``.
     ///
     /// e.g. fr-CH (where fr is the langague code for "french" and CH represents Switzerland as a country), it would return "ch".
     public var selectedLocaleCountryCode: String {
-        let splittedLocale = selectedLocale.components(separatedBy: "-")
-        guard splittedLocale.count > 1 else { return selectedLocaleLanguageCode }
-        return splittedLocale[1].lowercased()
+        return selectedLocale.ytkFirstGroupMatch(for: "-([\\S]*)")?.lowercased() ?? self.selectedLocaleLanguageCode
     }
     
     /// Set Google account's cookies to perform user-related API calls.
@@ -56,13 +54,13 @@ public class YouTubeModel {
     
     /// The logger that will be used to store the information of the requests.
     public var logger: RequestsLogger? = nil
-    
+        
     #if canImport(CommonCrypto)
     /// Generate the authentication hash from user's cookies required by YouTube.
     /// - Parameter cookies: user's authentification cookies.
     /// - Returns: A SAPISIDHASH cookie value, is generally used as the value for an HTTP header with name `Authorization`.
-    public func generateSAPISIDHASHForCookies(_ cookies: String) -> String {
-        let SAPISID = cookies.replacingOccurrences(of: "SAPISID=", with: "").components(separatedBy: ";")[0]
+    public func generateSAPISIDHASHForCookies(_ cookies: String) -> String? {
+        guard let SAPISID = cookies.ytkFirstGroupMatch(for: "SAPISID=([^\\s|;]*)") else { return nil }
         let time = Int(Date().timeIntervalSince1970)
         let data = Data("\(time) \(SAPISID) https://www.youtube.com".utf8)
         var digest = [UInt8](repeating: 0, count: Int(CC_SHA1_DIGEST_LENGTH))
@@ -102,7 +100,9 @@ public class YouTubeModel {
                 headers.headers.append(HeadersList.Header(name: "Cookie", content: cookies))
             }
 #if canImport(CommonCrypto)
-            headers.headers.append(HeadersList.Header(name: "Authorization", content: generateSAPISIDHASHForCookies(cookies)))
+            if let sapisidHash = generateSAPISIDHASHForCookies(cookies) {
+                headers.headers.append(HeadersList.Header(name: "Authorization", content: sapisidHash))
+            }
 #endif
         }
         

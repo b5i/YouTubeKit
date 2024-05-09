@@ -41,24 +41,16 @@ public struct VideoInfosWithDownloadFormatsResponse: YouTubeResponse {
         
         let dataToString = String(decoding: data, as: UTF8.self)
         
-        let preparedStringForPlayerId: [String] = dataToString.components(separatedBy: "<link rel=\"preload\" href=\"https://i.ytimg.com/generate_204\" as=\"fetch\"><link as=\"script\" rel=\"preload\" href=\"")
-        
-        guard preparedStringForPlayerId.count > 1 else { throw ResponseError(step: .decodeData, reason: "Couldn't get player path.") }
-        
         /// We have something like this **/s/player/playerId/player_ias.vflset/en_US/base.js**
-        let playerPath: String = preparedStringForPlayerId[1].components(separatedBy: "\" nonce=\"")[0]
-        
+        guard let playerPath = dataToString.ytkFirstGroupMatch(for: "<link rel=\"preload\" href=\"https:\\/\\/i.ytimg.com\\/generate_204\" as=\"fetch\"><link as=\"script\" rel=\"preload\" href=\"([\\S]+)\"") else {
+            throw ResponseError(step: .decodeData, reason: "Couldn't get player path.")
+        }
+                
         let (instructionArray, nParameter) = try processPlayerScrapping(playerPath: playerPath)
-        var preparedStringForJSONData: [String] = dataToString.components(separatedBy: "var ytInitialPlayerResponse = ")
-        
-        guard preparedStringForJSONData.count > 1 else { throw ResponseError(step: .decodeData, reason: "Couldn't get player's JSON data.") }
-        
-        preparedStringForJSONData = preparedStringForJSONData[1].components(separatedBy: ";</script><div id=\"player\"")
-        
-        preparedStringForJSONData = (preparedStringForJSONData[0] + ";") // We add a ";" so then when we look for "}}}};" we get at least one result.
-            .components(separatedBy: "}}}};")
-        
-        let stringJSONData = preparedStringForJSONData[0] + "}}}}" // As we removed them in the split operation.
+                
+        guard let stringJSONData = dataToString.ytkFirstGroupMatch(for: "var ytInitialPlayerResponse = ([\\S\\s]*\\}\\}\\}\\})[\\S\\s]*;</script><div id=\"player\"") else {
+            throw ResponseError(step: .decodeData, reason: "Couldn't get player's JSON data.")
+        }
         
         let json = JSON(parseJSON: stringJSONData)
         
@@ -104,23 +96,12 @@ public struct VideoInfosWithDownloadFormatsResponse: YouTubeResponse {
     ) -> [DownloadFormat] {
         return json.map({ encodedItem in
             var item = decodeFromJSON(json: encodedItem)
-            if encodedItem["signatureCipher"].string != nil {
-                let cipher: String = encodedItem["signatureCipher"].stringValue
-                let urlPart: [String] = cipher.components(separatedBy: "&url=")
+            if let cipher = encodedItem["signatureCipher"].string {
+                guard let url = cipher.ytkFirstGroupMatch(for: "&?url=([^\\s|&]*)")?.removingPercentEncoding else { return item }
+                                
+                guard var cipherString = cipher.ytkFirstGroupMatch(for: "&?s=([^\\s|&]*)")?.removingPercentEncoding else { return item }
                 
-                guard urlPart.count > 1 else { return item }
-                
-                let url = urlPart[1].removingPercentEncoding
-                
-                let cipherStringPart = cipher.components(separatedBy: "s=")
-                
-                guard cipherStringPart.count > 1 else { return item }
-                
-                let cipherString = cipherStringPart[1].components(separatedBy: "&sp=sig")[0].removingPercentEncoding
-                
-                guard var cipherString = cipherString else { return item }
-                
-                var splittedCipherString = cipherString.map { String($0) }
+                var splittedCipherString = cipherString.map { $0 }
                 
                 for instruction in instructionsArray  {
                     switch instruction {
@@ -137,9 +118,9 @@ public struct VideoInfosWithDownloadFormatsResponse: YouTubeResponse {
                     }
                 }
                 
-                cipherString = splittedCipherString.joined()
+                cipherString = String(splittedCipherString)
                 
-                guard let url = url, let cipherString = cipherString.addingPercentEncoding(withAllowedCharacters: .urlHostAllowed) else { return item }
+                guard let cipherString = cipherString.addingPercentEncoding(withAllowedCharacters: .urlHostAllowed) else { return item }
                 
                 var result = "\(url)&sig=\(cipherString)"
                 result = result.replacingOccurrences(of: ",", with: "%2C")
@@ -186,13 +167,9 @@ public struct VideoInfosWithDownloadFormatsResponse: YouTubeResponse {
     /// - Parameter textString: YouTube's player code.
     /// - Returns: The Javascript code in Data format.
     private static func extractNParameterFunction(fromFileText textString: String) -> Data {
-        
-        let textStringParts: [String] = textString
-            .replacingOccurrences(of: "\n", with: "")
-            .components(separatedBy: "var b=a.split(\"\")")
-        guard textStringParts.count > 1 else { return Data() }
-        
-        return ("function processNParameter(a) { var b=a.split(\"\")" + textStringParts[1].components(separatedBy: "return b.join(\"\")")[0] + ";return b.join(\"\"); }").data(using: .utf8) ?? Data()
+        guard let functionContents = textString.replacingOccurrences(of: "\n", with: "").ytkFirstGroupMatch(for: "(var b=a.split\\(\"\"\\)[\\s\\S]*?return b.join\\(\"\"\\)\\})") else { return Data() }
+                                
+        return ("function processNParameter(a) {" + functionContents).data(using: .utf8) ?? Data()
     }
     
     /// Get the player's decoding functions to un-throttle download format links download speed.
@@ -201,13 +178,8 @@ public struct VideoInfosWithDownloadFormatsResponse: YouTubeResponse {
     ///  - Returns: a closure potentially containing an array of ``PlayerCipherDecodeInstruction`` and a string representing the nParameter function in Javascript code.
     private static func processPlayerScrapping(playerPath: String) throws -> (instructions: [PlayerCipherDecodeInstruction], nParameterCode: String) {
         guard let playerURL = URL(string: "https://youtube.com\(playerPath)") else { throw ResponseError(step: .processPlayerScrapping, reason: "Could not create player URL (tried: https://youtube.com\(playerPath)") }
-        var preparedStringForPlayerName: [String] = playerPath.components(separatedBy: "s/player/")
-        
-        guard preparedStringForPlayerName.count > 1 else { throw ResponseError(step: .processPlayerScrapping, reason: "Could not get player name.") }
-        
-        preparedStringForPlayerName = preparedStringForPlayerName[1].components(separatedBy: "/")
-        
-        let playerName = preparedStringForPlayerName[0]
+
+        guard let playerName = playerPath.ytkFirstGroupMatch(for: "s/player/([^\\s|\\/]*)") else { throw ResponseError(step: .processPlayerScrapping, reason: "Could not get player name.") }
         
         let documentDirectoryPath: String
         
@@ -253,28 +225,14 @@ public struct VideoInfosWithDownloadFormatsResponse: YouTubeResponse {
         
         for line in separatedByLinePlayer {
             if line.contains("a=a.split(\"\");") {
-                let functionArray: [String] = line.components(separatedBy: "=function(a){a=a.split(\"\");")
+                guard let instructionsString = line.ytkFirstGroupMatch(for: "=function\\(a\\)\\{a=a.split\\(\"\"\\);([\\s\\S]*?)return") else { throw ResponseError(step: .scrapPlayer, reason: "Could not get n-parameter instructions.") }
                 
-                guard functionArray.count > 1 else { throw ResponseError(step: .scrapPlayer, reason: "Could not get n-parameter instructions.") }
-                var instructionsString: String = functionArray[1]
-                //var functionName: String = functionArray[0]
-                
-                instructionsString = instructionsString.components(separatedBy: "return a.join(\"\")};")[0]
-                
-                let instructionsStringArray = instructionsString.split(separator: ";")
+                let instructionsStringArray = instructionsString.split(separator: ";").map { String($0) } // not using components(...), so we don't have an empty item at the end of the array
                 
                 for instruction in instructionsStringArray {
-                    var preparedCurrentInstructionName = instruction.components(separatedBy: "(a,")
-                    guard preparedCurrentInstructionName.count > 1 else { continue }
+                    guard let currentFunctionName = instruction.ytkFirstGroupMatch(for: "\\.([\\S]*?)\\(") else { continue }
                     
-                    guard let currentIntParameter = Int(preparedCurrentInstructionName[1].components(separatedBy: ")")[0]) else { continue }
-                    
-                    preparedCurrentInstructionName = preparedCurrentInstructionName[0].components(separatedBy: ".")
-                    guard preparedCurrentInstructionName.count > 1 else { continue }
-                    
-                    let currentFunctionName = preparedCurrentInstructionName.last
-                    
-                    guard let currentFunctionName = currentFunctionName else { continue }
+                    guard let currentPotentialIntParameter = instruction.ytkFirstGroupMatch(for: "\\([^0-9]*([0-9]*)"), let currentIntParameter = Int(currentPotentialIntParameter) else { continue }
                     
                     if knownPlayerCipherDecodeInstructions[currentFunctionName] == nil {
                         knownPlayerCipherDecodeInstructions[currentFunctionName] = PlayerCipherDecodeInstruction.getInstructionTypeByName(
@@ -401,11 +359,7 @@ public struct VideoInfosWithDownloadFormatsResponse: YouTubeResponse {
             
             for line in separatedByLinesPlayerScript {
                 if line.contains("\(name):function(") {
-                    let preparedFunctionContent: [String] = line.components(separatedBy: "\(name):function(").filter({$0 != ""})
-                    
-                    let functionContent = preparedFunctionContent.last?.components(separatedBy: "}")[0]
-                    
-                    guard let functionContent = functionContent else { continue }
+                    guard let functionContent = line.ytkFirstGroupMatch(for: "\(name):function\\([^\\{]*\\{([^\\}]*)") else { continue }
                     
                     /// Functions types
                     ///
@@ -584,7 +538,7 @@ public struct VideoInfosWithDownloadFormatsResponse: YouTubeResponse {
                 }(),
                 isCopyrightedMedia: json["signatureCipher"].string != nil,
                 url: nil,
-                mimeType: json["mimeType"].string?.components(separatedBy: ";").first,
+                mimeType: json["mimeType"].string?.ytkFirstGroupMatch(for: "([^;]*)"),
                 width: json["width"].int,
                 height: json["height"].int,
                 quality: json["qualityLabel"].string,
@@ -610,7 +564,7 @@ public struct VideoInfosWithDownloadFormatsResponse: YouTubeResponse {
                 }(),
                 isCopyrightedMedia: json["signatureCipher"].string != nil,
                 url: nil,
-                mimeType: json["mimeType"].string?.components(separatedBy: ";").first,
+                mimeType: json["mimeType"].string?.ytkFirstGroupMatch(for: "([^;]*)"),
                 audioSampleRate: {
                     if let audioSampleRate = json["audioSampleRate"].string {
                         return Int(audioSampleRate)

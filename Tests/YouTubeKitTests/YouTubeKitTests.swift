@@ -489,7 +489,7 @@ final class YouTubeKitTests: XCTestCase {
         
         try VideoInfosWithDownloadFormatsResponse.removePlayerFilesFromDisk()
         
-        for video in [YTVideo(videoId: "3ryID_SwU5E"), YTVideo(videoId: "xUdZhqe2n7w")] as [YTVideo] {
+        for video in [YTVideo(videoId: "dSDbwfXX5_I"), YTVideo(videoId: "3ryID_SwU5E")] as [YTVideo] {
             
             let requestResult = try await video.fetchStreamingInfosWithDownloadFormatsThrowing(youtubeModel: YTM)
                         
