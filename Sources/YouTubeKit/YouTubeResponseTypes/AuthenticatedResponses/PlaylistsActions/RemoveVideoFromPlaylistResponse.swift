@@ -8,6 +8,7 @@
 
 import Foundation
 
+/// - Note: For the moment, no extraction of the `playlistEditToken` has been done and you need to pass `"CAFAAQ%3D%3D"` as an argument for it.
 public struct RemoveVideoFromPlaylistResponse: AuthenticatedResponse {
     public static var headersType: HeaderTypes = .removeVideoFromPlaylistHeaders
     

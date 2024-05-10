@@ -138,7 +138,7 @@ public struct HistoryResponse: AuthenticatedContinuableResponse {
             }
         }
         
-        public var id: Int { return groupTitle.hashValue }
+        public var id: Int { return self.hashValue }
         
         /// Ttitle of the group, usually represent a part of the time in the history like "Today", "Yesterday" or "February 15".
         public let groupTitle: String
@@ -171,8 +171,8 @@ public struct HistoryResponse: AuthenticatedContinuableResponse {
         }
             
         /// Struct representing a video and the token that should be used to suppress it from the history.
-        public struct VideoWithToken: HistoryBlockContent, Identifiable {
-            public var id: Int { return video.hashValue + (suppressToken?.hashValue ?? 0) }
+        public struct VideoWithToken: HistoryBlockContent, Identifiable, Hashable {
+            public var id: Int { self.hashValue }
             
             public let video: YTVideo
             
@@ -180,8 +180,8 @@ public struct HistoryResponse: AuthenticatedContinuableResponse {
             public let suppressToken: String?
         }
         
-        public struct ShortsBlock: HistoryBlockContent, Identifiable {
-            public var id: Int { return self.shorts.hashValue + self.suppressTokens.hashValue}
+        public struct ShortsBlock: HistoryBlockContent, Identifiable, Hashable {
+            public var id: Int { return self.hashValue }
             
             /// An array containing some shorts.
             public var shorts: [YTVideo]
