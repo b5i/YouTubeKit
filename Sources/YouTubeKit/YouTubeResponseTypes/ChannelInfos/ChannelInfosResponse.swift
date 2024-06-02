@@ -141,7 +141,7 @@ public struct ChannelInfosResponse: YouTubeResponse {
             
     public static func decodeJSON(json: JSON) -> ChannelInfosResponse {
         var toReturn = ChannelInfosResponse()
-        
+                
         if json["header"]["pageHeaderRenderer"].exists() {
             toReturn.extractChannelInfosFromPageHeaderRenderer(json: json)
         } else {
@@ -248,19 +248,20 @@ public struct ChannelInfosResponse: YouTubeResponse {
         
         self.name = channelInfos["title"]["dynamicTextViewModel"]["text"]["content"].string ?? metadata["title"].string
         
+        let metadataRows = channelInfos["metadata"]["contentMetadataViewModel"]["metadataRows"]
+        
         /*
          metadata -> contentMetadataViewModel -> [metadataRows] -> [metadataParts] -> text -> content
          */
-        self.handle = channelInfos["metadata"]["metadataRows"].arrayValue
-            .first(where: {$0.arrayValue.contains(where: {$0["metadataParts"].arrayValue.contains(where: {$0["text"]["content"].stringValue.starts(with: "@")})})})?.arrayValue // [metadataRows]
-            .first(where: {$0["metadataParts"].arrayValue.contains(where: {$0["text"]["content"].stringValue.starts(with: "@")})})?.arrayValue // [metadataParts]
-            .first(where: {$0["text"]["content"].stringValue.starts(with: "@")})?["text"]["content"].string // content
-        
+        self.handle = metadataRows.arrayValue
+            .first(where: {$0["metadataParts"].arrayValue.contains(where: {$0["text"]["content"].stringValue.starts(with: "@")})})?["metadataParts"].arrayValue // selects the metadataParts
+            .first(where: {$0["text"]["content"].stringValue.starts(with: "@")})?["text"]["content"].string
+                
         //self.subscribeStatus = channelInfos["subscribeButton"]["subscribeButtonRenderer"]["subscribed"].bool TODO: broken at the moment
         
-        self.subscribersCount = channelInfos["metadata"]["metadataRows"].arrayValue.count > 1 ? channelInfos["metadata"]["metadataRows"].arrayValue[1]["metadataParts"].arrayValue.first?["text"]["content"].string : nil
+        self.subscribersCount = metadataRows.arrayValue.count > 1 ? metadataRows.arrayValue[1]["metadataParts"].arrayValue.first?["text"]["content"].string : nil
         
-        self.videosCount =  channelInfos["metadata"]["metadataRows"].arrayValue.count > 1 ? channelInfos["metadata"]["metadataRows"].arrayValue[1]["metadataParts"].arrayValue.count > 1 ? channelInfos["metadata"]["metadataRows"].arrayValue[1]["metadataParts"].arrayValue[1]["text"]["content"].string : nil : nil
+        self.videosCount = metadataRows.arrayValue.count > 1 ? metadataRows.arrayValue[1]["metadataParts"].arrayValue.count > 1 ? metadataRows.arrayValue[1]["metadataParts"].arrayValue[1]["text"]["content"].string : nil : nil
         
         self.shortDescription = metadata["description"].string
         
