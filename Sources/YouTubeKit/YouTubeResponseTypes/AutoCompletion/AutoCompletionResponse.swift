@@ -11,9 +11,9 @@ import Foundation
 ///
 /// Note: by using this request you consent to YouTube's cookie policy (even if no cookies are kept wiht YouTubeKit).
 public struct AutoCompletionResponse: YouTubeResponse {
-    public static var headersType: HeaderTypes = .autoCompletion
+    public static let headersType: HeaderTypes = .autoCompletion
     
-    public static var parametersValidationList: ValidationList = [.query: .existenceValidator]
+    public static let parametersValidationList: ValidationList = [.query: .existenceValidator]
     
     /// Text query used to get the search suggestions.
     public var initialQuery: String = ""

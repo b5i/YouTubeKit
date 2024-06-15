@@ -147,7 +147,7 @@ public struct HeadersList: Codable {
         /// All content of the posibilities are defined in their parameter of the function ``setHeadersAgentFor(content:data:)``
         ///
         /// You can know whether to define them or not in ``HeaderTypes``
-        public enum ContentTypes: String, Codable, CaseIterable, RawRepresentable {
+        public enum ContentTypes: String, Codable, CaseIterable, RawRepresentable, Sendable {
             case query
             
             /// Can be for example videoId, channelId, playlistId etc...

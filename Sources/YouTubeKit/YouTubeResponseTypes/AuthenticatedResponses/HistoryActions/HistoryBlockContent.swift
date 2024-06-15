@@ -9,6 +9,6 @@
 import Foundation
 
 /// A protocol describing some content from an ``HistoryResponse/HistoryBlock``
-public protocol HistoryBlockContent: Hashable {
+public protocol HistoryBlockContent: Hashable, Sendable {
     var id: Int { get }
 }

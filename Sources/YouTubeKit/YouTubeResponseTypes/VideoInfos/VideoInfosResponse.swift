@@ -9,9 +9,9 @@ import Foundation
 
 /// Struct representing a search response.
 public struct VideoInfosResponse: YouTubeResponse {
-    public static var headersType: HeaderTypes = .videoInfos
+    public static let headersType: HeaderTypes = .videoInfos
     
-    public static var parametersValidationList: ValidationList = [.query: .videoIdValidator]
+    public static let parametersValidationList: ValidationList = [.query: .videoIdValidator]
         
     /// Name of the channel that posted the video.
     public var channel: YTLittleChannelInfos?

@@ -10,7 +10,7 @@ import Foundation
 
 public extension YTPlaylist {
     /// Fetch the ``PlaylistInfosResponse`` related to the playlist.
-    func fetchVideos(youtubeModel: YouTubeModel, useCookies: Bool? = nil, result: @escaping (Result<PlaylistInfosResponse, Error>) -> Void) {
+    func fetchVideos(youtubeModel: YouTubeModel, useCookies: Bool? = nil, result: @escaping @Sendable (Result<PlaylistInfosResponse, Error>) -> Void) {
         PlaylistInfosResponse.sendNonThrowingRequest(youtubeModel: youtubeModel, data: [.browseId: self.playlistId], useCookies: useCookies, result: result)
     }
     
@@ -26,7 +26,7 @@ public extension YTPlaylist {
     
     
     /// Fetch the ``PlaylistInfosResponse`` related to the playlist.
-    func fetchVideos(youtubeModel: YouTubeModel, useCookies: Bool? = nil, result: @escaping (PlaylistInfosResponse?, Error?) -> Void) {
+    func fetchVideos(youtubeModel: YouTubeModel, useCookies: Bool? = nil, result: @escaping @Sendable (PlaylistInfosResponse?, Error?) -> Void) {
         self.fetchVideos(youtubeModel: youtubeModel, useCookies: useCookies, result: { returning in
             switch returning {
             case .success(let response):

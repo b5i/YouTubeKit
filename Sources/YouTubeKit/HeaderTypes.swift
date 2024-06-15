@@ -11,7 +11,7 @@ import FoundationNetworking
 #endif
 
 /// List of possibles requests where you can send to YouTube
-public enum HeaderTypes: Codable {
+public enum HeaderTypes: Codable, Sendable {
     /// Get home menu videos.
     case home
     

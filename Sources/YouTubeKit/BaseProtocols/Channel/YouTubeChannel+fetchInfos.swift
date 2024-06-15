@@ -9,7 +9,7 @@
 import Foundation
 
 public extension YouTubeChannel {
-    func fetchInfos(youtubeModel: YouTubeModel, useCookies: Bool? = nil, result: @escaping (Result<ChannelInfosResponse, Error>) -> ()) {
+    func fetchInfos(youtubeModel: YouTubeModel, useCookies: Bool? = nil, result: @escaping @Sendable (Result<ChannelInfosResponse, Error>) -> ()) {
         ChannelInfosResponse.sendNonThrowingRequest(youtubeModel: youtubeModel, data: [.browseId: self.channelId], useCookies: useCookies, result: result)
     }
     
@@ -23,7 +23,7 @@ public extension YouTubeChannel {
     }
     
     @available(*, deprecated, message: "This method will be removed in a future version of YouTubeKit, please use fetchInfos(youtubeModel: YouTubeModel, useCookies: Bool? = nil, result: @escaping (Result<ChannelInfosResponse, Error>) -> ()) instead.") // safer and better to use the Result API instead of a tuple
-    func fetchInfos(youtubeModel: YouTubeModel, useCookies: Bool? = nil, result: @escaping (ChannelInfosResponse?, Error?) -> ()) {
+    func fetchInfos(youtubeModel: YouTubeModel, useCookies: Bool? = nil, result: @escaping @Sendable (ChannelInfosResponse?, Error?) -> ()) {
         self.fetchInfos(youtubeModel: youtubeModel, result: { returning in
             switch returning {
             case .success(let response):

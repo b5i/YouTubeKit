@@ -8,7 +8,7 @@
 import Foundation
 
 /// Struct representing a video.
-public struct YTVideo: YTSearchResult, YouTubeVideo, Codable {
+public struct YTVideo: YTSearchResult, YouTubeVideo, Codable, Sendable {
     public init(id: Int? = nil, videoId: String, title: String? = nil, channel: YTLittleChannelInfos? = nil, viewCount: String? = nil, timePosted: String? = nil, timeLength: String? = nil, thumbnails: [YTThumbnail] = []) {
         self.id = id
         self.videoId = videoId
@@ -77,7 +77,7 @@ public struct YTVideo: YTSearchResult, YouTubeVideo, Codable {
         return video
     }
     
-    public static var type: YTSearchResultType = .video
+    public static let type: YTSearchResultType = .video
     
     public var id: Int?
 

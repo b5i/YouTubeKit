@@ -11,7 +11,7 @@ public extension YouTubeVideo {
     func fetchStreamingInfosWithDownloadFormats(
         youtubeModel: YouTubeModel,
         useCookies: Bool? = nil,
-        infos: @escaping (Result<VideoInfosWithDownloadFormatsResponse, Error>) -> ()
+        infos: @escaping @Sendable (Result<VideoInfosWithDownloadFormatsResponse, Error>) -> ()
     ) {
         VideoInfosWithDownloadFormatsResponse.sendNonThrowingRequest(
             youtubeModel: youtubeModel,
@@ -38,7 +38,7 @@ public extension YouTubeVideo {
     func fetchStreamingInfosWithDownloadFormats(
             youtubeModel: YouTubeModel,
             useCookies: Bool? = nil,
-            infos: @escaping (VideoInfosWithDownloadFormatsResponse?, Error?) -> ()
+            infos: @escaping @Sendable (VideoInfosWithDownloadFormatsResponse?, Error?) -> ()
         ) {
         self.fetchStreamingInfosWithDownloadFormats(youtubeModel: youtubeModel, useCookies: useCookies, infos: { returning in
             switch returning {

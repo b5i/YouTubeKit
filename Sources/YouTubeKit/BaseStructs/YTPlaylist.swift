@@ -8,7 +8,7 @@
 import Foundation
 
 /// Struct representing a playlist.
-public struct YTPlaylist: YTSearchResult {
+public struct YTPlaylist: YTSearchResult, Sendable {
     public init(id: Int? = nil, playlistId: String, title: String? = nil, thumbnails: [YTThumbnail] = [], videoCount: String? = nil, channel: YTLittleChannelInfos? = nil, timePosted: String? = nil, frontVideos: [YTVideo] = [], privacy: YTPrivacy? = nil) {
         self.id = id
         self.playlistId = playlistId
@@ -61,7 +61,7 @@ public struct YTPlaylist: YTSearchResult {
         return playlist
     }
     
-    public static var type: YTSearchResultType = .playlist
+    public static let type: YTSearchResultType = .playlist
     
     public var id: Int?
     

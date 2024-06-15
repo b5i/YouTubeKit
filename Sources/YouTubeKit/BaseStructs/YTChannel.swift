@@ -49,7 +49,7 @@ public struct YTChannel: YTSearchResult, YouTubeChannel {
         return channel
     }
     
-    public static var type: YTSearchResultType = .channel
+    public static let type: YTSearchResultType = .channel
     
     public var id: Int?
     

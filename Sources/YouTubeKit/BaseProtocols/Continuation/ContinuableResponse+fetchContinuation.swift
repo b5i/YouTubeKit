@@ -9,7 +9,7 @@
 import Foundation
 
 public extension ContinuableResponse {
-    func fetchContinuation(youtubeModel: YouTubeModel, useCookies: Bool? = nil, result: @escaping (Result<Continuation, Error>) -> Void) {
+    func fetchContinuation(youtubeModel: YouTubeModel, useCookies: Bool? = nil, result: @escaping @Sendable (Result<Continuation, Error>) -> Void) {
         if let continuationToken = continuationToken {
             if let visitorData = visitorData {
                 Continuation.sendNonThrowingRequest(youtubeModel: youtubeModel, data: [.continuation: continuationToken, .visitorData: visitorData], useCookies: useCookies, result: result)
@@ -31,7 +31,7 @@ public extension ContinuableResponse {
     }
     
     @available(*, deprecated, message: "This method will be removed in a future version of YouTubeKit, please use fetchContinuation(youtubeModel: YouTubeModel, useCookies: Bool? = nil, result: @escaping (Result<Continuation, Error>) -> Void) instead.") // safer and better to use the Result API instead of a tuple
-    func fetchContinuation(youtubeModel: YouTubeModel, useCookies: Bool? = nil, result: @escaping ((Continuation)?, Error?) -> Void) {
+    func fetchContinuation(youtubeModel: YouTubeModel, useCookies: Bool? = nil, result: @escaping @Sendable ((Continuation)?, Error?) -> Void) {
         self.fetchContinuation(youtubeModel: youtubeModel, useCookies: useCookies, result: { returning in
             switch returning {
             case .success(let response):

@@ -13,7 +13,7 @@ public protocol AuthenticatedResponse: YouTubeResponse {
     static func sendNonThrowingRequest(
         youtubeModel: YouTubeModel,
         data: [HeadersList.AddQueryInfo.ContentTypes : String],
-        result: @escaping (Result<Self, Error>) -> ()
+        result: @escaping @Sendable (Result<Self, Error>) -> ()
     )
 
     /// A function to call the request of the given YouTubeResponse. For more informations see ``YouTubeModel/sendRequest(responseType:data:useCookies:result:)``.
@@ -39,7 +39,7 @@ public extension AuthenticatedResponse {
     static func sendNonThrowingRequest(
         youtubeModel: YouTubeModel,
         data: [HeadersList.AddQueryInfo.ContentTypes : String],
-        result: @escaping (Result<Self, Error>) -> ()
+        result: @escaping @Sendable (Result<Self, Error>) -> ()
     ) {
         if youtubeModel.cookies != "" && youtubeModel.cookies != "" {
             /// Call YouTubeModel's `sendRequest` function to have a more readable use.

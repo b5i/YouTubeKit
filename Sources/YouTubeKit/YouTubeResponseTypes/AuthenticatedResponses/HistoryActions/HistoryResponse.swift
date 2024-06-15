@@ -10,12 +10,12 @@ import Foundation
 
 /// Struct representing a HistoryResponse to get the infos and the videos from the account's history.
 public struct HistoryResponse: AuthenticatedContinuableResponse {
-    public static var headersType: HeaderTypes = .historyHeaders
+    public static let headersType: HeaderTypes = .historyHeaders
     
-    public static var parametersValidationList: ValidationList = [:]
+    public static let parametersValidationList: ValidationList = [:]
     
     /// ID of the playlist.
-    public static var playlistId: String = "VLFEhistory"
+    public static let playlistId: String = "VLFEhistory"
     
     public var isDisconnected: Bool = true
     
@@ -89,9 +89,9 @@ public struct HistoryResponse: AuthenticatedContinuableResponse {
     
     /// Struct representing the continuation ("load more videos" button)
     public struct Continuation: AuthenticatedResponse, ResponseContinuation {
-        public static var headersType: HeaderTypes = .historyContinuationHeaders
+        public static let headersType: HeaderTypes = .historyContinuationHeaders
         
-        public static var parametersValidationList: ValidationList = [.continuation: .existenceValidator]
+        public static let parametersValidationList: ValidationList = [.continuation: .existenceValidator]
         
         public var isDisconnected: Bool = true
         
@@ -126,7 +126,7 @@ public struct HistoryResponse: AuthenticatedContinuableResponse {
     }
     
     /// Struct representing a block of history, containing a title and an array of YTVideos.
-    public struct HistoryBlock: Hashable, Identifiable {
+    public struct HistoryBlock: Hashable, Identifiable, Sendable {
         public static func == (lhs: HistoryResponse.HistoryBlock, rhs: HistoryResponse.HistoryBlock) -> Bool {
             return lhs.id == rhs.id
         }

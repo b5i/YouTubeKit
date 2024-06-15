@@ -8,16 +8,16 @@
 
 import Foundation
 
-public struct ParameterValidator {
+public struct ParameterValidator: Sendable {
     /// A boolean that indicated whether the existence of the parameter is needed in order for it to succeed.
     public let needExistence: Bool
     
     /// The handler that is executed to check if a parameter's value is valid and modify it if necessary. Returns a optional string if everything is fine (should override the request's actual parameter in case it's not nil) or a ``ValidationError``.
-    public let handler: (String?) -> Result<String?, ValidationError>
+    public let handler: @Sendable (String?) -> Result<String?, ValidationError>
     
     /// - Parameter needExistence: A boolean that indicated whether the existence of the parameter is needed in order for it to succeed.
     /// - Parameter validator: The handler that is executed to check if a parameter's value is valid and modify it if necessary. Returns a optional string if everything is fine (should override the request's actual parameter) or a ``ValidationError``.
-    public init(needExistence: Bool = true, validator: @escaping (String?) -> Result<String?, ValidationError>) {
+    public init(needExistence: Bool = true, validator: @escaping @Sendable (String?) -> Result<String?, ValidationError>) {
         self.needExistence = needExistence
         self.handler = validator
     }

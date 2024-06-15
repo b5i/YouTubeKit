@@ -8,7 +8,7 @@
 import Foundation
 
 /// Protocol representing a search result.
-public protocol YTSearchResult: Codable, Equatable, Hashable {
+public protocol YTSearchResult: Codable, Equatable, Hashable, Sendable {
     /// Defines the item's type, for example a video or a channel.
     ///
     /// You can filter array of YTSearchResult conform items using

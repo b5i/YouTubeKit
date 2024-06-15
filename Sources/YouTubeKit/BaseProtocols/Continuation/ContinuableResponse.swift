@@ -24,7 +24,7 @@ public protocol ContinuableResponse: ResponseContinuation {
     func fetchContinuation(
         youtubeModel: YouTubeModel,
         useCookies: Bool?,
-        result: @escaping (Result<Continuation, Error>) -> Void
+        result: @escaping @Sendable (Result<Continuation, Error>) -> Void
     )
     
     /// Fetch the continuation of the ``ContinuableResponse``.

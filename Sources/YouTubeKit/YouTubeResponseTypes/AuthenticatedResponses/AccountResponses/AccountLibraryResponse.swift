@@ -9,9 +9,9 @@
 import Foundation
 
 public struct AccountLibraryResponse: AuthenticatedResponse {
-    public static var headersType: HeaderTypes = .usersLibraryHeaders
+    public static let headersType: HeaderTypes = .usersLibraryHeaders
     
-    public static var parametersValidationList: ValidationList = [:]
+    public static let parametersValidationList: ValidationList = [:]
         
     public var isDisconnected: Bool = true
     

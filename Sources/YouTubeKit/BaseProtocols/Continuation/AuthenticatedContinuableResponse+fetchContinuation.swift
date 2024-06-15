@@ -9,7 +9,7 @@
 import Foundation
 
 public extension AuthenticatedContinuableResponse {
-    func fetchContinuation(youtubeModel: YouTubeModel, result: @escaping (Result<Continuation, Error>) -> Void) {
+    func fetchContinuation(youtubeModel: YouTubeModel, result: @escaping @Sendable (Result<Continuation, Error>) -> Void) {
         if let continuationToken = continuationToken {
             Continuation.sendNonThrowingRequest(youtubeModel: youtubeModel, data: [.continuation: continuationToken], result: result)
         } else {

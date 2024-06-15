@@ -41,7 +41,7 @@ import Foundation
 /// ```
 ///
 /// - Note: Be aware that enabling logging can consume a lot of RAM as the logger stores a lot of raw informations. Therefore, make sure that you regularly clear the ``RequestsLogger/logs`` or disable logging when it's not needed.
-public protocol RequestsLogger: AnyObject {
+public protocol RequestsLogger: AnyObject, Sendable {
     /// An array of logs for requests/responses executed by the ``YouTubeModel``. A log is added once the request is fully finished and processed.
     var logs: [any GenericRequestLog] { get set }
     

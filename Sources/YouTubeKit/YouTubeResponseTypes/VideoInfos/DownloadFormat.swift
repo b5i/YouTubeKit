@@ -8,7 +8,7 @@
 import Foundation
 
 /// Protocol representing a particular video/audio format that can be downloaded.
-public protocol DownloadFormat {
+public protocol DownloadFormat: Sendable {
     /// Type of the format.
     static var type: MediaType { get }
     

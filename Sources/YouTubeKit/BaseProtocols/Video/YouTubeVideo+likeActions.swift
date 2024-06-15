@@ -12,7 +12,7 @@ public extension YouTubeVideo {
     /// Like the video.
     ///
     /// Requires a ``YouTubeModel`` where ``YouTubeModel/cookies`` is defined.
-    func likeVideo(youtubeModel: YouTubeModel, result: @escaping (Error?) -> Void) {
+    func likeVideo(youtubeModel: YouTubeModel, result: @escaping @Sendable (Error?) -> Void) {
         LikeVideoResponse.sendNonThrowingRequest(youtubeModel: youtubeModel, data: [.query: self.videoId], result: { response in
             switch response {
             case .success(let data):
@@ -58,7 +58,7 @@ public extension YouTubeVideo {
     /// Dislike the video.
     ///
     /// Requires a ``YouTubeModel`` where ``YouTubeModel/cookies`` is defined.
-    func dislikeVideo(youtubeModel: YouTubeModel, result: @escaping (Error?) -> Void) {
+    func dislikeVideo(youtubeModel: YouTubeModel, result: @escaping @Sendable (Error?) -> Void) {
         DislikeVideoResponse.sendNonThrowingRequest(youtubeModel: youtubeModel, data: [.query: self.videoId], result: { response in
             switch response {
             case .success(let data):
@@ -104,7 +104,7 @@ public extension YouTubeVideo {
     /// Remove the like/dislike from the video.
     ///
     /// Requires a ``YouTubeModel`` where ``YouTubeModel/cookies`` is defined.
-    func removeLikeFromVideo(youtubeModel: YouTubeModel, result: @escaping (Error?) -> Void) {
+    func removeLikeFromVideo(youtubeModel: YouTubeModel, result: @escaping @Sendable (Error?) -> Void) {
         RemoveLikeFromVideoResponse.sendNonThrowingRequest(youtubeModel: youtubeModel, data: [.query: self.videoId], result: { response in
             switch response {
             case .success(let data):

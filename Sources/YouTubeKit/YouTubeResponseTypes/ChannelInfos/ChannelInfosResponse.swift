@@ -8,9 +8,9 @@
 import Foundation
 
 public struct ChannelInfosResponse: YouTubeResponse {
-    public static var headersType: HeaderTypes = .channelHeaders
+    public static let headersType: HeaderTypes = .channelHeaders
     
-    public static var parametersValidationList: ValidationList = [.browseId: .channelIdValidator]
+    public static let parametersValidationList: ValidationList = [.browseId: .channelIdValidator]
     
     /// Array of thumbnails representing the avatar of the channel (the image in the round on YouTube's website).
     ///
@@ -105,7 +105,7 @@ public struct ChannelInfosResponse: YouTubeResponse {
     /// ```swift
     /// let recommendedChannels = await channelInfosResponse.getChannelContent(type: .custom("RecommendedChannels"))
     /// ```
-    public static var requestTypes: [RequestTypes : any ChannelContent.Type] = [
+    public static let requestTypes: [RequestTypes : any ChannelContent.Type] = [
         .videos: Videos.self,
         .directs: Directs.self,
         .shorts: Shorts.self,
@@ -269,7 +269,7 @@ public struct ChannelInfosResponse: YouTubeResponse {
     }
     
     /// Types of request you can do to retrieve some of the channel's content, channel's tabs on YouTube's website.
-    public enum RequestTypes: Hashable, Equatable {
+    public enum RequestTypes: Hashable, Equatable, Sendable {
         case directs
         case playlists
         case shorts
@@ -312,7 +312,7 @@ public struct ChannelInfosResponse: YouTubeResponse {
     ///     }
     /// }
     /// ```
-    public func getChannelContent(forType type: RequestTypes, youtubeModel: YouTubeModel, useCookies: Bool? = nil, result: @escaping (Result<ChannelInfosResponse, Error>) -> ()) {
+    public func getChannelContent(forType type: RequestTypes, youtubeModel: YouTubeModel, useCookies: Bool? = nil, result: @escaping @Sendable (Result<ChannelInfosResponse, Error>) -> ()) {
         guard
             let params = requestParams[type]
         else { result(.failure("Something between returnType or params haven't been added where it should, returnType in ChannelInfosResponse.requestTypes and params in ChannelInfosResponse.requestParams")); return }
@@ -378,7 +378,7 @@ public struct ChannelInfosResponse: YouTubeResponse {
         _: T.Type,
         youtubeModel: YouTubeModel,
         useCookies: Bool? = nil,
-        result: @escaping (Result<ContentContinuation<T>, Error>) -> Void) {
+        result: @escaping @Sendable (Result<ContentContinuation<T>, Error>) -> Void) {
         guard
             /// Get requestType from the given ChannelContent (T)
             let requestType = channelContentStore.first(where: { element in
@@ -447,7 +447,7 @@ public struct ChannelInfosResponse: YouTubeResponse {
     ///     }
     /// }
     /// ```
-    public func getChannelContent(type: RequestTypes, youtubeModel: YouTubeModel, useCookies: Bool? = nil, result: @escaping (ChannelInfosResponse?, Error?) -> ()) {
+    public func getChannelContent(type: RequestTypes, youtubeModel: YouTubeModel, useCookies: Bool? = nil, result: @escaping @Sendable (ChannelInfosResponse?, Error?) -> ()) {
         self.getChannelContent(forType: type, youtubeModel: youtubeModel, useCookies: useCookies, result: { returning in
             switch returning {
             case .success(let response):
@@ -506,7 +506,7 @@ public struct ChannelInfosResponse: YouTubeResponse {
         _: T.Type,
         youtubeModel: YouTubeModel,
         useCookies: Bool? = nil,
-        result: @escaping (ContentContinuation<T>?, Error?
+        result: @escaping @Sendable (ContentContinuation<T>?, Error?
         ) -> ()) {
         self.getChannelContentContinuation(T.self, youtubeModel: youtubeModel, useCookies: useCookies, result: { returning in
             switch returning {
@@ -564,9 +564,9 @@ public struct ChannelInfosResponse: YouTubeResponse {
         
     /// Struct representing the "Videos" tab in a channel's webpage on YouTube's website.
     public struct Videos: ListableChannelContent {
-        public static var type: ChannelInfosResponse.RequestTypes = .videos
+        public static let type: ChannelInfosResponse.RequestTypes = .videos
             
-        public static var itemsTypes: [any YTSearchResult.Type] = [YTVideo.self]
+        public static let itemsTypes: [any YTSearchResult.Type] = [YTVideo.self]
         
         public var items: [any YTSearchResult] = []
                 
@@ -621,9 +621,9 @@ public struct ChannelInfosResponse: YouTubeResponse {
     
     /// Struct representing the "Shorts" tab in a channel's webpage on YouTube's website.
     public struct Shorts: ListableChannelContent {
-        public static var type: ChannelInfosResponse.RequestTypes = .shorts
+        public static let type: ChannelInfosResponse.RequestTypes = .shorts
         
-        public static var itemsTypes: [any YTSearchResult.Type] = [YTVideo.self]
+        public static let itemsTypes: [any YTSearchResult.Type] = [YTVideo.self]
 
         public var items: [any YTSearchResult] = []
                 
@@ -678,9 +678,9 @@ public struct ChannelInfosResponse: YouTubeResponse {
     
     /// Struct representing the "Directs" tab in a channel's webpage on YouTube's website.
     public struct Directs: ListableChannelContent {
-        public static var type: ChannelInfosResponse.RequestTypes = .directs
+        public static let type: ChannelInfosResponse.RequestTypes = .directs
         
-        public static var itemsTypes: [any YTSearchResult.Type] = [YTVideo.self]
+        public static let itemsTypes: [any YTSearchResult.Type] = [YTVideo.self]
 
         public var items: [any YTSearchResult] = []
                 
@@ -735,9 +735,9 @@ public struct ChannelInfosResponse: YouTubeResponse {
     
     /// Struct representing the "Playlists" tab in a channel's webpage on YouTube's website.
     public struct Playlists: ListableChannelContent {
-        public static var type: ChannelInfosResponse.RequestTypes = .playlists
+        public static let type: ChannelInfosResponse.RequestTypes = .playlists
         
-        public static var itemsTypes: [any YTSearchResult.Type] = [YTPlaylist.self]
+        public static let itemsTypes: [any YTSearchResult.Type] = [YTPlaylist.self]
 
         public var items: [any YTSearchResult] = []
                 

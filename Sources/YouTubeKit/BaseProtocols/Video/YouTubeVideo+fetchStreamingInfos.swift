@@ -11,7 +11,7 @@ public extension YouTubeVideo {
     func fetchStreamingInfos(
         youtubeModel: YouTubeModel,
         useCookies: Bool? = nil,
-        infos: @escaping (Result<VideoInfosResponse, Error>) -> ()
+        infos: @escaping @Sendable (Result<VideoInfosResponse, Error>) -> ()
     ) {
         VideoInfosResponse.sendNonThrowingRequest(
             youtubeModel: youtubeModel,
@@ -38,7 +38,7 @@ public extension YouTubeVideo {
     func fetchStreamingInfos(
             youtubeModel: YouTubeModel,
             useCookies: Bool? = nil,
-            infos: @escaping (VideoInfosResponse?, Error?) -> ()
+            infos: @escaping @Sendable (VideoInfosResponse?, Error?) -> ()
     ) {
         self.fetchStreamingInfos(youtubeModel: youtubeModel, useCookies: useCookies, infos: { returning in
             switch returning {

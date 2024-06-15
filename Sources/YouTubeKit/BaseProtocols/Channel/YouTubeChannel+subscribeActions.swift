@@ -12,7 +12,7 @@ public extension YouTubeChannel {
     /// Subscribe to the channel.
     ///
     /// Requires a ``YouTubeModel`` where ``YouTubeModel/cookies`` is defined.
-    func subscribe(youtubeModel: YouTubeModel, result: @escaping (Error?) -> Void) {
+    func subscribe(youtubeModel: YouTubeModel, result: @escaping @Sendable (Error?) -> Void) {
         SubscribeChannelResponse.sendNonThrowingRequest(youtubeModel: youtubeModel, data: [.browseId: self.channelId], result: { response in
             switch response {
             case .success(let data):
@@ -59,7 +59,7 @@ public extension YouTubeChannel {
     /// Unsubscribe to the channel.
     ///
     /// Requires a ``YouTubeModel`` where ``YouTubeModel/cookies`` is defined.
-    func unsubscribe(youtubeModel: YouTubeModel, result: @escaping (Error?) -> Void) {
+    func unsubscribe(youtubeModel: YouTubeModel, result: @escaping @Sendable (Error?) -> Void) {
         UnsubscribeChannelResponse.sendNonThrowingRequest(youtubeModel: youtubeModel, data: [.browseId: self.channelId], result: { response in
             switch response {
             case .success(let data):

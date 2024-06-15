@@ -8,7 +8,7 @@
 import Foundation
 
 /// Different types of medias.
-public enum MediaType {
+public enum MediaType: Sendable {
     /// Video media, usually includes the audio inside.
     case video
     

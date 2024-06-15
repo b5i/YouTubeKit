@@ -8,7 +8,7 @@
 import Foundation
 
 /// Protocol to make conform to a decodable channel content like channel's video, shorts, directs or even playlists.
-public protocol ChannelContent {
+public protocol ChannelContent: Sendable {
     /// Type of the content, associated with a ``ChannelInfosResponse/RequestTypes`` type.
     static var type: ChannelInfosResponse.RequestTypes { get }
     

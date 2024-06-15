@@ -60,7 +60,9 @@ final class YouTubeKitTests: XCTestCase {
     
     func testLogger() async throws {
         let TEST_NAME = "Test: testLogger() -> "
-        class Logger: RequestsLogger {
+        final class Logger: RequestsLogger, @unchecked Sendable { // TODO: Find a way, respecting Swift Concurrency, to have a proper Sendable Logger that also conforms to RequestLogger. (might need to modify RequestLogger for that)
+            let queue = DispatchQueue(label: "YTK_TESTS_LOGGER")
+            
             var loggedTypes: [any YouTubeResponse.Type]? = nil
             
             var maximumCacheSize: Int? = nil
@@ -68,6 +70,72 @@ final class YouTubeKitTests: XCTestCase {
             var logs: [any GenericRequestLog] = []
             
             var isLogging: Bool = false
+            
+            func startLogging() {
+                self.queue.sync {
+                    self.isLogging = true
+                }
+            }
+            
+            func stopLogging() {
+                self.queue.sync {
+                    self.isLogging = false
+                }
+            }
+            
+            
+            func setCacheSize(_ size: Int?) {
+                self.queue.sync {
+                    self.maximumCacheSize = size
+                    if let size = size {
+                        self.removeFirstLogsWith(limit: size)
+                    }
+                }
+            }
+            
+            
+            func addLog(_ log: any GenericRequestLog) {
+                @Sendable func compareTypes<T: GenericRequestLog, U: YouTubeResponse>(log1: T, log2: U.Type) -> Bool {
+                    let newRequest: RequestLog<U>
+                    return type(of: log1) == type(of: newRequest)
+                }
+                
+                self.queue.sync {
+                    guard self.isLogging, (self.maximumCacheSize ?? 1) > 0 else { return }
+                    guard (self.loggedTypes?.contains(where: { compareTypes(log1: log, log2: $0) }) ?? true) else { return }
+                    if let maximumCacheSize = self.maximumCacheSize {
+                        self.removeFirstLogsWith(limit: max(maximumCacheSize - 1, 0))
+                    }
+                    self.logs.append(log)
+                }
+            }
+            
+            
+            func clearLogs() {
+                self.queue.sync {
+                    self.logs.removeAll()
+                }
+            }
+            
+            func clearLogsWithIds(_ ids: [UUID]) {
+                self.queue.sync {
+                    for idToRemove in ids {
+                        self.logs.removeAll(where: {$0.id == idToRemove})
+                    }
+                }
+            }
+            
+            func clearLogWithId(_ id: UUID) {
+                self.clearLogsWithIds([id])
+            }
+            
+            private func removeFirstLogsWith(limit maxCacheSize: Int) {
+                let logsCount = self.logs.count
+                let maxCacheSize = max(0, maxCacheSize)
+                if logsCount > maxCacheSize {
+                    self.logs.removeFirst(abs(maxCacheSize - logsCount))
+                }
+            }
         }
         
         let logger = Logger()

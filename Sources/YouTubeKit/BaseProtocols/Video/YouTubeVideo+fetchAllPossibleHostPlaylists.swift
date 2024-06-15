@@ -10,7 +10,7 @@ import Foundation
 
 public extension YouTubeVideo {
     /// Get all the user's playlists and if the video is already inside or not.
-    func fetchAllPossibleHostPlaylists(youtubeModel: YouTubeModel, result: @escaping (Result<AllPossibleHostPlaylistsResponse, Error>) -> Void) {
+    func fetchAllPossibleHostPlaylists(youtubeModel: YouTubeModel, result: @escaping @Sendable (Result<AllPossibleHostPlaylistsResponse, Error>) -> Void) {
         AllPossibleHostPlaylistsResponse.sendNonThrowingRequest(youtubeModel: youtubeModel, data: [.browseId: self.videoId], result: result)
     }
     
@@ -27,7 +27,7 @@ public extension YouTubeVideo {
     
     /// Get all the user's playlists and if the video is already inside or not.
     @available(*, deprecated, message: "This method will be removed in a future version of YouTubeKit, please use fetchAllPossibleHostPlaylists(youtubeModel: YouTubeModel, result: @escaping (Result<AllPossibleHostPlaylistsResponse, Error>) -> Void) instead.") // safer and better to use the Result API instead of a tuple
-    func fetchAllPossibleHostPlaylists(youtubeModel: YouTubeModel, result: @escaping (AllPossibleHostPlaylistsResponse?, Error?) -> Void) {
+    func fetchAllPossibleHostPlaylists(youtubeModel: YouTubeModel, result: @escaping @Sendable (AllPossibleHostPlaylistsResponse?, Error?) -> Void) {
         self.fetchAllPossibleHostPlaylists(youtubeModel: youtubeModel, result: { returning in
             switch returning {
             case .success(let response):

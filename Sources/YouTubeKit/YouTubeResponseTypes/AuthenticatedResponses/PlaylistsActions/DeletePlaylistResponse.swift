@@ -9,9 +9,9 @@
 import Foundation
 
 public struct DeletePlaylistResponse: AuthenticatedResponse {
-    public static var headersType: HeaderTypes = .deletePlaylistHeaders
+    public static let headersType: HeaderTypes = .deletePlaylistHeaders
     
-    public static var parametersValidationList: ValidationList = [.browseId: .playlistIdWithoutVLPrefixValidator]
+    public static let parametersValidationList: ValidationList = [.browseId: .playlistIdWithoutVLPrefixValidator]
     
     public var isDisconnected: Bool = true
     

@@ -15,7 +15,7 @@ public protocol AuthenticatedContinuableResponse: AuthenticatedResponse, Continu
     /// Fetch the continuation of the ``AuthenticatedContinuableResponse``.
     func fetchContinuation(
         youtubeModel: YouTubeModel,
-        result: @escaping (Result<Continuation, Error>) -> Void
+        result: @escaping @Sendable (Result<Continuation, Error>) -> Void
     )
     
     /// Fetch the continuation of the ``AuthenticatedContinuableResponse``.

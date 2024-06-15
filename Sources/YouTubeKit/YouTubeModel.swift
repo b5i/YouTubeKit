@@ -83,7 +83,7 @@ public class YouTubeModel {
         responseType: ResponseType.Type,
         data: [HeadersList.AddQueryInfo.ContentTypes : String],
         useCookies: Bool? = nil,
-        result: @escaping (Result<ResponseType, Error>) -> ()
+        result: @escaping @Sendable (Result<ResponseType, Error>) -> ()
     ) {
         var data = data // make them mutable
         
@@ -116,7 +116,8 @@ public class YouTubeModel {
                 data: data
             )
             
-            let endOfRequestHandler: (Data?, Result<ResponseType, Error>) -> () = { [weak logger] responseData, responseResult in
+            let data = data
+            let endOfRequestHandler: @Sendable (Data?, Result<ResponseType, Error>) -> () = { [weak logger] responseData, responseResult in
                 switch responseResult {
                 case .success(let success):
                     logger?.addLog(RequestLog(providedParameters: data, request: request, responseData: responseData, result: .success(success)))
@@ -127,21 +128,21 @@ public class YouTubeModel {
             }
             
             /// Create task with the request
-            let task = URLSession.shared.dataTask(with: request) { data, _, error in
+            let task = URLSession.shared.dataTask(with: request) { responseData, _, error in
                 /// Check if the task worked and gave back data.
-                if let data = data {
+                if let responseData = responseData {
                     do {
-                        let decodedResult = try ResponseType.decodeData(data: data)
+                        let decodedResult = try ResponseType.decodeData(data: responseData)
                         
-                        endOfRequestHandler(data, .success(decodedResult))
+                        endOfRequestHandler(responseData, .success(decodedResult))
                     } catch let processingError {
-                        endOfRequestHandler(data, .failure(processingError))
+                        endOfRequestHandler(responseData, .failure(processingError))
                     }
                 } else if let error = error {
                     /// Exectued if the data was nil so there was probably an error.
-                    endOfRequestHandler(data, .failure(error))
+                    endOfRequestHandler(responseData, .failure(error))
                 } else {
-                    endOfRequestHandler(data, .failure("Did not receive any error."))
+                    endOfRequestHandler(responseData, .failure("Did not receive any error."))
                 }
             }
             
@@ -1300,6 +1301,12 @@ public class YouTubeModel {
     }
 }
 
+#if swift(>=5.10)
+extension String: @retroactive LocalizedError {
+    public var errorDescription: String? { self }
+}
+#else
 extension String: LocalizedError {
     public var errorDescription: String? { self }
 }
+#endif

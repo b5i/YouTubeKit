@@ -12,7 +12,7 @@ public extension HistoryResponse {
     /// Remove the video from the account's history.
     ///
     /// Requires a ``YouTubeModel`` where ``YouTubeModel/cookies`` is defined.
-    func removeVideo(withSuppressToken suppressToken: String, youtubeModel: YouTubeModel, result: @escaping (Error?) -> Void) {
+    func removeVideo(withSuppressToken suppressToken: String, youtubeModel: YouTubeModel, result: @escaping @Sendable (Error?) -> Void) {
         RemoveVideoFromHistroryResponse.sendNonThrowingRequest(youtubeModel: youtubeModel, data: [.movingVideoId: suppressToken], result: { response in
             switch response {
             case .success(let response):

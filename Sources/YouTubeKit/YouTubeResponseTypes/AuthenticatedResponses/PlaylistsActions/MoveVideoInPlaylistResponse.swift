@@ -9,9 +9,9 @@
 import Foundation
 
 public struct MoveVideoInPlaylistResponse: AuthenticatedResponse {
-    public static var headersType: HeaderTypes = .moveVideoInPlaylistHeaders
+    public static let headersType: HeaderTypes = .moveVideoInPlaylistHeaders
     
-    public static var parametersValidationList: ValidationList = [.movingVideoId: .existenceValidator, .browseId: .playlistIdWithoutVLPrefixValidator]
+    public static let parametersValidationList: ValidationList = [.movingVideoId: .existenceValidator, .browseId: .playlistIdWithoutVLPrefixValidator]
     
     public var isDisconnected: Bool = true
     

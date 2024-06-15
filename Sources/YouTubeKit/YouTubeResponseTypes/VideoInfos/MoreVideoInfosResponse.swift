@@ -9,9 +9,9 @@
 import Foundation
 
 public struct MoreVideoInfosResponse: YouTubeResponse {
-    public static var headersType: HeaderTypes = .moreVideoInfosHeaders
+    public static let headersType: HeaderTypes = .moreVideoInfosHeaders
     
-    public static var parametersValidationList: ValidationList = [.query: .videoIdValidator]
+    public static let parametersValidationList: ValidationList = [.query: .videoIdValidator]
     
     /// Title of the video.
     public var videoTitle: String?
@@ -298,7 +298,7 @@ public struct MoreVideoInfosResponse: YouTubeResponse {
     /// - Parameter result: the closure to execute when the request is finished.
     ///
     /// - Note: using cookies with this request is generally not needed.
-    public func getRecommendedVideosContination(youtubeModel: YouTubeModel, result: @escaping (Result<RecommendedVideosContinuation, Error>) -> ()) {
+    public func getRecommendedVideosContination(youtubeModel: YouTubeModel, result: @escaping @Sendable (Result<RecommendedVideosContinuation, Error>) -> ()) {
         if let recommendedVideosContinuationToken = recommendedVideosContinuationToken {
             RecommendedVideosContinuation.sendNonThrowingRequest(youtubeModel: youtubeModel, data: [.continuation: recommendedVideosContinuationToken], result: result)
         } else {
@@ -329,7 +329,7 @@ public struct MoreVideoInfosResponse: YouTubeResponse {
     /// - Parameter result: the closure to execute when the request is finished.
     ///
     /// - Note: using cookies with this request is generally not needed.
-    public func getRecommendedVideosContination(youtubeModel: YouTubeModel, result: @escaping (RecommendedVideosContinuation?, Error?) -> ()) {
+    public func getRecommendedVideosContination(youtubeModel: YouTubeModel, result: @escaping @Sendable (RecommendedVideosContinuation?, Error?) -> ()) {
         self.getRecommendedVideosContination(youtubeModel: youtubeModel, result: { returning in
             switch returning {
             case .success(let response):
@@ -359,9 +359,9 @@ public struct MoreVideoInfosResponse: YouTubeResponse {
     
     /// Struct representing the continuation of the recommended videos of the ``MoreVideoInfosResponse``.
     public struct RecommendedVideosContinuation: ResponseContinuation {
-        public static var headersType: HeaderTypes = .fetchMoreRecommendedVideosHeaders
+        public static let headersType: HeaderTypes = .fetchMoreRecommendedVideosHeaders
         
-        public static var parametersValidationList: ValidationList = [.continuation: .existenceValidator]
+        public static let parametersValidationList: ValidationList = [.continuation: .existenceValidator]
         
         public var continuationToken: String?
         
@@ -387,7 +387,7 @@ public struct MoreVideoInfosResponse: YouTubeResponse {
     }
     
     /// Struct representing the data about the video that concerns the account that was used to make the requests (the cookies).
-    public struct AuthenticatedData: Codable {
+    public struct AuthenticatedData: Codable, Sendable {
         public init(likeStatus: LikeStatus? = nil, subscriptionStatus: Bool? = nil) {
             self.likeStatus = likeStatus
             self.subscriptionStatus = subscriptionStatus
@@ -400,7 +400,7 @@ public struct MoreVideoInfosResponse: YouTubeResponse {
         public var subscriptionStatus: Bool?
         
         /// Enum representing the different "appreciation" status of the account for the video.
-        public enum LikeStatus: Codable {
+        public enum LikeStatus: Codable, Sendable {
             case liked
             case disliked
             case nothing
@@ -408,7 +408,7 @@ public struct MoreVideoInfosResponse: YouTubeResponse {
     }
     
     /// Struct representing a part of the video's description.
-    public struct YouTubeDescriptionPart: Codable {
+    public struct YouTubeDescriptionPart: Codable, Sendable {
         public init(text: String? = nil, role: YouTubeDescriptionPartRole? = nil, style: YouTubeDescriptionPartStyle = .normalText) {
             self.text = text
             self.role = role
@@ -425,7 +425,7 @@ public struct MoreVideoInfosResponse: YouTubeResponse {
         public var style: YouTubeDescriptionPartStyle = .normalText
         
         /// Enum representing the different description part roles that the text could have.
-        public enum YouTubeDescriptionPartRole: Codable {
+        public enum YouTubeDescriptionPartRole: Codable, Sendable {
             /// Contains the URL of the link.
             case link(URL)
             
@@ -443,7 +443,7 @@ public struct MoreVideoInfosResponse: YouTubeResponse {
         }
         
         /// Style that this part adopts on YouTube's website.
-        public enum YouTubeDescriptionPartStyle: Codable {
+        public enum YouTubeDescriptionPartStyle: Codable, Sendable {
             case normalText
             case blue
             
@@ -453,7 +453,7 @@ public struct MoreVideoInfosResponse: YouTubeResponse {
     }
     
     /// Struct representing a chapter of the video.
-    public struct Chapter: Codable {
+    public struct Chapter: Codable, Sendable {
         public init(title: String? = nil, thumbnail: [YTThumbnail] = [], startTimeSeconds: Int? = nil, timeDescriptions: (shortTimeDescription: String?, textTimeDescription: String?) = (nil, nil)) {
             self.title = title
             self.thumbnail = thumbnail

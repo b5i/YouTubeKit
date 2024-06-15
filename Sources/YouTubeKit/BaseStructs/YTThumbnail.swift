@@ -8,7 +8,7 @@
 import Foundation
 
 /// Struct representing a thumbnail.
-public struct YTThumbnail: Codable, Equatable, Hashable {
+public struct YTThumbnail: Codable, Equatable, Hashable, Sendable {
     public init(width: Int? = nil, height: Int? = nil, url: URL) {
         self.width = width
         self.height = height

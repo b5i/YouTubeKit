@@ -230,9 +230,9 @@ We imagine that the JSON is of the form:
 
 /// Struct representing a getNameAndSurname response.
 public struct NameAndSurnameResponse: YouTubeResponse {
-    public static var headersType: HeaderTypes = .customHeaders("myHeadersID") //<- the myHeadersID has to be the same as the one you defined in step 1!
+    public static let headersType: HeaderTypes = .customHeaders("myHeadersID") //<- the myHeadersID has to be the same as the one you defined in step 1!
     
-    public static var parametersValidationList: ValidationList = [:] // we don't need any validators here as there's no parameters to provide.
+    public static let parametersValidationList: ValidationList = [:] // we don't need any validators here as there's no parameters to provide.
     
     /// String representing a name.
     public var name: String = ""

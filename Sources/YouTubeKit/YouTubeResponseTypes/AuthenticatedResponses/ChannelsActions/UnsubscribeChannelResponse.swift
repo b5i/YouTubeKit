@@ -9,9 +9,9 @@
 import Foundation
 
 public struct UnsubscribeChannelResponse: AuthenticatedResponse {
-    public static var headersType: HeaderTypes = .unsubscribeFromChannelHeaders
+    public static let headersType: HeaderTypes = .unsubscribeFromChannelHeaders
     
-    public static var parametersValidationList: ValidationList = [.browseId: .channelIdValidator]
+    public static let parametersValidationList: ValidationList = [.browseId: .channelIdValidator]
     
     public var isDisconnected: Bool = true
     

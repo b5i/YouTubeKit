@@ -31,7 +31,7 @@ import FoundationNetworking
 ///     var id: Int?
 /// }
 /// ```
-public protocol YouTubeResponse {
+public protocol YouTubeResponse: Sendable {
     typealias DataRequestType = HeadersList.AddQueryInfo.ContentTypes
     typealias ValidationList = [DataRequestType: ParameterValidator]
     typealias RequestData = [DataRequestType: String]
@@ -61,7 +61,7 @@ public protocol YouTubeResponse {
         youtubeModel: YouTubeModel,
         data: RequestData,
         useCookies: Bool?,
-        result: @escaping (Result<Self, Error>) -> ()
+        result: @escaping @Sendable (Result<Self, Error>) -> ()
     )
     
     /// A function to call the request of the given YouTubeResponse. For more informations see ``YouTubeModel/sendRequest(responseType:data:useCookies:result:)``.
@@ -87,7 +87,7 @@ public protocol YouTubeResponse {
         youtubeModel: YouTubeModel,
         data: [HeadersList.AddQueryInfo.ContentTypes : String],
         useCookies: Bool?,
-        result: @escaping (Self?, Error?) -> ()
+        result: @escaping @Sendable (Self?, Error?) -> ()
     )
 
     /// A function to call the request of the given YouTubeResponse. For more informations see ``YouTubeModel/sendRequest(responseType:data:useCookies:result:)``.
@@ -106,7 +106,7 @@ public extension YouTubeResponse {
         youtubeModel: YouTubeModel,
         data: RequestData,
         useCookies: Bool? = nil,
-        result: @escaping (Result<Self, Error>) -> ()
+        result: @escaping @Sendable (Result<Self, Error>) -> ()
     ) {
         /// Call YouTubeModel's `sendRequest` function to have a more readable use.
         youtubeModel.sendRequest(
@@ -149,7 +149,7 @@ public extension YouTubeResponse {
         youtubeModel: YouTubeModel,
         data: [HeadersList.AddQueryInfo.ContentTypes : String],
         useCookies: Bool? = nil,
-        result: @escaping (Self?, Error?) -> ()
+        result: @escaping @Sendable (Self?, Error?) -> ()
     ) {
         self.sendNonThrowingRequest(
             youtubeModel: youtubeModel,

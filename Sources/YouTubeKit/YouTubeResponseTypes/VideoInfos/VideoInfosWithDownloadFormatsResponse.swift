@@ -20,9 +20,9 @@ import JavaScriptCore
 
 /// Struct representing the VideoInfosWithDownloadFormatsResponse.
 public struct VideoInfosWithDownloadFormatsResponse: YouTubeResponse {
-    public static var headersType: HeaderTypes = .videoInfosWithDownloadFormats
+    public static let headersType: HeaderTypes = .videoInfosWithDownloadFormats
     
-    public static var parametersValidationList: ValidationList = [.query: .videoIdValidator]
+    public static let parametersValidationList: ValidationList = [.query: .videoIdValidator]
     
     /// Array of formats used to download the video, they usually contain both audio and video data and the download speed is higher than the ``VideoInfosWithDownloadFormatsResponse/downloadFormats``.
     public var defaultFormats: [any DownloadFormat]
@@ -302,7 +302,7 @@ public struct VideoInfosWithDownloadFormatsResponse: YouTubeResponse {
     }
     
     /// Operation used to download the player.
-    private final class DownloadPlayerOperation: Operation {
+    private final class DownloadPlayerOperation: Operation, @unchecked Sendable {
         override var isAsynchronous: Bool { true }
         
         override var isExecuting: Bool { result == nil }
@@ -494,7 +494,7 @@ public struct VideoInfosWithDownloadFormatsResponse: YouTubeResponse {
         public var formatLocaleInfos: FormatLocaleInfos?
         
         /// Struct representing some informations about the audio track language.
-        public struct FormatLocaleInfos {
+        public struct FormatLocaleInfos: Sendable {
             public init(displayName: String? = nil, localeId: String? = nil, isDefaultAudioFormat: Bool? = nil) {
                 self.displayName = displayName
                 self.localeId = localeId
@@ -608,12 +608,12 @@ public struct VideoInfosWithDownloadFormatsResponse: YouTubeResponse {
     
     public struct ResponseError: Error {
         /// The step where the error occured.
-        public var step: StepType
+        public let step: StepType
         
         /// A string explaining the reason why the error was thrown.
-        public var reason: String
+        public let reason: String
         
-        public enum StepType {
+        public enum StepType: Sendable {
             case decodeData
             case processPlayerScrapping
             case scrapPlayer

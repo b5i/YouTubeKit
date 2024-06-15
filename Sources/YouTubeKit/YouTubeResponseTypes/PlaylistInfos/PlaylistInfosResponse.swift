@@ -9,9 +9,9 @@ import Foundation
 
 /// Struct representing a PlaylistInfosResponse to get the infos and the videos from a playlist.
 public struct PlaylistInfosResponse: ContinuableResponse {
-    public static var headersType: HeaderTypes = .playlistHeaders
+    public static let headersType: HeaderTypes = .playlistHeaders
     
-    public static var parametersValidationList: ValidationList = [.browseId: .playlistIdWithVLPrefixValidator]
+    public static let parametersValidationList: ValidationList = [.browseId: .playlistIdWithVLPrefixValidator]
     
     /// Channel(s) that own(s) the playlist.
     public var channel: [YTLittleChannelInfos] = []
@@ -143,9 +143,9 @@ public struct PlaylistInfosResponse: ContinuableResponse {
     
     /// Struct representing the continuation ("load more videos" button)
     public struct Continuation: ResponseContinuation {
-        public static var headersType: HeaderTypes = .playlistContinuationHeaders
+        public static let headersType: HeaderTypes = .playlistContinuationHeaders
         
-        public static var parametersValidationList: ValidationList = [.continuation: .existenceValidator]
+        public static let parametersValidationList: ValidationList = [.continuation: .existenceValidator]
         
         /// Continuation token used to fetch more videos, nil if there is no more videos to fetch.
         public var continuationToken: String?
@@ -182,7 +182,7 @@ public struct PlaylistInfosResponse: ContinuableResponse {
     }
     
     /// Struct representing the informations about what the user's can do with it.
-    public struct UserInteractions {
+    public struct UserInteractions: Sendable {
         public init(canBeDeleted: Bool? = nil, canReorder: Bool? = nil, isEditable: Bool? = nil, isSaveButtonDisabled: Bool? = nil, isSaveButtonToggled: Bool? = nil) {
             self.canBeDeleted = canBeDeleted
             self.canReorder = canReorder

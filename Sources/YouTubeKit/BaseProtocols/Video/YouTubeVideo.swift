@@ -62,7 +62,7 @@ public protocol YouTubeVideo {
     func fetchStreamingInfos(
         youtubeModel: YouTubeModel,
         useCookies: Bool?,
-        infos: @escaping (Result<VideoInfosResponse, Error>) -> ()
+        infos: @escaping @Sendable (Result<VideoInfosResponse, Error>) -> ()
     )
     
     @available(macOS 10.15, iOS 13.0, watchOS 6.0, tvOS 13.0, *)
@@ -84,7 +84,7 @@ public protocol YouTubeVideo {
     func fetchStreamingInfosWithDownloadFormats(
         youtubeModel: YouTubeModel,
         useCookies: Bool?,
-        infos: @escaping (Result<VideoInfosWithDownloadFormatsResponse, Error>) -> ()
+        infos: @escaping @Sendable (Result<VideoInfosWithDownloadFormatsResponse, Error>) -> ()
     )
     
     @available(macOS 10.15, iOS 13.0, watchOS 6.0, tvOS 13.0, *)
@@ -106,7 +106,7 @@ public protocol YouTubeVideo {
     func fetchMoreInfos(
         youtubeModel: YouTubeModel,
         useCookies: Bool?,
-        result: @escaping (Result<MoreVideoInfosResponse, Error>) -> ()
+        result: @escaping @Sendable (Result<MoreVideoInfosResponse, Error>) -> ()
     )
     
     @available(macOS 10.15, iOS 13.0, watchOS 6.0, tvOS 13.0, *)
@@ -123,7 +123,7 @@ public protocol YouTubeVideo {
     /// Get all the user's playlists and if the video is already inside or not.
     func fetchAllPossibleHostPlaylists(
         youtubeModel: YouTubeModel,
-        result: @escaping (Result<AllPossibleHostPlaylistsResponse, Error>) -> Void
+        result: @escaping @Sendable (Result<AllPossibleHostPlaylistsResponse, Error>) -> Void
     )
     
     /// Get all the user's playlists and if the video is already inside or not.
@@ -135,7 +135,7 @@ public protocol YouTubeVideo {
     /// Requires a ``YouTubeModel`` where ``YouTubeModel/cookies`` is defined.
     func likeVideo(
         youtubeModel: YouTubeModel,
-        result: @escaping (Error?) -> Void
+        result: @escaping @Sendable (Error?) -> Void
     )
     
     @available(macOS 10.15, iOS 13.0, watchOS 6.0, tvOS 13.0, *)
@@ -155,7 +155,7 @@ public protocol YouTubeVideo {
     /// Requires a ``YouTubeModel`` where ``YouTubeModel/cookies`` is defined.
     func dislikeVideo(
         youtubeModel: YouTubeModel,
-        result: @escaping (Error?) -> Void
+        result: @escaping @Sendable (Error?) -> Void
     )
     
     @available(macOS 10.15, iOS 13.0, watchOS 6.0, tvOS 13.0, *)
@@ -175,7 +175,7 @@ public protocol YouTubeVideo {
     /// Requires a ``YouTubeModel`` where ``YouTubeModel/cookies`` is defined.
     func removeLikeFromVideo(
         youtubeModel: YouTubeModel,
-        result: @escaping (Error?) -> Void
+        result: @escaping @Sendable (Error?) -> Void
     )
     
     @available(macOS 10.15, iOS 13.0, watchOS 6.0, tvOS 13.0, *)

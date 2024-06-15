@@ -9,9 +9,9 @@ import Foundation
 
 /// Struct representing a search response.
 public struct SearchResponse: ContinuableResponse {
-    public static var headersType: HeaderTypes = .search
+    public static let headersType: HeaderTypes = .search
     
-    public static var parametersValidationList: ValidationList = [.query: .existenceValidator]
+    public static let parametersValidationList: ValidationList = [.query: .existenceValidator]
     
     /// String token that will be useful in case of a search continuation request ("load more" button).
     public var continuationToken: String?
@@ -101,9 +101,9 @@ public struct SearchResponse: ContinuableResponse {
     public struct Restricted: ContinuableResponse {    
         public typealias Continuation = SearchResponse.Continuation
         
-        public static var headersType: HeaderTypes = .restrictedSearch
+        public static let headersType: HeaderTypes = .restrictedSearch
         
-        public static var parametersValidationList: ValidationList = [.query: .existenceValidator]
+        public static let parametersValidationList: ValidationList = [.query: .existenceValidator]
         
         /// String token that will be useful in case of a search continuation request ("load more" button).
         public var continuationToken: String?
@@ -153,9 +153,9 @@ public struct SearchResponse: ContinuableResponse {
     /// mySearchResponse.mergeContinuation(mySearchResponseContinuation)
     /// ```
     public struct Continuation: ResponseContinuation {
-        public static var headersType: HeaderTypes = .searchContinuationHeaders
+        public static let headersType: HeaderTypes = .searchContinuationHeaders
         
-        public static var parametersValidationList: ValidationList = [.continuation: .existenceValidator]
+        public static let parametersValidationList: ValidationList = [.continuation: .existenceValidator]
         
         /// String token that will be useful in case of a search continuation request ("load more" button).
         public var continuationToken: String? = nil

@@ -9,9 +9,9 @@
 import Foundation
 
 public struct LikeVideoResponse: AuthenticatedResponse {
-    public static var headersType: HeaderTypes = .likeVideoHeaders
+    public static let headersType: HeaderTypes = .likeVideoHeaders
     
-    public static var parametersValidationList: ValidationList = [.query: .videoIdValidator]
+    public static let parametersValidationList: ValidationList = [.query: .videoIdValidator]
     
     public var isDisconnected: Bool = true
     

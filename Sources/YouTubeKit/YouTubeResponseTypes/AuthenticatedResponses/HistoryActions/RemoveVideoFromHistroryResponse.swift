@@ -9,9 +9,9 @@
 import Foundation
 
 public struct RemoveVideoFromHistroryResponse: AuthenticatedResponse {
-    public static var headersType: HeaderTypes = .deleteVideoFromHistory
+    public static let headersType: HeaderTypes = .deleteVideoFromHistory
     
-    public static var parametersValidationList: ValidationList = [.movingVideoId: .existenceValidator]
+    public static let parametersValidationList: ValidationList = [.movingVideoId: .existenceValidator]
     
     public var isDisconnected: Bool = true
     
