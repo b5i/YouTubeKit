@@ -524,6 +524,7 @@ final class YouTubeKitTests: XCTestCase {
             .continuation: continuationToken,
             .visitorData: visitorData
         ])
+                
         XCTAssertNotEqual(continuationResult.continuationToken, "", TEST_NAME + "Checking continuationToken for SearchResponse.Contination.")
         XCTAssertNotEqual(continuationResult.results.count, 0, TEST_NAME + "Checking if continuation results aren't empty.")
         

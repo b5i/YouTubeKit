@@ -15,5 +15,5 @@ public protocol ResponseContinuation: YouTubeResponse {
     var continuationToken: String? { get set }
     
     /// Results of the continuation search.
-    var results: [ResultsType] { get set }
+    var results: [ResultsType] { get set }    
 }

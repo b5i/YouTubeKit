@@ -51,7 +51,7 @@ public protocol YouTubeResponse: Sendable {
     static func decodeData(data: Data) throws -> Self
     
     /// A function to extract the response from some JSON.
-    static func decodeJSON(json: JSON) -> Self
+    static func decodeJSON(json: JSON) throws -> Self
     
     /// A function that throws the error from some JSON if there's one. It should be called when calling ``YouTubeResponse/decodeData(data:)``.
     static func checkForErrors(json: JSON) throws
@@ -210,7 +210,13 @@ public extension YouTubeResponse {
         
         try self.checkForErrors(json: json)
         
-        return self.decodeJSON(json: json)
+        do {
+            return try self.decodeJSON(json: json)
+        } catch let error as ResponseExtractionError {
+            throw error
+        } catch {
+            throw ResponseExtractionError(reponseType: Self.self, stepDescription: error.localizedDescription)
+        }
     }
     
     static func checkForErrors(json: JSON) throws {
