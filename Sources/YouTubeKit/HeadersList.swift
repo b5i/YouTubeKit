@@ -156,10 +156,13 @@ public struct HeadersList: Codable {
             case params
             case visitorData
             
-            ///Those are used during the modification of a playlist
+            /// Those are used during the modification of a playlist
             case movingVideoId
             case videoBeforeId
             case playlistEditToken
+            
+            /// Used to completly replace the URL of the request, including the parameters that could potentially 
+            case customURL
         }
     }
     
@@ -170,9 +173,9 @@ public struct HeadersList: Codable {
     /// - Returns: An `URLRequest`built with the provided parameters and headers.
     public static func setHeadersAgentFor(
         content: HeadersList,
-        data: [AddQueryInfo.ContentTypes : String]
+        data: YouTubeResponse.RequestData
     ) -> URLRequest {
-        var url = content.url
+        var url = URL(string: data[.customURL] ?? "") ?? content.url
         if content.parameters != nil {
             var parametersToAppend: [URLQueryItem] = []
             for parameter in content.parameters! {

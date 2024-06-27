@@ -189,4 +189,15 @@ public protocol YouTubeVideo {
     ///
     /// Requires a ``YouTubeModel`` where ``YouTubeModel/cookies`` is defined.
     func removeLikeFromVideo(youtubeModel: YouTubeModel) async -> Error?
+    
+    /// Get the captions for the current video.
+    static func getCaptions(youtubeModel: YouTubeModel, captionType: YTCaption, result: @escaping @Sendable (Result<VideoCaptionsResponse, Error>) -> Void)
+    
+    /// Get the captions for the current video.
+    @available(macOS 10.15, iOS 13.0, watchOS 6.0, tvOS 13.0, *)
+    static func getCaptionsThrowing(youtubeModel: YouTubeModel, captionType: YTCaption) async throws -> VideoCaptionsResponse
+    
+    /// Get the captions for the current video.
+    @available(macOS 10.15, iOS 13.0, watchOS 6.0, tvOS 13.0, *)
+    static func getCaptions(youtubeModel: YouTubeModel, captionType: YTCaption) async -> Result<VideoCaptionsResponse, Error>
 }

@@ -312,6 +312,30 @@ final class YouTubeKitTests: XCTestCase {
             }
         }
         
+        func testURLValidator() {
+            let testAndResult: [(String?, Bool)] = [
+                ("https://google.com", true),
+                ("google.com", true),
+                ("www.google.com", true),
+                ("www.google.com/test?param=test&param2=test2", true),
+                ("google", true), // it's obviously not a valid URL but it can be converted to URL in swift
+                (nil, false)
+            ]
+            
+            for (test, shouldPass) in testAndResult {
+                switch ParameterValidator.urlValidator.handler(test) {
+                case .success(let result):
+                    if !shouldPass {
+                        XCTFail(TEST_NAME + "Non-valid URL: \"\(String(describing: test))\" shouldn't pass the URL test but got: \(String(describing: result))")
+                    }
+                case .failure(let error):
+                    if shouldPass {
+                        XCTFail(TEST_NAME + "Valid URL: \(String(describing: test)) failed URL test with error: \(error.localizedDescription).")
+                    }
+                }
+            }
+        }
+        
         func testExistenceValidator() {
             switch ParameterValidator.existenceValidator.handler(nil) {
             case .success(let result):
@@ -333,6 +357,7 @@ final class YouTubeKitTests: XCTestCase {
         testPlaylistIdWithoutVLValidator()
         testPrivacyValidator()
         testExistenceValidator()
+        testURLValidator()
     }
     
     func testHeadersToRequest() async {
@@ -540,7 +565,9 @@ final class YouTubeKitTests: XCTestCase {
         let video = YTVideo(videoId: "90RLzVUuXe4")
         
         let requestResult = try await video.fetchStreamingInfosThrowing(youtubeModel: YTM)
-                        
+        
+        XCTAssert(!requestResult.captions.isEmpty, TEST_NAME + "Checking if requestResult.captions is not nil.")
+        
         XCTAssertNotNil(requestResult.channel?.name, TEST_NAME + "Checking if requestResult.channel.name is not nil.")
         XCTAssertNotNil(requestResult.channel?.channelId, TEST_NAME + "Checking if requestResult.channel.browseId is not nil.")
         XCTAssertNotNil(requestResult.isLive, TEST_NAME + "Checking if requestResult.isLive is not nil.")
@@ -551,6 +578,72 @@ final class YouTubeKitTests: XCTestCase {
         XCTAssertNotNil(requestResult.videoId, TEST_NAME + "Checking if requestResult.videoId is not nil.")
         XCTAssertNotNil(requestResult.videoURLsExpireAt, TEST_NAME + "Checking if requestResult.videoURLsExpireAt is not nil.")
         XCTAssertNotNil(requestResult.viewCount, TEST_NAME + "Checking if requestResult.viewCount is not nil.")
+        
+        let captionsResults = try await VideoCaptionsResponse.sendThrowingRequest(youtubeModel: YTM, data: [.customURL: requestResult.captions.first!.url.absoluteString])
+        
+        XCTAssert(!captionsResults.captionParts.isEmpty, TEST_NAME + "Checking if captionsResults.captionParts is not empty")
+        
+        let testCaptionsResponse = VideoCaptionsResponse(captionParts: [
+            .init(text: "[Music]", startTime: 13.119999999999999, duration: 3.0800000000000001),
+            .init(text: "i'm good yeah i'm feeling all right baby", startTime: 16.559999999999999, duration: 3.2800000000000011),
+            .init(text: "i'mma have the best night of my", startTime: 19.84, duration: 2.5599999999999987),
+            .init(text: "life and wherever it takes me i'm down", startTime: 22.399999999999999, duration: 3.2800000000000011),
+            .init(text: "for the ride baby don't you know i'm", startTime: 25.68, duration: 2.6400000000000006)
+        ])
+        
+        XCTAssertEqual(
+            testCaptionsResponse.getFormattedString(withFormat: .vtt),
+        """
+        WEBVTT
+        
+        1
+        00:00:13.119 --> 00:00:16.199
+        [Music]
+        
+        2
+        00:00:16.559 --> 00:00:19.839
+        i\'m good yeah i\'m feeling all right baby
+        
+        3
+        00:00:19.839 --> 00:00:22.399
+        i\'mma have the best night of my
+        
+        4
+        00:00:22.399 --> 00:00:25.679
+        life and wherever it takes me i\'m down
+        
+        5
+        00:00:25.679 --> 00:00:28.320
+        for the ride baby don\'t you know i\'m
+        """,
+            TEST_NAME + "Checking if testCaptionsResponse.getFormattedString(withFormat: .vtt) is good."
+        ) // vtt integrity checked with https://w3c.github.io/webvtt.js/parser.html
+        
+        XCTAssertEqual(
+            testCaptionsResponse.getFormattedString(withFormat: .srt),
+        """
+        1
+        00:00:13,119 --> 00:00:16,199
+        [Music]
+        
+        2
+        00:00:16,559 --> 00:00:19,839
+        i\'m good yeah i\'m feeling all right baby
+        
+        3
+        00:00:19,839 --> 00:00:22,399
+        i\'mma have the best night of my
+        
+        4
+        00:00:22,399 --> 00:00:25,679
+        life and wherever it takes me i\'m down
+        
+        5
+        00:00:25,679 --> 00:00:28,320
+        for the ride baby don\'t you know i\'m
+        """,
+            TEST_NAME + "Checking if testCaptionsResponse.getFormattedString(withFormat: .srt) is good."
+        ) // srt integrity checked with https://taoning2014.github.io/srt-validator-website/index.html
     }
     
     func testVideoInfosWithDownloadFormatsResponse() async throws {
@@ -903,26 +996,30 @@ final class YouTubeKitTests: XCTestCase {
         
         let likeStatus: MoreVideoInfosResponse.AuthenticatedData.LikeStatus? = try await getCurrentLikeStatus()
         
-        guard let likeStatus = likeStatus else { XCTFail(TEST_NAME + "Checking if likeStatus is defined"); return}
+        guard let likeStatus = likeStatus else { XCTFail(TEST_NAME + "Checking if likeStatus is defined"); return }
+        
+        let delay: UInt64 = 4_000_000_000
+        
+        try await Task.sleep(nanoseconds: delay) // introduce some delay to avoid a block from YouTube.
     
         switch likeStatus {
         case .liked:
             try await dislikeVideo()
-            try await Task.sleep(nanoseconds: 1_000_000_000) // introduce some delay to avoid a block from YouTube.
+            try await Task.sleep(nanoseconds: delay)
             try await removelikeVideo()
-            try await Task.sleep(nanoseconds: 1_000_000_000)
+            try await Task.sleep(nanoseconds: delay)
             try await likeVideo()
         case .disliked:
             try await removelikeVideo()
-            try await Task.sleep(nanoseconds: 1_000_000_000)
+            try await Task.sleep(nanoseconds: delay)
             try await likeVideo()
-            try await Task.sleep(nanoseconds: 1_000_000_000)
+            try await Task.sleep(nanoseconds: delay)
             try await dislikeVideo()
         case .nothing:
             try await likeVideo()
-            try await Task.sleep(nanoseconds: 1_000_000_000)
+            try await Task.sleep(nanoseconds: delay)
             try await dislikeVideo()
-            try await Task.sleep(nanoseconds: 1_000_000_000)
+            try await Task.sleep(nanoseconds: delay)
             try await removelikeVideo()
         }
         

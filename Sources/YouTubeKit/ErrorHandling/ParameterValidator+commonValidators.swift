@@ -76,4 +76,16 @@ public extension ParameterValidator {
             return .success(privacy)
         }
     })
+    
+    static let urlValidator = ParameterValidator(needExistence: true, validator: { url in
+        let validatorName = "URL validator"
+        
+        guard let url = url else { return .failure(.init(reason: "Nil value.", validatorFailedNameDescriptor: validatorName)) } // should never be called because of the needExistence
+        
+        if URL(string: url) != nil {            
+            return .success(url)
+        } else {
+            return .failure(.init(reason: "Given url is not a valid URL.", validatorFailedNameDescriptor: validatorName))
+        }
+    })
 }

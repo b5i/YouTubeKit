@@ -147,6 +147,8 @@ public enum HeaderTypes: Codable, Sendable {
     /// - Parameter browseId: The channel's id should be taken from ``YTChannel/channelId`` or ``YTLittleChannelInfos/channelId``.
     case unsubscribeFromChannelHeaders
     
+    case videoCaptionsHeaders
+    
     /// For custom headers
     case customHeaders(String)
 }

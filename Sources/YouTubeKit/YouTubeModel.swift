@@ -108,10 +108,9 @@ public class YouTubeModel {
         
         do {
             try ResponseType.validateRequest(data: &data)
-            
-            
+
             /// Create request
-            let request = HeadersList.setHeadersAgentFor(
+            let request: URLRequest = HeadersList.setHeadersAgentFor(
                 content: headers,
                 data: data
             )
@@ -258,6 +257,8 @@ public class YouTubeModel {
             return subscribeToChannelHeaders()
         case .unsubscribeFromChannelHeaders:
             return unsubscribeFromChannelHeaders()
+        case .videoCaptionsHeaders:
+            return videoCaptionsHeaders()
         case .customHeaders(let stringIdentifier):
             if let headersGenerator = customHeadersFunctions[stringIdentifier] {
                 return headersGenerator()
@@ -1296,6 +1297,29 @@ public class YouTubeModel {
                 parameters: [
                     .init(name: "prettyPrint", content: "false")
                 ]
+            )
+        }
+    }
+    
+    func videoCaptionsHeaders() -> HeadersList {
+        if let headers = self.customHeaders[.videoCaptionsHeaders] {
+            return headers
+        } else {
+            return HeadersList(
+                url: URL(string: "https://www.youtube.com/")!, // will be overriden by the customURL option
+                method: .GET,
+                headers: [
+                    .init(name: "Accept", content: "*/*"),
+                    .init(name: "Accept-Encoding", content: "gzip, deflate, br"),
+                    .init(name: "Host", content: "www.youtube.com"),
+                    .init(name: "User-Agent", content: "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.1 Safari/605.1.15"),
+                    .init(name: "Accept-Language", content: "\(self.selectedLocale);q=0.9"),
+                    .init(name: "Origin", content: "https://www.youtube.com/"),
+                    .init(name: "Referer", content: "https://www.youtube.com/"),
+                    .init(name: "Content-Type", content: "application/xml"),
+                    .init(name: "X-Origin", content: "https://www.youtube.com")
+                ],
+                parameters: []
             )
         }
     }

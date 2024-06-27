@@ -77,6 +77,8 @@ extension HeaderTypes: RawRepresentable {
             return "subscribeToChannelHeaders"
         case .unsubscribeFromChannelHeaders:
             return "unsubscribeFromChannelHeaders"
+        case .videoCaptionsHeaders:
+            return "videoCaptionsHeaders"
         case .customHeaders(let stringIdentifier):
             return stringIdentifier
         }

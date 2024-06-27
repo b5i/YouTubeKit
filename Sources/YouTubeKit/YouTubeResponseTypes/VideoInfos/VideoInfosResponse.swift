@@ -12,6 +12,9 @@ public struct VideoInfosResponse: YouTubeResponse {
     public static let headersType: HeaderTypes = .videoInfos
     
     public static let parametersValidationList: ValidationList = [.query: .videoIdValidator]
+    
+    /// An array of `Caption` representing the variety of captions that the video supports
+    public var captions: [YTCaption]
         
     /// Name of the channel that posted the video.
     public var channel: YTLittleChannelInfos?
@@ -68,19 +71,21 @@ public struct VideoInfosResponse: YouTubeResponse {
     
     /// Count of view of the video, usually an integer in the string.
     public var viewCount: String?
-    
+
     public init(
-            channel: YTLittleChannelInfos? = nil,
-            isLive: Bool? = nil,
-            keywords: [String] = [],
-            streamingURL: URL? = nil,
-            thumbnails: [YTThumbnail] = [],
-            title: String? = nil,
-            videoDescription: String? = nil,
-            videoId: String? = nil,
-            videoURLsExpireAt: Date? = nil,
-            viewCount: String? = nil
+        captions: [YTCaption] = [],
+        channel: YTLittleChannelInfos? = nil,
+        isLive: Bool? = nil,
+        keywords: [String] = [],
+        streamingURL: URL? = nil,
+        thumbnails: [YTThumbnail] = [],
+        title: String? = nil,
+        videoDescription: String? = nil,
+        videoId: String? = nil,
+        videoURLsExpireAt: Date? = nil,
+        viewCount: String? = nil
     ) {
+        self.captions = captions
         self.channel = channel
         self.isLive = isLive
         self.keywords = keywords
@@ -108,6 +113,22 @@ public struct VideoInfosResponse: YouTubeResponse {
         }
         
         return VideoInfosResponse(
+            captions: {
+                var captionsArray: [YTCaption] = []
+                
+                captionsArray.append(contentsOf: json["captions"]["playerCaptionsTracklistRenderer"]["captionTracks"].arrayValue.compactMap { captionJSON in
+                    guard let url = captionJSON["baseUrl"].url else { return nil }
+                    return YTCaption(languageCode: captionJSON["languageCode"].stringValue, languageName: captionJSON["name"]["simpleText"].stringValue, url: url, isTranslated: false)
+                })
+                
+                guard let firstCaptionURL = captionsArray.first?.url else { return captionsArray }
+                
+                captionsArray.append(contentsOf: json["captions"]["playerCaptionsTracklistRenderer"]["translationLanguages"].arrayValue.compactMap { captionJSON in
+                    return YTCaption(languageCode: captionJSON["languageCode"].stringValue, languageName: captionJSON["languageName"]["simpleText"].stringValue, url: firstCaptionURL.appending(queryItems: [.init(name: "tlang", value: captionJSON["languageCode"].stringValue)]), isTranslated: true)
+                })
+                
+                return captionsArray
+            }(),
             channel: channel,
             isLive: videoDetailsJSON["isLiveContent"].bool,
             keywords: videoDetailsJSON["keywords"].arrayObject as? [String] ?? [],
