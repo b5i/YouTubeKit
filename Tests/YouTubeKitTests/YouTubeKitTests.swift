@@ -1153,4 +1153,30 @@ final class YouTubeKitTests: XCTestCase {
             XCTAssertEqual(accountSubscriptionsResponse.continuationToken, continuationResponse.continuationToken, TEST_NAME + "continuationToken hasn't been merged.")
         }
     }
+    
+    func testAccountSubscriptionsFeedResponse() async throws {
+        let TEST_NAME = "Test: testAccountSubscriptionsFeedResponse() -> "
+        guard cookies != "" else { return }
+        YTM.cookies = cookies
+        
+        var accountSubscriptionsFeedResponse = try await AccountSubscriptionsFeedResponse.sendThrowingRequest(youtubeModel: YTM, data: [:], useCookies: true)
+        
+        XCTAssert(!accountSubscriptionsFeedResponse.isDisconnected, TEST_NAME + "Account is disconnected.")
+        XCTAssertNil(accountSubscriptionsFeedResponse.visitorData, TEST_NAME + "visitorData is not nil (but should never be extracted).")
+                
+        XCTAssertNotEqual(accountSubscriptionsFeedResponse.results.count, 0, TEST_NAME + "Checking if accountSubscriptionsFeedResponse.results is not empty.")
+        
+        if accountSubscriptionsFeedResponse.continuationToken != nil {
+            let continuationResponse = try await accountSubscriptionsFeedResponse.fetchContinuation(youtubeModel: YTM)
+            
+            XCTAssertNotEqual(continuationResponse.results.count, 0, TEST_NAME + "Checking if continuationResponse.results is not empty.")
+            
+            let oldChannelsCount = accountSubscriptionsFeedResponse.results.count
+            
+            accountSubscriptionsFeedResponse.mergeContinuation(continuationResponse)
+            
+            XCTAssertEqual(accountSubscriptionsFeedResponse.results.count, oldChannelsCount + continuationResponse.results.count, TEST_NAME + "accountSubscriptionsFeedResponse.results.count is not equal to oldChannelsCount + continuationResponse.results.count")
+            XCTAssertEqual(accountSubscriptionsFeedResponse.continuationToken, continuationResponse.continuationToken, TEST_NAME + "continuationToken hasn't been merged.")
+        }
+    }
 }
