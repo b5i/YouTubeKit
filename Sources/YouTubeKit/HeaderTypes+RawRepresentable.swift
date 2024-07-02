@@ -81,6 +81,14 @@ extension HeaderTypes: RawRepresentable {
             return "videoCaptionsHeaders"
         case .trendingVideosHeaders:
             return "trendingVideosHeaders"
+        case .usersSubscriptionsHeaders:
+            return "usersSubscriptionsHeaders"
+        case .usersSubscriptionsContinuationHeaders:
+            return "usersSubscriptionsContinuationHeaders"
+        case .usersSubscriptionsFeedHeaders:
+            return "usersSubscriptionsFeedHeaders"
+        case .usersSubscriptionsFeedContinuationHeaders:
+            return "usersSubscriptionsFeedContinuationHeaders"
         case .customHeaders(let stringIdentifier):
             return stringIdentifier
         }

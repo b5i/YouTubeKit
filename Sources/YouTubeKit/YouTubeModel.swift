@@ -261,6 +261,14 @@ public class YouTubeModel {
             return videoCaptionsHeaders()
         case .trendingVideosHeaders:
             return getTrendingVideosHeaders()
+        case .usersSubscriptionsHeaders:
+            return getUsersSubscriptionsHeaders()
+        case .usersSubscriptionsContinuationHeaders:
+            return getUsersSubscriptionsContinuationHeaders()
+        case .usersSubscriptionsFeedHeaders:
+            return getUsersSubscriptionsFeedHeaders()
+        case .usersSubscriptionsFeedContinuationHeaders:
+            return getUsersSubscriptionsFeedContinuationHeaders()
         case .customHeaders(let stringIdentifier):
             if let headersGenerator = customHeadersFunctions[stringIdentifier] {
                 return headersGenerator()
@@ -1351,6 +1359,136 @@ public class YouTubeModel {
                 ],
                 httpBody: [
                     "{\"context\":{\"client\":{\"deviceMake\":\"Apple\",\"userAgent\":\"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.2 Safari/605.1.15,gzip(gfe)\",\"clientName\":\"WEB\",\"clientVersion\":\"2.20221220.09.00\",\"osName\":\"Macintosh\",\"osVersion\":\"10_15_7\",\"platform\":\"DESKTOP\",\"clientFormFactor\":\"UNKNOWN_FORM_FACTOR\",\"userInterfaceTheme\":\"USER_INTERFACE_THEME_DARK\",\"timeZone\":\"Europe/Zurich\",\"browserName\":\"Safari\",\"browserVersion\":\"16.2\",\"acceptHeader\":\"text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8\",\"utcOffsetMinutes\":60,\"mainAppWebInfo\":{\"webDisplayMode\":\"WEB_DISPLAY_MODE_BROWSER\",\"isWebNativeShareAvailable\":true}},\"user\":{\"lockedSafetyMode\":false},\"request\":{\"useSsl\":true,\"internalExperimentFlags\":[],\"consistencyTokenJars\":[]}},\"browseId\":\"FEtrending\",\"params\":\"",
+                    "\"}"
+                ],
+                parameters: [
+                    .init(name: "prettyPrint", content: "false")
+                ]
+            )
+        }
+    }
+
+    /// Get headers to get the user's subscriptions
+    /// - Returns: The headers for this request.
+    func getUsersSubscriptionsHeaders() -> HeadersList {
+        if let headers = self.customHeaders[.usersSubscriptionsHeaders] {
+            return headers
+        } else {
+            return HeadersList(
+                url: URL(string: "https://www.youtube.com/youtubei/v1/browse")!,
+                method: .POST,
+                headers: [
+                    .init(name: "Accept", content: "*/*"),
+                    .init(name: "Accept-Encoding", content: "gzip, deflate, br"),
+                    .init(name: "Host", content: "www.youtube.com"),
+                    .init(name: "User-Agent", content: "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.1 Safari/605.1.15"),
+                    .init(name: "Accept-Language", content: "\(self.selectedLocale);q=0.9"),
+                    .init(name: "Origin", content: "https://www.youtube.com/"),
+                    .init(name: "Referer", content: "https://www.youtube.com/"),
+                    .init(name: "Content-Type", content: "application/json"),
+                    .init(name: "X-Origin", content: "https://www.youtube.com")
+                ],
+                addQueryAfterParts: [],
+                httpBody: [
+                    "{\"context\":{\"client\":{\"hl\":\"\(self.selectedLocaleLanguageCode)\",\"gl\":\"\(self.selectedLocaleCountryCode.uppercased())\",\"userAgent\":\"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.2 Safari/605.1.15,gzip(gfe)\",\"clientName\":\"WEB\",\"clientVersion\":\"2.20230120.00.00\",\"acceptHeader\":\"text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8\",\"mainAppWebInfo\":{\"webDisplayMode\":\"WEB_DISPLAY_MODE_BROWSER\",\"isWebNativeShareAvailable\":true}},\"user\":{\"lockedSafetyMode\":false},\"request\":{\"useSsl\":true,\"internalExperimentFlags\":[],\"consistencyTokenJars\":[]}},\"browseId\":\"FEchannels\"}"
+                ],
+                parameters: [
+                    .init(name: "prettyPrint", content: "false")
+                ]
+            )
+        }
+    }
+    
+    /// Get headers to get the continuation of a `getUsersSubscriptionsHeaders()` ("more results" button).
+    /// - Returns: The headers for this request.
+    func getUsersSubscriptionsContinuationHeaders() -> HeadersList {
+        if let headers = self.customHeaders[.usersSubscriptionsContinuationHeaders] {
+            return headers
+        } else {
+            return HeadersList(
+                url: URL(string: "https://www.youtube.com/youtubei/v1/browse")!,
+                method: .POST,
+                headers: [
+                    .init(name: "Accept", content: "*/*"),
+                    .init(name: "Accept-Encoding", content: "gzip, deflate, br"),
+                    .init(name: "Host", content: "www.youtube.com"),
+                    .init(name: "User-Agent", content: "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.1 Safari/605.1.15"),
+                    .init(name: "Accept-Language", content: "\(self.selectedLocale);q=0.9"),
+                    .init(name: "Origin", content: "https://www.youtube.com/"),
+                    .init(name: "Referer", content: "https://www.youtube.com/"),
+                    .init(name: "Content-Type", content: "application/json"),
+                    .init(name: "X-Origin", content: "https://www.youtube.com")
+                ],
+                addQueryAfterParts: [
+                    .init(index: 0, encode: false, content: .continuation)
+                ],
+                httpBody: [
+                    "{\"context\":{\"client\":{\"hl\":\"\(self.selectedLocaleLanguageCode)\",\"gl\":\"\(self.selectedLocaleCountryCode.uppercased())\",\"userAgent\":\"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.2 Safari/605.1.15,gzip(gfe)\",\"clientName\":\"WEB\",\"clientVersion\":\"2.20230120.00.00\",\"acceptHeader\":\"text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8\",\"mainAppWebInfo\":{\"webDisplayMode\":\"WEB_DISPLAY_MODE_BROWSER\",\"isWebNativeShareAvailable\":true}},\"user\":{\"lockedSafetyMode\":false},\"request\":{\"useSsl\":true,\"internalExperimentFlags\":[],\"consistencyTokenJars\":[]}},\"continuation\":\"",
+                    "\"}"
+                ],
+                parameters: [
+                    .init(name: "prettyPrint", content: "false")
+                ]
+            )
+        }
+    }
+    
+    /// Get headers to get the user's subscriptions
+    /// - Returns: The headers for this request.
+    func getUsersSubscriptionsFeedHeaders() -> HeadersList {
+        if let headers = self.customHeaders[.usersSubscriptionsFeedHeaders] {
+            return headers
+        } else {
+            return HeadersList(
+                url: URL(string: "https://www.youtube.com/youtubei/v1/browse")!,
+                method: .POST,
+                headers: [
+                    .init(name: "Accept", content: "*/*"),
+                    .init(name: "Accept-Encoding", content: "gzip, deflate, br"),
+                    .init(name: "Host", content: "www.youtube.com"),
+                    .init(name: "User-Agent", content: "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.1 Safari/605.1.15"),
+                    .init(name: "Accept-Language", content: "\(self.selectedLocale);q=0.9"),
+                    .init(name: "Origin", content: "https://www.youtube.com/"),
+                    .init(name: "Referer", content: "https://www.youtube.com/"),
+                    .init(name: "Content-Type", content: "application/json"),
+                    .init(name: "X-Origin", content: "https://www.youtube.com")
+                ],
+                addQueryAfterParts: [],
+                httpBody: [
+                    "{\"context\":{\"client\":{\"hl\":\"\(self.selectedLocaleLanguageCode)\",\"gl\":\"\(self.selectedLocaleCountryCode.uppercased())\",\"userAgent\":\"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.2 Safari/605.1.15,gzip(gfe)\",\"clientName\":\"WEB\",\"clientVersion\":\"2.20230120.00.00\",\"acceptHeader\":\"text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8\",\"mainAppWebInfo\":{\"webDisplayMode\":\"WEB_DISPLAY_MODE_BROWSER\",\"isWebNativeShareAvailable\":true}},\"user\":{\"lockedSafetyMode\":false},\"request\":{\"useSsl\":true,\"internalExperimentFlags\":[],\"consistencyTokenJars\":[]}},\"browseId\":\"FEsubscriptions\"}"
+                ],
+                parameters: [
+                    .init(name: "prettyPrint", content: "false")
+                ]
+            )
+        }
+    }
+    
+    /// Get headers to get the continuation of a `getUsersSubscriptionsHeaders()` ("more results" button).
+    /// - Returns: The headers for this request.
+    func getUsersSubscriptionsFeedContinuationHeaders() -> HeadersList {
+        if let headers = self.customHeaders[.usersSubscriptionsFeedContinuationHeaders] {
+            return headers
+        } else {
+            return HeadersList(
+                url: URL(string: "https://www.youtube.com/youtubei/v1/browse")!,
+                method: .POST,
+                headers: [
+                    .init(name: "Accept", content: "*/*"),
+                    .init(name: "Accept-Encoding", content: "gzip, deflate, br"),
+                    .init(name: "Host", content: "www.youtube.com"),
+                    .init(name: "User-Agent", content: "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.1 Safari/605.1.15"),
+                    .init(name: "Accept-Language", content: "\(self.selectedLocale);q=0.9"),
+                    .init(name: "Origin", content: "https://www.youtube.com/"),
+                    .init(name: "Referer", content: "https://www.youtube.com/"),
+                    .init(name: "Content-Type", content: "application/json"),
+                    .init(name: "X-Origin", content: "https://www.youtube.com")
+                ],
+                addQueryAfterParts: [
+                    .init(index: 0, encode: false, content: .continuation)
+                ],
+                httpBody: [
+                    "{\"context\":{\"client\":{\"hl\":\"\(self.selectedLocaleLanguageCode)\",\"gl\":\"\(self.selectedLocaleCountryCode.uppercased())\",\"userAgent\":\"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.2 Safari/605.1.15,gzip(gfe)\",\"clientName\":\"WEB\",\"clientVersion\":\"2.20230120.00.00\",\"acceptHeader\":\"text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8\",\"mainAppWebInfo\":{\"webDisplayMode\":\"WEB_DISPLAY_MODE_BROWSER\",\"isWebNativeShareAvailable\":true}},\"user\":{\"lockedSafetyMode\":false},\"request\":{\"useSsl\":true,\"internalExperimentFlags\":[],\"consistencyTokenJars\":[]}},\"continuation\":\"",
                     "\"}"
                 ],
                 parameters: [

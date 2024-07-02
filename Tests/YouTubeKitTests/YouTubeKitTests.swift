@@ -927,7 +927,7 @@ final class YouTubeKitTests: XCTestCase {
         let historyResponse = try await HistoryResponse.sendThrowingRequest(youtubeModel: YTM, data: [:], useCookies: true)
                 
         XCTAssertNotNil(historyResponse.title, TEST_NAME + "Checking if historyResponse.title has been extracted.")
-        XCTAssertNotEqual(historyResponse.results.count, 0, TEST_NAME + "Checking if historyResponse.videosAndTime is not empty.")
+        XCTAssertNotEqual(historyResponse.results.count, 0, TEST_NAME + "Checking if historyResponse.results is not empty.")
         
         guard let firstVideoToken = (historyResponse.results.first?.contentsArray.first(where: {$0 as? HistoryResponse.HistoryBlock.VideoWithToken != nil}) as! HistoryResponse.HistoryBlock.VideoWithToken).suppressToken else { XCTFail(TEST_NAME + "Could not find a video with a suppressToken in the history"); return }
         
@@ -940,7 +940,7 @@ final class YouTubeKitTests: XCTestCase {
         if historyResponse.continuationToken != nil {
             let continuationResponse = try await historyResponse.fetchContinuation(youtubeModel: YTM)
             
-            XCTAssertNotEqual(continuationResponse.results.count, 0, TEST_NAME + "Checking if continuationResponse.historyParts is not empty.")
+            XCTAssertNotEqual(continuationResponse.results.count, 0, TEST_NAME + "Checking if continuationResponse.results is not empty.")
             
             if let shortsBlock = (continuationResponse.results.first?.contentsArray.first(where: {$0 as? HistoryResponse.HistoryBlock.ShortsBlock != nil}) as? HistoryResponse.HistoryBlock.ShortsBlock) {
                 XCTAssertNotNil(shortsBlock.suppressTokens.compactMap({$0}), TEST_NAME + "Checking if suppressTokens of ShortBlock is not full of nil values.")
@@ -1126,5 +1126,31 @@ final class YouTubeKitTests: XCTestCase {
         
         XCTAssertEqual(secondBaseTrendingResponse.currentContentIdentifier, mainTabName, TEST_NAME + "currentContentIdentifier is not equal to mainTabName after second request.")
         XCTAssertEqual(baseTrendingResponse.categoriesContentsStore[mainTabName], secondBaseTrendingResponse.categoriesContentsStore[mainTabName], TEST_NAME + "baseTrendingResponse.categoriesContentsStore[tabName] is not equal to secondBaseTrendingResponse[tabName] after merging.")
+    }
+    
+    func testAccountSubscriptionsResponse() async throws {
+        let TEST_NAME = "Test: testAccountSubscriptionsResponse() -> "
+        guard cookies != "" else { return }
+        YTM.cookies = cookies
+        
+        var accountSubscriptionsResponse = try await AccountSubscriptionsResponse.sendThrowingRequest(youtubeModel: YTM, data: [:], useCookies: true)
+        
+        XCTAssert(!accountSubscriptionsResponse.isDisconnected, TEST_NAME + "Account is disconnected.")
+        XCTAssertNil(accountSubscriptionsResponse.visitorData, TEST_NAME + "visitorData is not nil (but should never be extracted).")
+                
+        XCTAssertNotEqual(accountSubscriptionsResponse.results.count, 0, TEST_NAME + "Checking if accountSubscriptionsResponse.results is not empty.")
+        
+        if accountSubscriptionsResponse.continuationToken != nil {
+            let continuationResponse = try await accountSubscriptionsResponse.fetchContinuation(youtubeModel: YTM)
+            
+            XCTAssertNotEqual(continuationResponse.results.count, 0, TEST_NAME + "Checking if continuationResponse.results is not empty.")
+            
+            let oldChannelsCount = accountSubscriptionsResponse.results.count
+            
+            accountSubscriptionsResponse.mergeContinuation(continuationResponse)
+            
+            XCTAssertEqual(accountSubscriptionsResponse.results.count, oldChannelsCount + continuationResponse.results.count, TEST_NAME + "accountSubscriptionsResponse.results.count is not equal to oldChannelsCount + continuationResponse.results.count")
+            XCTAssertEqual(accountSubscriptionsResponse.continuationToken, continuationResponse.continuationToken, TEST_NAME + "continuationToken hasn't been merged.")
+        }
     }
 }
