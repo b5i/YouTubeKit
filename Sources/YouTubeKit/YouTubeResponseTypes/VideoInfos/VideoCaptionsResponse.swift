@@ -23,7 +23,7 @@ public struct VideoCaptionsResponse: YouTubeResponse {
     public static func decodeData(data: Data) throws -> VideoCaptionsResponse {
         var toReturn = VideoCaptionsResponse(captionParts: [])
         
-        #if os(iOS) || os(tvOS) || os(watchOS) || os(macOS) || os(visionOS)
+        #if os(macOS)
         let dataText = CFXMLCreateStringByUnescapingEntities(nil, CFXMLCreateStringByUnescapingEntities(nil, String(decoding: data, as: UTF8.self) as CFString, nil), nil) as String
         #else
         let dataText = String(decoding: data, as: UTF8.self)
