@@ -24,7 +24,7 @@ final class YouTubeKitTests: XCTestCase {
         YTM.customHeadersFunctions["nameAndSurname"] = myCustomHeadersFunction
         
         /// Struct representing a getNameAndSurname response.
-        struct NameAndSurnameResponse: YouTubeResponse {            
+        struct NameAndSurnameResponse: YouTubeResponse {
             static var headersType: HeaderTypes = .customHeaders("nameAndSurname")
             
             static var parametersValidationList: ValidationList = [:]
@@ -1083,5 +1083,48 @@ final class YouTubeKitTests: XCTestCase {
         func unsubscribeToChannel() async throws {
             try await channel.unsubscribeThrowing(youtubeModel: YTM)
         }
+    }
+    
+    func testTrendingTab() async throws {
+        let TEST_NAME = "Test: testTrendingTab() -> "
+        
+        var baseTrendingResponse = try await TrendingVideosResponse.sendThrowingRequest(youtubeModel: YTM, data: [:])
+        
+        guard let mainTabName = baseTrendingResponse.currentContentIdentifier else {
+            XCTFail(TEST_NAME + "currentContentIdentifier is not defined")
+            return
+        }
+        
+        XCTAssertNotNil(baseTrendingResponse.categoriesContentsStore[mainTabName], TEST_NAME + "currentContentIdentifier is not defined.")
+        XCTAssert(!baseTrendingResponse.categoriesContentsStore[mainTabName]!.isEmpty, TEST_NAME + "currentContentIdentifier is empty.")
+        XCTAssertNotNil(baseTrendingResponse.requestParams[mainTabName], TEST_NAME + "baseTrendingResponse.requestParams[mainTabName] is nil.")
+        
+        for availableTab in Array(baseTrendingResponse.requestParams.keys) where availableTab != mainTabName {
+            let newResponse = try await baseTrendingResponse.getCategoryContentThrowing(forIdentifier: availableTab, youtubeModel: YTM)
+            
+            guard let tabName = newResponse.currentContentIdentifier else {
+                XCTFail(TEST_NAME + "currentContentIdentifier is not defined for tab with supposed name \(availableTab).")
+                return
+            }
+            
+            XCTAssertEqual(tabName, availableTab, TEST_NAME + "tabName equal to availableTab.")
+            
+            XCTAssertNotNil(newResponse.categoriesContentsStore[tabName], TEST_NAME + "currentContentIdentifier is not defined for tab with name \(tabName).")
+            XCTAssert(!newResponse.categoriesContentsStore[tabName]!.isEmpty, TEST_NAME + "currentContentIdentifier is empty for tab with name \(tabName).")
+            XCTAssertNotNil(newResponse.requestParams[tabName], TEST_NAME + "newResponse.requestParams[mainTabName] is nil for with name \(tabName).")
+            
+            baseTrendingResponse.mergeTrendingResponse(newResponse)
+            
+            XCTAssertEqual(baseTrendingResponse.currentContentIdentifier, tabName, TEST_NAME + "tabName is not equal to currentContentIdentifier after merging to baseTrendingResponse.")
+            XCTAssertEqual(baseTrendingResponse.categoriesContentsStore[tabName], newResponse.categoriesContentsStore[tabName], TEST_NAME + "baseTrendingResponse.categoriesContentsStore[tabName] is not equal to newResponse[tabName] after merging.")
+            XCTAssertNotNil(baseTrendingResponse.categoriesContentsStore[mainTabName], TEST_NAME + "baseTrendingResponse.categoriesContentsStore[mainTabName] is nil after merging with response with categoryName: \"\(tabName)\"")
+        }
+        
+        let secondBaseTrendingResponse = try await baseTrendingResponse.getCategoryContentThrowing(forIdentifier: mainTabName, youtubeModel: YTM)
+        
+        baseTrendingResponse.mergeTrendingResponse(secondBaseTrendingResponse)
+        
+        XCTAssertEqual(secondBaseTrendingResponse.currentContentIdentifier, mainTabName, TEST_NAME + "currentContentIdentifier is not equal to mainTabName after second request.")
+        XCTAssertEqual(baseTrendingResponse.categoriesContentsStore[mainTabName], secondBaseTrendingResponse.categoriesContentsStore[mainTabName], TEST_NAME + "baseTrendingResponse.categoriesContentsStore[tabName] is not equal to secondBaseTrendingResponse[tabName] after merging.")
     }
 }

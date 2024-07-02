@@ -3,7 +3,7 @@
 //
 //  Created by Antoine Bollengier (github.com/b5i) on 19.06.2023.
 //  Copyright © 2023 - 2024 Antoine Bollengier. All rights reserved.
-//  
+//
 
 import Foundation
 
@@ -79,6 +79,8 @@ extension HeaderTypes: RawRepresentable {
             return "unsubscribeFromChannelHeaders"
         case .videoCaptionsHeaders:
             return "videoCaptionsHeaders"
+        case .trendingVideosHeaders:
+            return "trendingVideosHeaders"
         case .customHeaders(let stringIdentifier):
             return stringIdentifier
         }

@@ -3,7 +3,7 @@
 //
 //  Created by Antoine Bollengier (github.com/b5i) on 04.06.23.
 //  Copyright © 2023 - 2024 Antoine Bollengier. All rights reserved.
-//  
+//
 
 import Foundation
 #if canImport(FoundationNetworking)
@@ -147,7 +147,13 @@ public enum HeaderTypes: Codable, Sendable {
     /// - Parameter browseId: The channel's id should be taken from ``YTChannel/channelId`` or ``YTLittleChannelInfos/channelId``.
     case unsubscribeFromChannelHeaders
     
+    /// Get the captions of a video.
+    /// - Parameter customURL: The url of the captions that you can get from one of the ``YTCaption/url`` of ``VideoInfosResponse/captions``.
     case videoCaptionsHeaders
+    
+    /// Get trending videos.
+    /// - Parameter params: The operation param from ``TrendingVideosResponse/requestParams`` (optional).
+    case trendingVideosHeaders
     
     /// For custom headers
     case customHeaders(String)
