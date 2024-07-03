@@ -167,6 +167,24 @@ public enum HeaderTypes: Codable, Sendable {
     /// - Parameter params: The operation param from ``TrendingVideosResponse/requestParams`` (optional).
     case trendingVideosHeaders
     
+    case videoCommentsHeaders
+    
+    case videoCommentsContinuationHeaders
+    
+    case createCommentHeaders
+    
+    case likeCommentHeaders
+    
+    case dislikeCommentHeaders
+    
+    case removeLikeCommentHeaders
+    
+    case removeDislikeCommentHeaders
+    
+    case updateCommentHeaders
+    
+    case replyCommentHeaders
+    
     /// For custom headers
     case customHeaders(String)
 }

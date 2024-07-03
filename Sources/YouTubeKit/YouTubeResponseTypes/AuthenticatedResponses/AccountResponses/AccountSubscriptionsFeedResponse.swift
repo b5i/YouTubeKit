@@ -58,10 +58,10 @@ public struct AccountSubscriptionsFeedResponse: AuthenticatedContinuableResponse
         
         public var isDisconnected: Bool = true
         
-        /// Continuation token used to fetch more channels, nil if there is no more channels to fetch.
+        /// Continuation token used to fetch more videos, nil if there is no more videos to fetch.
         public var continuationToken: String?
         
-        /// Array of history blocks.
+        /// Array of videos.
         public var results: [YTVideo] = []
         
         public static func decodeJSON(json: JSON) -> AccountSubscriptionsFeedResponse.Continuation {

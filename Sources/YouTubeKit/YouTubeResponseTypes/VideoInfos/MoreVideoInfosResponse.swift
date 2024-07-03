@@ -107,7 +107,7 @@ public struct MoreVideoInfosResponse: YouTubeResponse {
         if !(json["responseContext"]["mainAppWebResponseContext"]["loggedOut"].bool ?? true) {
             // Response was made with authentication cookies
             isAccountConnected = true
-            toReturn.authenticatedInfos = AuthenticatedData()
+            toReturn.authenticatedInfos = AuthenticatedData(likeStatus: nil as YTLikeStatus?)
         }
         
         for contentPart in json["contents"]["twoColumnWatchNextResults"]["results"]["results"]["contents"].arrayValue {
@@ -388,18 +388,38 @@ public struct MoreVideoInfosResponse: YouTubeResponse {
     
     /// Struct representing the data about the video that concerns the account that was used to make the requests (the cookies).
     public struct AuthenticatedData: Codable, Sendable {
-        public init(likeStatus: LikeStatus? = nil, subscriptionStatus: Bool? = nil) {
+        public init(likeStatus: YTLikeStatus? = nil, subscriptionStatus: Bool? = nil) {
             self.likeStatus = likeStatus
             self.subscriptionStatus = subscriptionStatus
         }
         
+        @available(*, deprecated, message: "This init will be removed in a future YouTubeKit version, please use YTLikeStatus instead.")
+        public init(likeStatus: LikeStatus? = nil, subscriptionStatus: Bool? = nil) {
+            let realLikeStatus: YTLikeStatus? = {
+                switch likeStatus {
+                case .liked:
+                    return .liked
+                case .disliked:
+                    return .disliked
+                case .nothing:
+                    return .nothing
+                case .none:
+                    return nil
+                }
+            }()
+
+            self.likeStatus = realLikeStatus
+            self.subscriptionStatus = subscriptionStatus
+        }
+        
         /// Like status for the video of the account.
-        public var likeStatus: LikeStatus?
+        public var likeStatus: YTLikeStatus?
         
         /// Boolean indicating whether the account is subscribed to the channel that posted the video or not.
         public var subscriptionStatus: Bool?
         
         /// Enum representing the different "appreciation" status of the account for the video.
+        @available(*, deprecated, message: "This enum will be removed in a future YouTubeKit version, please use YTLikeStatus instead.")
         public enum LikeStatus: Codable, Sendable {
             case liked
             case disliked

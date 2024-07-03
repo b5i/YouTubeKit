@@ -89,6 +89,24 @@ extension HeaderTypes: RawRepresentable {
             return "usersSubscriptionsFeedHeaders"
         case .usersSubscriptionsFeedContinuationHeaders:
             return "usersSubscriptionsFeedContinuationHeaders"
+        case .videoCommentsHeaders:
+            return "videoCommentsHeaders"
+        case .videoCommentsContinuationHeaders:
+            return "videoCommentsContinuationHeaders"
+        case .createCommentHeaders:
+            return "createCommentHeaders"
+        case .likeCommentHeaders:
+            return "likeCommentHeaders"
+        case .dislikeCommentHeaders:
+            return "dislikeCommentHeaders"
+        case .removeLikeCommentHeaders:
+            return "removeLikeCommentHeaders"
+        case .removeDislikeCommentHeaders:
+            return "removeDislikeCommentHeaders"
+        case .updateCommentHeaders:
+            return "updateCommentHeaders"
+        case .replyCommentHeaders:
+            return "replyCommentHeaders"
         case .customHeaders(let stringIdentifier):
             return stringIdentifier
         }

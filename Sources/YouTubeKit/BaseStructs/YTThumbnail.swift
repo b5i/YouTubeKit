@@ -32,7 +32,7 @@ public struct YTThumbnail: Codable, Equatable, Hashable, Sendable {
     ///     }
     ///   - thumbnailList: the array of `Thumbnail` where the ones in the given JSON have to be appended.
     public static func appendThumbnails(json: JSON, thumbnailList: inout [YTThumbnail]) {
-        for thumbnail in json["thumbnails"].array ?? json["image"]["sources"].array ?? [] {
+        for thumbnail in json["thumbnails"].array ?? json["image"]["sources"].array ?? json["sources"].array ?? [] {
             if var url = thumbnail["url"].url {
                 /// URL is of form "//yt3.googleusercontent.com/ytc"
                 if url.absoluteString.hasPrefix("//") {
@@ -55,5 +55,11 @@ public struct YTThumbnail: Codable, Equatable, Hashable, Sendable {
                 }
             }
         }
+    }
+    
+    public static func getThumbnails(json: JSON) -> [YTThumbnail] {
+        var toReturn: [YTThumbnail] = []
+        self.appendThumbnails(json: json, thumbnailList: &toReturn)
+        return toReturn
     }
 }

@@ -994,7 +994,7 @@ final class YouTubeKitTests: XCTestCase {
         
         let video = YTVideo(videoId: "JdFRjsEZrmU")
         
-        let likeStatus: MoreVideoInfosResponse.AuthenticatedData.LikeStatus? = try await getCurrentLikeStatus()
+        let likeStatus: YTLikeStatus? = try await getCurrentLikeStatus()
         
         guard let likeStatus = likeStatus else { XCTFail(TEST_NAME + "Checking if likeStatus is defined"); return }
         
@@ -1023,7 +1023,7 @@ final class YouTubeKitTests: XCTestCase {
             try await removelikeVideo()
         }
         
-        func getCurrentLikeStatus() async throws -> MoreVideoInfosResponse.AuthenticatedData.LikeStatus? {
+        func getCurrentLikeStatus() async throws -> YTLikeStatus? {
             let currentStatusResponse = try await video.fetchMoreInfosThrowing(youtubeModel: YTM, useCookies: true)
                         
             return currentStatusResponse.authenticatedInfos?.likeStatus
@@ -1178,5 +1178,67 @@ final class YouTubeKitTests: XCTestCase {
             XCTAssertEqual(accountSubscriptionsFeedResponse.results.count, oldChannelsCount + continuationResponse.results.count, TEST_NAME + "accountSubscriptionsFeedResponse.results.count is not equal to oldChannelsCount + continuationResponse.results.count")
             XCTAssertEqual(accountSubscriptionsFeedResponse.continuationToken, continuationResponse.continuationToken, TEST_NAME + "continuationToken hasn't been merged.")
         }
+    }
+    
+    func testVideoComments() async throws {
+        let TEST_NAME = "Test: testAccountSubscriptionsFeedResponse() -> "
+        
+        YTM.cookies = self.cookies
+        
+        let video = YTVideo(videoId: "3ryID_SwU5E")
+        
+        let videoResponse = try await video.fetchMoreInfosThrowing(youtubeModel: YTM, useCookies: true)
+        
+        guard let commentsToken = videoResponse.commentsContinuationToken else {
+            XCTFail(TEST_NAME + "videoResponse.commentsContinuationToken is nil.")
+            return
+        }
+                
+        var videoCommentsResponse = try await VideoCommentsResponse.sendThrowingRequest(youtubeModel: YTM, data: [.params: commentsToken], useCookies: true)
+        
+        XCTAssertNil(videoCommentsResponse.visitorData, TEST_NAME + "visitorData is not nil but it should.")
+        
+        XCTAssert(!videoCommentsResponse.results.isEmpty, TEST_NAME + "videoCommentsResponse.results is empty")
+        
+        let firstComment = videoCommentsResponse.results.first!
+        
+        XCTAssertNotNil(firstComment.totalRepliesNumber)
+        XCTAssertNotNil(firstComment.timePosted)
+        XCTAssertNotEqual(firstComment.text.count, 0)
+        XCTAssertNotNil(firstComment.sender)
+        XCTAssertNotNil(firstComment.replyLevel)
+        XCTAssertNotNil(firstComment.likesCountWhenUserLiked)
+        XCTAssertNotNil(firstComment.likesCount)
+        XCTAssertNotNil(firstComment.likeState)
+        XCTAssertNotNil(firstComment.isLikedByVideoCreator)
+        XCTAssertNotEqual(firstComment.commentIdentifier.count, 0)
+                
+        guard let continuationToken = videoCommentsResponse.continuationToken else { XCTFail(TEST_NAME + "videoCommentsResponse.continuationToken is nil."); return }
+        
+        let continuation = try await VideoCommentsResponse.Continuation.sendThrowingRequest(youtubeModel: YTM, data: [.params: continuationToken], useCookies: true)
+        
+        XCTAssertNotNil(continuation.continuationToken, TEST_NAME + "continuationToken of continuation is nil.")
+        
+        XCTAssert(!continuation.results.isEmpty, TEST_NAME + "continuation.results is empty")
+        
+        let firstCommentFromContinuation = continuation.results.first!
+        
+        XCTAssertNotNil(firstCommentFromContinuation.totalRepliesNumber)
+        XCTAssertNotNil(firstCommentFromContinuation.timePosted)
+        XCTAssertNotEqual(firstCommentFromContinuation.text.count, 0)
+        XCTAssertNotNil(firstCommentFromContinuation.sender)
+        XCTAssertNotNil(firstCommentFromContinuation.replyLevel)
+        XCTAssertNotNil(firstCommentFromContinuation.likesCountWhenUserLiked)
+        XCTAssertNotNil(firstCommentFromContinuation.likesCount)
+        XCTAssertNotNil(firstCommentFromContinuation.likeState)
+        XCTAssertNotNil(firstCommentFromContinuation.isLikedByVideoCreator)
+        XCTAssertNotEqual(firstCommentFromContinuation.commentIdentifier.count, 0)
+        
+        let oldCount = videoCommentsResponse.results.count
+        
+        videoCommentsResponse.mergeContinuation(continuation)
+        
+        XCTAssertEqual(videoCommentsResponse.results.count, oldCount + continuation.results.count)
+        XCTAssertEqual(videoCommentsResponse.continuationToken, continuation.continuationToken)
     }
 }
