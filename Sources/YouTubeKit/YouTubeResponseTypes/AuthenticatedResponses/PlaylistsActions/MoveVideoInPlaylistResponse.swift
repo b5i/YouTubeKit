@@ -8,7 +8,7 @@
 
 import Foundation
 
-public struct MoveVideoInPlaylistResponse: AuthenticatedResponse {
+public struct MoveVideoInPlaylistResponse: SimpleActionAuthenticatedResponse {
     public static let headersType: HeaderTypes = .moveVideoInPlaylistHeaders
     
     public static let parametersValidationList: ValidationList = [.movingVideoId: .existenceValidator, .browseId: .playlistIdWithoutVLPrefixValidator]

@@ -167,23 +167,57 @@ public enum HeaderTypes: Codable, Sendable {
     /// - Parameter params: The operation param from ``TrendingVideosResponse/requestParams`` (optional).
     case trendingVideosHeaders
     
+    /// Get a video's comments.
+    /// - Parameter continuation: The continuation token from ``MoreVideoInfosResponse/commentsContinuationToken``.
     case videoCommentsHeaders
     
+    /// Get a video's comments' continuation.
+    /// - Parameter continuation: The continuation token from ``VideoCommentsResponse/continuationToken``.
     case videoCommentsContinuationHeaders
     
+    /// Create a comment.
+    /// - Parameter params: the params from ``VideoCommentsResponse/commentCreationToken``
+    /// - Parameter text: the text of the new comment (no need to escape it).
     case createCommentHeaders
     
+    /// Like a comment.
+    /// - Parameter params: the params from ``YTComment/actionsParams``[.like], only present if ``YouTubeModel/cookies`` contains valid cookies.
     case likeCommentHeaders
     
+    /// Dislike a comment.
+    /// - Parameter params: the params from ``YTComment/actionsParams``[.dislike], only present if ``YouTubeModel/cookies`` contains valid cookies.
     case dislikeCommentHeaders
     
+    /// Remove the like from a comment.
+    /// - Parameter params: the params from ``YTComment/actionsParams``[.removeLike], only present if ``YouTubeModel/cookies`` contains valid cookies.
     case removeLikeCommentHeaders
     
+    /// Remove the dislike from a comment.
+    /// - Parameter params: the params from ``YTComment/actionsParams``[.removeDislike], only present if ``YouTubeModel/cookies`` contains valid cookies.
     case removeDislikeCommentHeaders
     
-    case updateCommentHeaders
+    /// Edit the content of a comment.
+    /// - Parameter params: the params from ``YTComment/actionsParams``[.edit], only present if ``YouTubeModel/cookies`` contains valid cookies.
+    /// - Parameter text: the new text of the comment (no need to escape it).
+    case editCommentHeaders
     
+    /// Edit the content of a comment.
+    /// - Parameter params: the params from ``YTComment/actionsParams``[.edit], only present if ``YouTubeModel/cookies`` contains valid cookies.
+    /// - Parameter text: the new text of the comment (no need to escape it).
     case replyCommentHeaders
+    
+    /// Edit the text of a reply to a comment.
+    /// - Parameter params: the params from ``YTComment/actionsParams``[.edit] from the reply, only present if ``YouTubeModel/cookies`` contains valid cookies.
+    /// - Parameter text: the new text of the comment (no need to escape it).
+    case editReplyCommentHeaders
+    
+    /// Delete a comment.
+    /// - Parameter params: the params from ``YTComment/actionsParams``[.delete], only present if ``YouTubeModel/cookies`` contains valid cookies.
+    case removeCommentHeaders
+    
+    /// Translate the text of a comment.
+    /// - Parameter params: the params from ``YTComment/actionsParams``[.translate], only present if ``YouTubeModel/cookies`` contains valid cookies.
+    case translateCommentHeaders
     
     /// For custom headers
     case customHeaders(String)

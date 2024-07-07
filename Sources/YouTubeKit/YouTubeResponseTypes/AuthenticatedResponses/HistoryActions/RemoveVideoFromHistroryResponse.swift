@@ -8,7 +8,7 @@
 
 import Foundation
 
-public struct RemoveVideoFromHistroryResponse: AuthenticatedResponse {
+public struct RemoveVideoFromHistroryResponse: SimpleActionAuthenticatedResponse {
     public static let headersType: HeaderTypes = .deleteVideoFromHistory
     
     public static let parametersValidationList: ValidationList = [.movingVideoId: .existenceValidator]

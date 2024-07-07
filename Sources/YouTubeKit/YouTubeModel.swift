@@ -269,16 +269,24 @@ public class YouTubeModel {
             return getUsersSubscriptionsFeedHeaders()
         case .usersSubscriptionsFeedContinuationHeaders:
             return getUsersSubscriptionsFeedContinuationHeaders()
-        case .videoCommentsHeaders:
+        case .videoCommentsHeaders, .videoCommentsContinuationHeaders:
             return getVideoCommentsHeaders()
+        case .removeLikeCommentHeaders, .removeDislikeCommentHeaders, .dislikeCommentHeaders, .likeCommentHeaders, .removeCommentHeaders, .translateCommentHeaders:
+            return likeActionsCommentHeaders(actionType: type)
+        case .replyCommentHeaders:
+            return replyCommentHeaders()
+        case .editCommentHeaders:
+            return editCommentHeaders()
+        case .editReplyCommentHeaders:
+            return editReplyCommentHeaders()
+        case .createCommentHeaders:
+            return createCommentHeaders()
         case .customHeaders(let stringIdentifier):
             if let headersGenerator = customHeadersFunctions[stringIdentifier] {
                 return headersGenerator()
             } else {
                 return HeadersList.getEmtpy()
             }
-        default:
-            return getVideoCommentsHeaders()
         }
     }
     
@@ -1502,43 +1510,6 @@ public class YouTubeModel {
         }
     }
     
-    
-    func commentActionHeaders() -> HeadersList {
-        if let headers = self.customHeaders[.likeVideoHeaders] {
-            return headers
-        } else {
-            return HeadersList(
-                url: URL(string: "https://www.youtube.com/youtubei/v1/browse/edit_playlist")!,
-                method: .POST,
-                headers: [
-                    .init(name: "Accept", content: "*/*"),
-                    .init(name: "Accept-Encoding", content: "gzip, deflate, br"),
-                    .init(name: "Host", content: "www.youtube.com"),
-                    .init(name: "User-Agent", content: "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.1 Safari/605.1.15"),
-                    .init(name: "Accept-Language", content: "\(self.selectedLocale);q=0.9"),
-                    .init(name: "Origin", content: "https://www.youtube.com/"),
-                    .init(name: "Referer", content: "https://www.youtube.com/"),
-                    .init(name: "Content-Type", content: "application/json"),
-                    .init(name: "X-Origin", content: "https://www.youtube.com")
-                ],
-                addQueryAfterParts: [
-                    .init(index: 0, encode: false, content: .movingVideoId),
-                    .init(index: 1, encode: false, content: .playlistEditToken),
-                    .init(index: 2, encode: false, content: .browseId)
-                ],
-                httpBody: [
-                    "{\"context\":{\"client\":{\"hl\":\"\(self.selectedLocaleLanguageCode)\",\"gl\":\"\(self.selectedLocaleCountryCode.uppercased())\",\"deviceMake\":\"Apple\",\"userAgent\":\"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.2 Safari/605.1.15,gzip(gfe)\",\"clientName\":\"WEB\",\"clientVersion\":\"2.20221220.09.00\",\"osName\":\"Macintosh\",\"osVersion\":\"10_15_7\",\"platform\":\"DESKTOP\",\"clientFormFactor\":\"UNKNOWN_FORM_FACTOR\",\"userInterfaceTheme\":\"USER_INTERFACE_THEME_DARK\",\"timeZone\":\"Europe/Zurich\",\"browserName\":\"Safari\",\"browserVersion\":\"16.2\",\"acceptHeader\":\"text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8\",\"utcOffsetMinutes\":60,\"mainAppWebInfo\":{\"webDisplayMode\":\"WEB_DISPLAY_MODE_BROWSER\",\"isWebNativeShareAvailable\":true}},\"user\":{\"lockedSafetyMode\":false},\"request\":{\"useSsl\":true,\"internalExperimentFlags\":[],\"consistencyTokenJars\":[]}},\"actions\":[{\"setVideoId\":\"",
-                    "\",\"action\":\"ACTION_REMOVE_VIDEO\"}],\"params\":\"",
-                    "\",\"playlistId\":\"",
-                    "\"}"
-                ],
-                parameters: [
-                    .init(name: "prettyPrint", content: "false")
-                ]
-            )
-        }
-    }
-    
     func getVideoCommentsHeaders() -> HeadersList {
         if let headers = self.customHeaders[.videoCommentsHeaders] {
             return headers
@@ -1558,10 +1529,178 @@ public class YouTubeModel {
                     .init(name: "X-Origin", content: "https://www.youtube.com")
                 ],
                 addQueryAfterParts: [
-                    .init(index: 0, encode: false, content: .params)
+                    .init(index: 0, encode: false, content: .continuation)
                 ],
                 httpBody: [
                     "{\"context\":{\"client\":{\"hl\":\"\(self.selectedLocaleLanguageCode)\",\"gl\":\"\(self.selectedLocaleCountryCode.uppercased())\",\"deviceMake\":\"Apple\",\"userAgent\":\"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.2 Safari/605.1.15,gzip(gfe)\",\"clientName\":\"WEB\",\"clientVersion\":\"2.20240702.01.00\",\"osName\":\"Macintosh\",\"osVersion\":\"10_15_7\",\"platform\":\"DESKTOP\",\"clientFormFactor\":\"UNKNOWN_FORM_FACTOR\",\"userInterfaceTheme\":\"USER_INTERFACE_THEME_DARK\",\"timeZone\":\"Europe/Zurich\",\"browserName\":\"Safari\",\"browserVersion\":\"16.2\",\"acceptHeader\":\"text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8\",\"utcOffsetMinutes\":60,\"mainAppWebInfo\":{\"webDisplayMode\":\"WEB_DISPLAY_MODE_BROWSER\",\"isWebNativeShareAvailable\":true}},\"user\":{\"lockedSafetyMode\":false},\"request\":{\"useSsl\":true,\"internalExperimentFlags\":[],\"consistencyTokenJars\":[]}},\"continuation\":\"",
+                    "\"}"
+                ],
+                parameters: [
+                    .init(name: "prettyPrint", content: "false")
+                ]
+            )
+        }
+    }
+    
+    func likeActionsCommentHeaders(actionType: HeaderTypes) -> HeadersList {
+        if let headers = self.customHeaders[actionType] {
+            return headers
+        } else {
+            return HeadersList(
+                url: URL(string: "https://www.youtube.com/youtubei/v1/comment/perform_comment_action")!,
+                method: .POST,
+                headers: [
+                    .init(name: "Accept", content: "*/*"),
+                    .init(name: "Accept-Encoding", content: "gzip, deflate, br"),
+                    .init(name: "Host", content: "www.youtube.com"),
+                    .init(name: "User-Agent", content: "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.1 Safari/605.1.15"),
+                    .init(name: "Accept-Language", content: "\(self.selectedLocale);q=0.9"),
+                    .init(name: "Origin", content: "https://www.youtube.com/"),
+                    .init(name: "Referer", content: "https://www.youtube.com/"),
+                    .init(name: "Content-Type", content: "application/json"),
+                    .init(name: "X-Origin", content: "https://www.youtube.com")
+                ],
+                addQueryAfterParts: [
+                    .init(index: 0, encode: false, content: .params)
+                ],
+                httpBody: [
+                    "{\"context\":{\"client\":{\"hl\":\"\(self.selectedLocaleLanguageCode)\",\"gl\":\"\(self.selectedLocaleCountryCode.uppercased())\",\"deviceMake\":\"Apple\",\"userAgent\":\"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.2 Safari/605.1.15,gzip(gfe)\",\"clientName\":\"WEB\",\"clientVersion\":\"2.20240702.01.00\",\"osName\":\"Macintosh\",\"osVersion\":\"10_15_7\",\"platform\":\"DESKTOP\",\"clientFormFactor\":\"UNKNOWN_FORM_FACTOR\",\"userInterfaceTheme\":\"USER_INTERFACE_THEME_DARK\",\"timeZone\":\"Europe/Zurich\",\"browserName\":\"Safari\",\"browserVersion\":\"16.2\",\"acceptHeader\":\"text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8\",\"utcOffsetMinutes\":60,\"mainAppWebInfo\":{\"webDisplayMode\":\"WEB_DISPLAY_MODE_BROWSER\",\"isWebNativeShareAvailable\":true}},\"user\":{\"lockedSafetyMode\":false},\"request\":{\"useSsl\":true,\"internalExperimentFlags\":[],\"consistencyTokenJars\":[]}},\"actions\":[\"",
+                    "\"]}"
+                ],
+                parameters: [
+                    .init(name: "prettyPrint", content: "false")
+                ]
+            )
+        }
+    }
+    
+    func replyCommentHeaders() -> HeadersList {
+        if let headers = self.customHeaders[.replyCommentHeaders] {
+            return headers
+        } else {
+            return HeadersList(
+                url: URL(string: "https://www.youtube.com/youtubei/v1/comment/create_comment_reply")!,
+                method: .POST,
+                headers: [
+                    .init(name: "Accept", content: "*/*"),
+                    .init(name: "Accept-Encoding", content: "gzip, deflate, br"),
+                    .init(name: "Host", content: "www.youtube.com"),
+                    .init(name: "User-Agent", content: "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.1 Safari/605.1.15"),
+                    .init(name: "Accept-Language", content: "\(self.selectedLocale);q=0.9"),
+                    .init(name: "Origin", content: "https://www.youtube.com/"),
+                    .init(name: "Referer", content: "https://www.youtube.com/"),
+                    .init(name: "Content-Type", content: "application/json"),
+                    .init(name: "X-Origin", content: "https://www.youtube.com")
+                ],
+                addQueryAfterParts: [
+                    .init(index: 0, encode: false, content: .params),
+                    .init(index: 1, encode: false, content: .text)
+                ],
+                httpBody: [
+                    "{\"context\":{\"client\":{\"hl\":\"\(self.selectedLocaleLanguageCode)\",\"gl\":\"\(self.selectedLocaleCountryCode.uppercased())\",\"deviceMake\":\"Apple\",\"userAgent\":\"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.2 Safari/605.1.15,gzip(gfe)\",\"clientName\":\"WEB\",\"clientVersion\":\"2.20240702.01.00\",\"osName\":\"Macintosh\",\"osVersion\":\"10_15_7\",\"platform\":\"DESKTOP\",\"clientFormFactor\":\"UNKNOWN_FORM_FACTOR\",\"userInterfaceTheme\":\"USER_INTERFACE_THEME_DARK\",\"timeZone\":\"Europe/Zurich\",\"browserName\":\"Safari\",\"browserVersion\":\"16.2\",\"acceptHeader\":\"text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8\",\"utcOffsetMinutes\":60,\"mainAppWebInfo\":{\"webDisplayMode\":\"WEB_DISPLAY_MODE_BROWSER\",\"isWebNativeShareAvailable\":true}},\"user\":{\"lockedSafetyMode\":false},\"request\":{\"useSsl\":true,\"internalExperimentFlags\":[],\"consistencyTokenJars\":[]}},\"createReplyParams\":\"",
+                    "\", \"commentText\":\"",
+                    "\"}"
+                ],
+                parameters: [
+                    .init(name: "prettyPrint", content: "false")
+                ]
+            )
+        }
+    }
+    
+    func editCommentHeaders() -> HeadersList {
+        if let headers = self.customHeaders[.editCommentHeaders] {
+            return headers
+        } else {
+            return HeadersList(
+                url: URL(string: "https://www.youtube.com/youtubei/v1/comment/update_comment")!,
+                method: .POST,
+                headers: [
+                    .init(name: "Accept", content: "*/*"),
+                    .init(name: "Accept-Encoding", content: "gzip, deflate, br"),
+                    .init(name: "Host", content: "www.youtube.com"),
+                    .init(name: "User-Agent", content: "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.1 Safari/605.1.15"),
+                    .init(name: "Accept-Language", content: "\(self.selectedLocale);q=0.9"),
+                    .init(name: "Origin", content: "https://www.youtube.com/"),
+                    .init(name: "Referer", content: "https://www.youtube.com/"),
+                    .init(name: "Content-Type", content: "application/json"),
+                    .init(name: "X-Origin", content: "https://www.youtube.com")
+                ],
+                addQueryAfterParts: [
+                    .init(index: 0, encode: false, content: .text),
+                    .init(index: 1, encode: false, content: .params)
+                ],
+                httpBody: [
+                    "{\"context\":{\"client\":{\"hl\":\"\(self.selectedLocaleLanguageCode)\",\"gl\":\"\(self.selectedLocaleCountryCode.uppercased())\",\"deviceMake\":\"Apple\",\"userAgent\":\"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.2 Safari/605.1.15,gzip(gfe)\",\"clientName\":\"WEB\",\"clientVersion\":\"2.20240702.01.00\",\"osName\":\"Macintosh\",\"osVersion\":\"10_15_7\",\"platform\":\"DESKTOP\",\"clientFormFactor\":\"UNKNOWN_FORM_FACTOR\",\"userInterfaceTheme\":\"USER_INTERFACE_THEME_DARK\",\"timeZone\":\"Europe/Zurich\",\"browserName\":\"Safari\",\"browserVersion\":\"16.2\",\"acceptHeader\":\"text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8\",\"utcOffsetMinutes\":60,\"mainAppWebInfo\":{\"webDisplayMode\":\"WEB_DISPLAY_MODE_BROWSER\",\"isWebNativeShareAvailable\":true}},\"user\":{\"lockedSafetyMode\":false},\"request\":{\"useSsl\":true,\"internalExperimentFlags\":[],\"consistencyTokenJars\":[]}},\"commentText\":\"",
+                    "\", \"updateCommentParams\":\"",
+                    "\"}"
+                ],
+                parameters: [
+                    .init(name: "prettyPrint", content: "false")
+                ]
+            )
+        }
+    }
+    
+    func editReplyCommentHeaders() -> HeadersList {
+        if let headers = self.customHeaders[.editCommentHeaders] {
+            return headers
+        } else {
+            return HeadersList(
+                url: URL(string: "https://www.youtube.com/youtubei/v1/comment/update_comment_reply")!,
+                method: .POST,
+                headers: [
+                    .init(name: "Accept", content: "*/*"),
+                    .init(name: "Accept-Encoding", content: "gzip, deflate, br"),
+                    .init(name: "Host", content: "www.youtube.com"),
+                    .init(name: "User-Agent", content: "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.1 Safari/605.1.15"),
+                    .init(name: "Accept-Language", content: "\(self.selectedLocale);q=0.9"),
+                    .init(name: "Origin", content: "https://www.youtube.com/"),
+                    .init(name: "Referer", content: "https://www.youtube.com/"),
+                    .init(name: "Content-Type", content: "application/json"),
+                    .init(name: "X-Origin", content: "https://www.youtube.com")
+                ],
+                addQueryAfterParts: [
+                    .init(index: 0, encode: false, content: .text),
+                    .init(index: 1, encode: false, content: .params)
+                ],
+                httpBody: [
+                    "{\"context\":{\"client\":{\"hl\":\"\(self.selectedLocaleLanguageCode)\",\"gl\":\"\(self.selectedLocaleCountryCode.uppercased())\",\"deviceMake\":\"Apple\",\"userAgent\":\"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.2 Safari/605.1.15,gzip(gfe)\",\"clientName\":\"WEB\",\"clientVersion\":\"2.20240702.01.00\",\"osName\":\"Macintosh\",\"osVersion\":\"10_15_7\",\"platform\":\"DESKTOP\",\"clientFormFactor\":\"UNKNOWN_FORM_FACTOR\",\"userInterfaceTheme\":\"USER_INTERFACE_THEME_DARK\",\"timeZone\":\"Europe/Zurich\",\"browserName\":\"Safari\",\"browserVersion\":\"16.2\",\"acceptHeader\":\"text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8\",\"utcOffsetMinutes\":60,\"mainAppWebInfo\":{\"webDisplayMode\":\"WEB_DISPLAY_MODE_BROWSER\",\"isWebNativeShareAvailable\":true}},\"user\":{\"lockedSafetyMode\":false},\"request\":{\"useSsl\":true,\"internalExperimentFlags\":[],\"consistencyTokenJars\":[]}},\"replyText\":\"",
+                    "\", \"updateReplyParams\":\"",
+                    "\"}"
+                ],
+                parameters: [
+                    .init(name: "prettyPrint", content: "false")
+                ]
+            )
+        }
+    }
+    
+    func createCommentHeaders() -> HeadersList {
+        if let headers = self.customHeaders[.createCommentHeaders] {
+            return headers
+        } else {
+            return HeadersList(
+                url: URL(string: "https://www.youtube.com/youtubei/v1/comment/create_comment")!,
+                method: .POST,
+                headers: [
+                    .init(name: "Accept", content: "*/*"),
+                    .init(name: "Accept-Encoding", content: "gzip, deflate, br"),
+                    .init(name: "Host", content: "www.youtube.com"),
+                    .init(name: "User-Agent", content: "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.1 Safari/605.1.15"),
+                    .init(name: "Accept-Language", content: "\(self.selectedLocale);q=0.9"),
+                    .init(name: "Origin", content: "https://www.youtube.com/"),
+                    .init(name: "Referer", content: "https://www.youtube.com/"),
+                    .init(name: "Content-Type", content: "application/json"),
+                    .init(name: "X-Origin", content: "https://www.youtube.com")
+                ],
+                addQueryAfterParts: [
+                    .init(index: 0, encode: false, content: .params),
+                    .init(index: 1, encode: false, content: .text)
+                ],
+                httpBody: [
+                    "{\"context\":{\"client\":{\"hl\":\"\(self.selectedLocaleLanguageCode)\",\"gl\":\"\(self.selectedLocaleCountryCode.uppercased())\",\"deviceMake\":\"Apple\",\"userAgent\":\"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.2 Safari/605.1.15,gzip(gfe)\",\"clientName\":\"WEB\",\"clientVersion\":\"2.20240702.01.00\",\"osName\":\"Macintosh\",\"osVersion\":\"10_15_7\",\"platform\":\"DESKTOP\",\"clientFormFactor\":\"UNKNOWN_FORM_FACTOR\",\"userInterfaceTheme\":\"USER_INTERFACE_THEME_DARK\",\"timeZone\":\"Europe/Zurich\",\"browserName\":\"Safari\",\"browserVersion\":\"16.2\",\"acceptHeader\":\"text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8\",\"utcOffsetMinutes\":60,\"mainAppWebInfo\":{\"webDisplayMode\":\"WEB_DISPLAY_MODE_BROWSER\",\"isWebNativeShareAvailable\":true}},\"user\":{\"lockedSafetyMode\":false},\"request\":{\"useSsl\":true,\"internalExperimentFlags\":[],\"consistencyTokenJars\":[]}},\"createCommentParams\":\"",
+                    "\", \"commentText\":\"",
                     "\"}"
                 ],
                 parameters: [

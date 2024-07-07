@@ -24,7 +24,7 @@ public extension ContinuableResponse {
     @available(macOS 10.15, iOS 13.0, watchOS 6.0, tvOS 13.0, *)
     func fetchContinuationThrowing(youtubeModel: YouTubeModel, useCookies: Bool? = nil) async throws -> Continuation {
         return try await withCheckedThrowingContinuation({ (continuation: CheckedContinuation<Continuation, Error>) in
-            fetchContinuation(youtubeModel: youtubeModel, useCookies: useCookies, result: { response in
+            self.fetchContinuation(youtubeModel: youtubeModel, useCookies: useCookies, result: { response in
                 continuation.resume(with: response)
             })
         })

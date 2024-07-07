@@ -1181,11 +1181,11 @@ final class YouTubeKitTests: XCTestCase {
     }
     
     func testVideoComments() async throws {
-        let TEST_NAME = "Test: testAccountSubscriptionsFeedResponse() -> "
+        let TEST_NAME = "Test: testVideoComments() -> "
         
         YTM.cookies = self.cookies
         
-        let video = YTVideo(videoId: "3ryID_SwU5E")
+        let video = YTVideo(videoId: "KkCXLABwHP0")
         
         let videoResponse = try await video.fetchMoreInfosThrowing(youtubeModel: YTM, useCookies: true)
         
@@ -1193,8 +1193,8 @@ final class YouTubeKitTests: XCTestCase {
             XCTFail(TEST_NAME + "videoResponse.commentsContinuationToken is nil.")
             return
         }
-                
-        var videoCommentsResponse = try await VideoCommentsResponse.sendThrowingRequest(youtubeModel: YTM, data: [.params: commentsToken], useCookies: true)
+        
+        var videoCommentsResponse = try await VideoCommentsResponse.sendThrowingRequest(youtubeModel: YTM, data: [.continuation: commentsToken], useCookies: true)
         
         XCTAssertNil(videoCommentsResponse.visitorData, TEST_NAME + "visitorData is not nil but it should.")
         
@@ -1212,16 +1212,15 @@ final class YouTubeKitTests: XCTestCase {
         XCTAssertNotNil(firstComment.likeState)
         XCTAssertNotNil(firstComment.isLikedByVideoCreator)
         XCTAssertNotEqual(firstComment.commentIdentifier.count, 0)
-                
-        guard let continuationToken = videoCommentsResponse.continuationToken else { XCTFail(TEST_NAME + "videoCommentsResponse.continuationToken is nil."); return }
         
-        let continuation = try await VideoCommentsResponse.Continuation.sendThrowingRequest(youtubeModel: YTM, data: [.params: continuationToken], useCookies: true)
+        XCTAssertNotNil(firstComment.actionsParams[.repliesContinuation])
         
-        XCTAssertNotNil(continuation.continuationToken, TEST_NAME + "continuationToken of continuation is nil.")
+        let moreRepliesResponse = try await firstComment.fetchRepliesContinuation(youtubeModel: YTM, useCookies: true)
+        XCTAssertNotNil(moreRepliesResponse.continuationToken, TEST_NAME + "continuationToken of moreRepliesResponse is nil.")
         
-        XCTAssert(!continuation.results.isEmpty, TEST_NAME + "continuation.results is empty")
+        XCTAssert(!moreRepliesResponse.results.isEmpty, TEST_NAME + "moreRepliesResponse.results is empty")
         
-        let firstCommentFromContinuation = continuation.results.first!
+        let firstCommentFromContinuation = moreRepliesResponse.results.first!
         
         XCTAssertNotNil(firstCommentFromContinuation.totalRepliesNumber)
         XCTAssertNotNil(firstCommentFromContinuation.timePosted)
@@ -1234,11 +1233,86 @@ final class YouTubeKitTests: XCTestCase {
         XCTAssertNotNil(firstCommentFromContinuation.isLikedByVideoCreator)
         XCTAssertNotEqual(firstCommentFromContinuation.commentIdentifier.count, 0)
         
+        
+        XCTAssertNotNil(videoCommentsResponse.continuationToken)
+        
+        let continuation = try await videoCommentsResponse.fetchContinuationThrowing(youtubeModel: YTM, useCookies: true)
+        
+        XCTAssertNotNil(continuation.continuationToken, TEST_NAME + "continuationToken of continuation is nil.")
+        
+        XCTAssert(!continuation.results.isEmpty, TEST_NAME + "continuation.results is empty")
+        
+        let firstCommentFromNormalContinuation = continuation.results.first!
+        
+        XCTAssertNotNil(firstCommentFromNormalContinuation.totalRepliesNumber)
+        XCTAssertNotNil(firstCommentFromNormalContinuation.timePosted)
+        XCTAssertNotEqual(firstCommentFromNormalContinuation.text.count, 0)
+        XCTAssertNotNil(firstCommentFromNormalContinuation.sender)
+        XCTAssertNotNil(firstCommentFromNormalContinuation.replyLevel)
+        XCTAssertNotNil(firstCommentFromNormalContinuation.likesCountWhenUserLiked)
+        XCTAssertNotNil(firstCommentFromNormalContinuation.likesCount)
+        XCTAssertNotNil(firstCommentFromNormalContinuation.likeState)
+        XCTAssertNotNil(firstCommentFromNormalContinuation.isLikedByVideoCreator)
+        XCTAssertNotEqual(firstCommentFromNormalContinuation.commentIdentifier.count, 0)
+        
         let oldCount = videoCommentsResponse.results.count
         
         videoCommentsResponse.mergeContinuation(continuation)
         
         XCTAssertEqual(videoCommentsResponse.results.count, oldCount + continuation.results.count)
         XCTAssertEqual(videoCommentsResponse.continuationToken, continuation.continuationToken)
+        
+        if let commentToTranslate = videoCommentsResponse.results.first(where: {$0.actionsParams[.translate] != nil}) {
+            let translationResponse = try await commentToTranslate.translateText(youtubeModel: YTM)
+            XCTAssert(!translationResponse.translation.isEmpty)
+        }
+    }
+    
+    func testAuthActionsVideoComments() async throws {
+        let TEST_NAME = "Test: testVideoComments() -> "
+        
+        YTM.cookies = self.cookies
+        
+        guard self.cookies != "" else { return } // start of the tests that require a google account
+        
+        let video = YTVideo(videoId: "KkCXLABwHP0")
+        
+        let videoResponse = try await video.fetchMoreInfosThrowing(youtubeModel: YTM, useCookies: true)
+        
+        guard let commentsToken = videoResponse.commentsContinuationToken else {
+            XCTFail(TEST_NAME + "videoResponse.commentsContinuationToken is nil.")
+            return
+        }
+                
+        let videoCommentsResponse = try await VideoCommentsResponse.sendThrowingRequest(youtubeModel: YTM, data: [.continuation: commentsToken], useCookies: true)
+        
+        guard let commentCreationToken = videoCommentsResponse.commentCreationToken else { XCTFail(TEST_NAME + "commentCreationToken is nil."); return }
+        
+        let createCommentText = "YouTubeKit test ?=/\\\""
+        let createCommentResponse = try await CreateCommentResponse.sendThrowingRequest(youtubeModel: YTM, data: [.params: commentCreationToken, .text: createCommentText])
+        
+        XCTAssert(!createCommentResponse.isDisconnected)
+        XCTAssert(createCommentResponse.success)
+        guard let createdComment = createCommentResponse.newComment else { XCTFail(TEST_NAME + "Couldn't retrieve newly created comment."); return }
+        
+        XCTAssertEqual(createdComment.text, createCommentText)
+        try await Task.sleep(nanoseconds: 60_000_000_000) // time for the comment to be indexed by youtube
+        
+        try await createdComment.commentAction(youtubeModel: YTM, action: .like)
+        try await Task.sleep(nanoseconds: 5_000_000_000)
+        try await createdComment.commentAction(youtubeModel: YTM, action: .removeLike)
+        try await Task.sleep(nanoseconds: 5_000_000_000)
+        try await createdComment.commentAction(youtubeModel: YTM, action: .dislike)
+        try await Task.sleep(nanoseconds: 5_000_000_000)
+        try await createdComment.commentAction(youtubeModel: YTM, action: .removeDislike)
+        try await Task.sleep(nanoseconds: 5_000_000_000)
+        try await createdComment.editComment(withNewText: "YouTubeKit", youtubeModel: YTM)
+        try await Task.sleep(nanoseconds: 5_000_000_000)
+        let reply = try await createdComment.replyToComment(youtubeModel: YTM, text: "Yes!")
+        guard let replyComment = reply.newComment else { XCTFail(TEST_NAME + "Couldn't retrieve newly created reply."); return}
+        try await Task.sleep(nanoseconds: 60_000_000_000)
+        try await replyComment.editComment(withNewText: "No!", youtubeModel: YTM)
+        try await Task.sleep(nanoseconds: 5_000_000_000)
+        try await createdComment.commentAction(youtubeModel: YTM, action: .delete)
     }
 }

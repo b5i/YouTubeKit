@@ -8,14 +8,13 @@
 
 import Foundation
 
-public struct RemoveVideoByIdFromPlaylistResponse: AuthenticatedResponse {
+public struct RemoveVideoByIdFromPlaylistResponse: SimpleActionAuthenticatedResponse {
     public static let headersType: HeaderTypes = .removeVideoByIdFromPlaylistHeaders
     
     public static let parametersValidationList: ValidationList = [.movingVideoId: .videoIdValidator, .browseId: .playlistIdWithoutVLPrefixValidator]
     
     public var isDisconnected: Bool = true
     
-    /// Boolean indicating whether the remove action was successful.
     public var success: Bool = false
     
     public static func decodeJSON(json: JSON) -> RemoveVideoByIdFromPlaylistResponse {

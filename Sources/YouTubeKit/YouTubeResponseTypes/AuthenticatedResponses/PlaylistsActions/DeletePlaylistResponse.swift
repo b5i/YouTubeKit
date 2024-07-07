@@ -8,7 +8,7 @@
 
 import Foundation
 
-public struct DeletePlaylistResponse: AuthenticatedResponse {
+public struct DeletePlaylistResponse: SimpleActionAuthenticatedResponse {
     public static let headersType: HeaderTypes = .deletePlaylistHeaders
     
     public static let parametersValidationList: ValidationList = [.browseId: .playlistIdWithoutVLPrefixValidator]

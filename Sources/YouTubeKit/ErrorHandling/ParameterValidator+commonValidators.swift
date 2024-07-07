@@ -29,6 +29,14 @@ public extension ParameterValidator {
         }
     })
     
+    static let textSanitizerValidator = ParameterValidator(validator: { parameter in
+        if let parameter = parameter {
+            return .success(parameter.replacingOccurrences(of: "\\", with: #"\\"#).replacingOccurrences(of: "\"", with: #"\""#))
+        } else {
+            return .failure(.init(reason: "Parameter is nil.", validatorFailedNameDescriptor: "ExistenceValidator."))
+        }
+    })
+    
     static let channelIdValidator = ParameterValidator(validator: { channelId in
         let validatorName = "ChannelId validator"
         guard let channelId = channelId else { return .failure(.init(reason: "Nil value.", validatorFailedNameDescriptor: validatorName))}
@@ -77,7 +85,7 @@ public extension ParameterValidator {
         }
     })
     
-    static let urlValidator = ParameterValidator(needExistence: true, validator: { url in
+    static let urlValidator = ParameterValidator(validator: { url in
         let validatorName = "URL validator"
         
         guard let url = url else { return .failure(.init(reason: "Nil value.", validatorFailedNameDescriptor: validatorName)) } // should never be called because of the needExistence

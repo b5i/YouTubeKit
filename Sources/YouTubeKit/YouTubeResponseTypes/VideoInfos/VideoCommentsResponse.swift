@@ -12,7 +12,7 @@ import Foundation
 public struct VideoCommentsResponse: ContinuableResponse {
     public static let headersType: HeaderTypes = .videoCommentsHeaders
     
-    public static let parametersValidationList: ValidationList = [:]
+    public static let parametersValidationList: ValidationList = [.continuation: .existenceValidator]
         
     public var results: [YTComment] = []
     
@@ -20,16 +20,12 @@ public struct VideoCommentsResponse: ContinuableResponse {
     
     public var visitorData: String? = nil // will never be filled
     
+    /// Every sorting mode contains a ``VideoCommentsResponse/SortingMode/token`` that can be used as the continuation of a new ``VideoCommentsResponse``.
+    public var sortingModes: [SortingMode] = []
+    
+    public var commentCreationToken: String? = nil
+    
     public static func decodeJSON(json: JSON) throws -> VideoCommentsResponse {
-        struct CommentRendererTokens {
-            let commentId: String
-            
-            let commentInfo: String
-            let commentAuthData: String?
-            let commentCommands: String?
-            let loadRepliesContinuationToken: String?
-        }
-        
         var toReturn = VideoCommentsResponse()
 
         let isConnected: Bool = !(json["responseContext"]["mainAppWebResponseContext"]["loggedOut"].bool ?? true)
@@ -37,22 +33,35 @@ public struct VideoCommentsResponse: ContinuableResponse {
         var commentRenderers: [CommentRendererTokens] = []
         
         for continuationActions in json["onResponseReceivedEndpoints"].arrayValue {
-            for commentRenderer in continuationActions["reloadContinuationItemsCommand"]["continuationItems"].array ?? continuationActions["appendContinuationItemsAction"]["continuationItems"].arrayValue where commentRenderer["commentThreadRenderer"].exists() {
-                let loadRepliesContinuationToken: String? = commentRenderer["commentThreadRenderer"]["replies"]["commentRepliesRenderer"]["contents"].arrayValue.first(where: {$0["continuationItemRenderer"].exists()})?["continuationItemRenderer"]["continuationEndpoint"]["continuationCommand"]["token"].string
+            for commentRenderer in continuationActions["reloadContinuationItemsCommand"]["continuationItems"].array ?? continuationActions["appendContinuationItemsAction"]["continuationItems"].arrayValue {
+                                
+                let commentViewModel: JSON
+                let loadRepliesContinuationToken: String?
                 
-                let commentId: String? = commentRenderer["commentThreadRenderer"]["commentViewModel"]["commentViewModel"]["commentId"].string
-                let commentInfo: String? = commentRenderer["commentThreadRenderer"]["commentViewModel"]["commentViewModel"]["commentKey"].string
+                if commentRenderer["commentThreadRenderer"].exists() {
+                    commentViewModel = commentRenderer["commentThreadRenderer"]["commentViewModel"]["commentViewModel"]
+                    loadRepliesContinuationToken = commentRenderer["commentThreadRenderer"]["replies"]["commentRepliesRenderer"]["contents"].arrayValue.first(where: {$0["continuationItemRenderer"].exists()})?["continuationItemRenderer"]["continuationEndpoint"]["continuationCommand"]["token"].string
+                } else if commentRenderer["commentViewModel"].exists() {
+                    commentViewModel = commentRenderer["commentViewModel"]
+                    loadRepliesContinuationToken = nil
+                } else if commentRenderer["continuationItemRenderer"].exists() {
+                    toReturn.continuationToken = commentRenderer["continuationItemRenderer"]["continuationEndpoint"]["continuationCommand"]["token"].string ?? commentRenderer["continuationItemRenderer"]["button"]["buttonRenderer"]["command"]["continuationCommand"]["token"].string
+                    
+                    continue
+                } else if commentRenderer["commentsHeaderRenderer"].exists() {
+                    toReturn.commentCreationToken = commentRenderer["commentsHeaderRenderer"]["createRenderer"]["commentSimpleboxRenderer"]["submitButton"]["buttonRenderer"]["serviceEndpoint"]["createCommentEndpoint"]["createCommentParams"].string
+                    for sortingModes in commentRenderer["commentsHeaderRenderer"]["sortMenu"]["sortFilterSubMenuRenderer"]["subMenuItems"].arrayValue {
+                        guard let label = sortingModes["title"].string, let isSelected = sortingModes["selected"].bool, let token = sortingModes["serviceEndpoint"]["continuationCommand"]["token"].string else { continue }
+                        toReturn.sortingModes.append(.init(label: label, isSelected: isSelected, token: token))
+                    }
+                    continue
+                } else {
+                    continue
+                }
                 
-                guard let commentId = commentId, let commentInfo = commentInfo else { continue }
-                
-                let commentAuthData: String? = commentRenderer["commentThreadRenderer"]["commentViewModel"]["commentViewModel"]["toolbarStateKey"].string
-                
-                let commentCommands: String? = commentRenderer["commentThreadRenderer"]["commentViewModel"]["commentViewModel"]["toolbarSurfaceKey"].string
-                
-                commentRenderers.append(.init(commentId: commentId, commentInfo: commentInfo, commentAuthData: commentAuthData, commentCommands: commentCommands, loadRepliesContinuationToken: loadRepliesContinuationToken))
-            }
-            if let continuationItem = (continuationActions["reloadContinuationItemsCommand"]["continuationItems"].array ?? continuationActions["appendContinuationItemsAction"]["continuationItems"].arrayValue).reversed().first(where: {$0["continuationItemRenderer"].exists()}) {
-                toReturn.continuationToken = continuationItem["continuationItemRenderer"]["continuationEndpoint"]["continuationCommand"]["token"].string
+                guard let commentRendererTokens = self.extractCommentRendererTokensFromCommentViewModel(commentViewModel, loadRepliesContinuationToken: loadRepliesContinuationToken) else { continue }
+            
+                commentRenderers.append(commentRendererTokens)
             }
         }
         
@@ -108,6 +117,8 @@ public struct VideoCommentsResponse: ContinuableResponse {
                 }
                 if let editButtonToken = commandsCluster["menuCommand"]["innertubeCommand"]["menuEndpoint"]["menu"]["menuRenderer"]["items"].arrayValue.first(where: {$0["menuNavigationItemRenderer"]["navigationEndpoint"]["updateCommentDialogEndpoint"]["dialog"]["commentDialogRenderer"]["submitButton"]["buttonRenderer"]["serviceEndpoint"]["commandMetadata"]["webCommandMetadata"]["apiUrl"].string == "/youtubei/v1/comment/update_comment"})?["menuNavigationItemRenderer"]["navigationEndpoint"]["updateCommentDialogEndpoint"]["dialog"]["commentDialogRenderer"]["submitButton"]["buttonRenderer"]["serviceEndpoint"]["updateCommentEndpoint"]["updateCommentParams"].string {
                     commentToReturn.actionsParams[.edit] = editButtonToken
+                } else if let editButtonToken = commandsCluster["menuCommand"]["innertubeCommand"]["menuEndpoint"]["menu"]["menuRenderer"]["items"].arrayValue.first(where: {$0["menuNavigationItemRenderer"]["navigationEndpoint"]["updateCommentReplyDialogEndpoint"]["dialog"]["commentReplyDialogRenderer"]["replyButton"]["buttonRenderer"]["serviceEndpoint"]["commandMetadata"]["webCommandMetadata"]["apiUrl"].string == "/youtubei/v1/comment/update_comment_reply"})?["menuNavigationItemRenderer"]["navigationEndpoint"]["updateCommentReplyDialogEndpoint"]["dialog"]["commentReplyDialogRenderer"]["replyButton"]["buttonRenderer"]["serviceEndpoint"]["updateCommentReplyEndpoint"]["updateReplyParams"].string {
+                    commentToReturn.actionsParams[.edit] = editButtonToken
                 }
                 if let deleteButtonToken = commandsCluster["menuCommand"]["innertubeCommand"]["menuEndpoint"]["menu"]["menuRenderer"]["items"].arrayValue.first(where: {$0["menuNavigationItemRenderer"]["navigationEndpoint"]["confirmDialogEndpoint"]["content"]["confirmDialogRenderer"]["confirmButton"]["buttonRenderer"]["serviceEndpoint"]["commandMetadata"]["webCommandMetadata"]["apiUrl"].string == "/youtubei/v1/comment/perform_comment_action"})?["menuNavigationItemRenderer"]["navigationEndpoint"]["confirmDialogEndpoint"]["content"]["confirmDialogRenderer"]["confirmButton"]["buttonRenderer"]["serviceEndpoint"]["performCommentActionEndpoint"]["action"].string {
                     commentToReturn.actionsParams[.delete] = deleteButtonToken
@@ -117,6 +128,10 @@ public struct VideoCommentsResponse: ContinuableResponse {
             if let commentAuthData = commentRenderer.commentAuthData, let commentAuthDataJSON = commentEntities.first(where: {$0["entityKey"].string == commentAuthData}) {
                 commentToReturn.likeState = self.getLikeStatus(forKey: commentAuthDataJSON["payload"]["engagementToolbarStateEntityPayload"]["likeState"].stringValue)
                 commentToReturn.isLikedByVideoCreator = self.getHeartedByCreatorState(forKey: commentAuthDataJSON["payload"]["engagementToolbarStateEntityPayload"]["heartState"].stringValue)
+            }
+            
+            if let loadRepliesContinuationToken = commentRenderer.loadRepliesContinuationToken {
+                commentToReturn.actionsParams[.repliesContinuation] = loadRepliesContinuationToken
             }
             
             toReturn.results.append(commentToReturn)
@@ -129,7 +144,7 @@ public struct VideoCommentsResponse: ContinuableResponse {
     public struct Continuation: ResponseContinuation {
         public static let headersType: HeaderTypes = .videoCommentsContinuationHeaders
         
-        public static let parametersValidationList: ValidationList = [.params: .existenceValidator]
+        public static let parametersValidationList: ValidationList = [.continuation: .existenceValidator]
                 
         /// Continuation token used to fetch more videos, nil if there is no more videos to fetch.
         public var continuationToken: String?
@@ -145,6 +160,20 @@ public struct VideoCommentsResponse: ContinuableResponse {
                 results: extractedResult.results
             )
         }
+    }
+    
+    public struct SortingMode: Sendable {
+        public init(label: String, isSelected: Bool, token: String) {
+            self.label = label
+            self.isSelected = isSelected
+            self.token = token
+        }
+        
+        public var label: String
+        
+        public var isSelected: Bool
+        
+        public var token: String
     }
     
     private static func getShortsFromSectionRenderer(_ json: JSON) -> [YTVideo] {
@@ -191,5 +220,27 @@ public struct VideoCommentsResponse: ContinuableResponse {
         default:
             return nil
         }
+    }
+    
+    private static func extractCommentRendererTokensFromCommentViewModel(_ json: JSON, loadRepliesContinuationToken: String? = nil) -> CommentRendererTokens? {
+        let commentId: String? = json["commentId"].string
+        let commentInfo: String? = json["commentKey"].string
+        
+        guard let commentId = commentId, let commentInfo = commentInfo else { return nil }
+        
+        let commentAuthData: String? = json["toolbarStateKey"].string
+        
+        let commentCommands: String? = json["toolbarSurfaceKey"].string
+        
+        return CommentRendererTokens(commentId: commentId, commentInfo: commentInfo, commentAuthData: commentAuthData, commentCommands: commentCommands, loadRepliesContinuationToken: loadRepliesContinuationToken)
+    }
+    
+    private struct CommentRendererTokens: Sendable {
+        let commentId: String
+        
+        let commentInfo: String
+        let commentAuthData: String?
+        let commentCommands: String?
+        let loadRepliesContinuationToken: String?
     }
 }

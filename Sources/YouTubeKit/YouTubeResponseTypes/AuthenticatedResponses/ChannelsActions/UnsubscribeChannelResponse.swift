@@ -8,7 +8,7 @@
 
 import Foundation
 
-public struct UnsubscribeChannelResponse: AuthenticatedResponse {
+public struct UnsubscribeChannelResponse: SimpleActionAuthenticatedResponse {
     public static let headersType: HeaderTypes = .unsubscribeFromChannelHeaders
     
     public static let parametersValidationList: ValidationList = [.browseId: .channelIdValidator]

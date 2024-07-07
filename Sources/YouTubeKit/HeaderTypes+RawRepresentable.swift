@@ -103,10 +103,16 @@ extension HeaderTypes: RawRepresentable {
             return "removeLikeCommentHeaders"
         case .removeDislikeCommentHeaders:
             return "removeDislikeCommentHeaders"
-        case .updateCommentHeaders:
-            return "updateCommentHeaders"
+        case .editCommentHeaders:
+            return "editCommentHeaders"
         case .replyCommentHeaders:
             return "replyCommentHeaders"
+        case .removeCommentHeaders:
+            return "removeCommentHeaders"
+        case .translateCommentHeaders:
+            return "removeCommentHeaders"
+        case .editReplyCommentHeaders:
+            return "editReplyCommentHeaders"
         case .customHeaders(let stringIdentifier):
             return stringIdentifier
         }

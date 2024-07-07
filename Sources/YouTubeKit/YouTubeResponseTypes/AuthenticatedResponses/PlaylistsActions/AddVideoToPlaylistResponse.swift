@@ -8,7 +8,7 @@
 
 import Foundation
 
-public struct AddVideoToPlaylistResponse: AuthenticatedResponse {
+public struct AddVideoToPlaylistResponse: SimpleActionAuthenticatedResponse {
     public static let headersType: HeaderTypes = .addVideoToPlaylistHeaders
     
     public static let parametersValidationList: ValidationList = [.browseId: .playlistIdWithoutVLPrefixValidator, .movingVideoId: .videoIdValidator]

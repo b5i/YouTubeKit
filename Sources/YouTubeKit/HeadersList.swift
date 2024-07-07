@@ -155,12 +155,13 @@ public struct HeadersList: Codable {
             case continuation
             case params
             case visitorData
+            case text
             
             /// Those are used during the modification of a playlist
             case movingVideoId
             case videoBeforeId
             case playlistEditToken
-            
+                        
             /// Used to completly replace the URL of the request, including the parameters that could potentially 
             case customURL
         }
