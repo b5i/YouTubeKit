@@ -541,8 +541,45 @@ final class YouTubeKitTests: XCTestCase {
     func testSearchResponseContinuation() async throws {
         let TEST_NAME = "Test: testSearchResponseContinuation() -> "
         
-        var searchResult = try await SearchResponse.sendThrowingRequest(youtubeModel: YTM, data: [.query: "fred again"])
-
+        var searchResult = try await SearchResponse.sendThrowingRequest(youtubeModel: YTM, data: [.query: "hugodécrypte"])
+        
+        // hugodécrypte has special channel json containing the video count of his channel
+        
+        if let firstChannel = searchResult.results.first(where: {$0 as? YTChannel != nil}) as? YTChannel {
+            XCTAssertNotNil(firstChannel.name)
+            XCTAssertNotNil(firstChannel.subscriberCount)
+            XCTAssertNotNil(firstChannel.videoCount)
+            XCTAssertNotEqual(firstChannel.thumbnails.count, 0)
+        }
+        
+        searchResult = try await SearchResponse.sendThrowingRequest(youtubeModel: YTM, data: [.query: "fred again"])
+        
+        if let firstChannel = searchResult.results.first(where: {$0 as? YTChannel != nil}) as? YTChannel {
+            XCTAssertNotNil(firstChannel.name)
+            XCTAssertNotNil(firstChannel.handle)
+            XCTAssertNotNil(firstChannel.subscriberCount)
+            XCTAssertNotEqual(firstChannel.thumbnails.count, 0)
+        }
+        
+        if let firstVideo = searchResult.results.first(where: {$0 as? YTVideo != nil}) as? YTVideo {
+            XCTAssertNotNil(firstVideo.title)
+            XCTAssertNotNil(firstVideo.channel)
+            XCTAssertNotNil(firstVideo.thumbnails)
+            XCTAssertNotNil(firstVideo.timeLength)
+            XCTAssertNotNil(firstVideo.viewCount)
+            XCTAssertNotNil(firstVideo.timePosted)
+        }
+        
+        if let firstPlaylist = searchResult.results.first(where: {$0 as? YTPlaylist != nil}) as? YTPlaylist {
+            XCTAssertNotNil(firstPlaylist.title)
+            XCTAssertNotNil(firstPlaylist.channel)
+            XCTAssertNotEqual(firstPlaylist.thumbnails.count, 0)
+            XCTAssertNotNil(firstPlaylist.videoCount)
+            XCTAssertNotNil(firstPlaylist.privacy)
+            XCTAssertNotNil(firstPlaylist.timePosted)
+            XCTAssertNotEqual(firstPlaylist.frontVideos.count, 0)
+        }
+        
         guard let continuationToken = searchResult.continuationToken else { XCTFail(TEST_NAME + "continuationToken is not defined"); return }
         guard let visitorData = searchResult.visitorData else { XCTFail(TEST_NAME + "visitorData is not defined"); return }
         let continuationResult = try await SearchResponse.Continuation.sendThrowingRequest(youtubeModel: YTM, data: [
@@ -683,11 +720,11 @@ final class YouTubeKitTests: XCTestCase {
         
         let mainRequestResult = try await channel.fetchInfosThrowing(youtubeModel: YTM)
                 
-        XCTAssertNotNil(mainRequestResult.videosCount, TEST_NAME + "Checking if mainRequestResult.videosCount is not nil")
+        XCTAssertNotNil(mainRequestResult.videoCount, TEST_NAME + "Checking if mainRequestResult.videosCount is not nil")
         
         /// Testing ChannelContent fetching, Videos, Shorts, Directs and Playlists
         
-        ///Videos
+        /// Videos
         var videoRequestResult = try await mainRequestResult.getChannelContentThrowing(forType: .videos, youtubeModel: YTM)
                 
         XCTAssertEqual(videoRequestResult.name, videoResult.channel?.name, TEST_NAME + "Checking if videoRequestResult.name is equal to videoResult.channel.name")

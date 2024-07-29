@@ -125,13 +125,33 @@ public struct ChannelInfosResponse: YouTubeResponse {
     public var requestParams: [RequestTypes : String] = [:]
     
     /// Count of subscriber of the channel.
-    public var subscribersCount: String?
+    @available(*, deprecated, renamed: "subscriberCount")
+    public var subscribersCount: String? {
+        get {
+            return self.subscriberCount
+        } set {
+            self.subscriberCount = newValue
+        }
+    }
+    
+    /// Count of subscriber of the channel.
+    public var subscriberCount: String?
     
     /// Boolean indicating if the user from the provided cookies is subscribed to the channel -> only when cookies are given see ``YouTubeModel/cookies``.
     public var subscribeStatus: Bool?
     
     /// Count of videos that the channel posted.
-    public var videosCount: String?
+    @available(*, deprecated, renamed: "videoCount")
+    public var videosCount: String? {
+        get {
+            return self.videoCount
+        } set {
+            self.videoCount = newValue
+        }
+    }
+    
+    /// Count of videos that the channel posted.
+    public var videoCount: String?
     
     /// A short description of the channel.
     public var shortDescription: String?
@@ -216,9 +236,9 @@ public struct ChannelInfosResponse: YouTubeResponse {
         
         self.subscribeStatus = channelInfos["subscribeButton"]["subscribeButtonRenderer"]["subscribed"].bool
         
-        self.subscribersCount = channelInfos["subscriberCountText"]["simpleText"].string
+        self.subscriberCount = channelInfos["subscriberCountText"]["simpleText"].string
         
-        self.videosCount = channelInfos["videosCountText"]["runs"].arrayValue.map({$0["text"].stringValue}).joined()
+        self.videoCount = channelInfos["videosCountText"]["runs"].arrayValue.map({$0["text"].stringValue}).joined()
     }
     
     private mutating func extractChannelInfosFromPageHeaderRenderer(json: JSON) {
@@ -259,9 +279,11 @@ public struct ChannelInfosResponse: YouTubeResponse {
                 
         //self.subscribeStatus = channelInfos["subscribeButton"]["subscribeButtonRenderer"]["subscribed"].bool TODO: broken at the moment
         
-        self.subscribersCount = metadataRows.arrayValue.count > 1 ? metadataRows.arrayValue[1]["metadataParts"].arrayValue.first?["text"]["content"].string : nil
+        // TODO: implement badges extraction via dynamicTextViewModel -> text -> attachmentRuns
         
-        self.videosCount = metadataRows.arrayValue.count > 1 ? metadataRows.arrayValue[1]["metadataParts"].arrayValue.count > 1 ? metadataRows.arrayValue[1]["metadataParts"].arrayValue[1]["text"]["content"].string : nil : nil
+        self.subscriberCount = !metadataRows.arrayValue.isEmpty ? metadataRows.arrayValue.last!["metadataParts"].arrayValue.first?["text"]["content"].string : nil
+        
+        self.videoCount = !metadataRows.arrayValue.isEmpty ? metadataRows.arrayValue.last!["metadataParts"].arrayValue.count > 1 ? metadataRows.arrayValue.last!["metadataParts"].arrayValue[1]["text"]["content"].string : nil : nil
         
         self.shortDescription = metadata["description"].string
         
@@ -816,6 +838,16 @@ public struct ChannelInfosResponse: YouTubeResponse {
     
     /// Copy properties from another ``ChannelInfosResponse`` to the current ``ChannelInfosResponse`` instance.
     /// - Parameter otherResponse: the ``ChannelInfosResponse`` where the infos will be taken of.
+    public mutating func copyProperties(of channel: YTChannel) {
+        self.avatarThumbnails = channel.thumbnails
+        self.name = channel.name
+        self.handle = channel.handle
+        self.videoCount = channel.videoCount
+        self.subscriberCount = channel.subscriberCount
+    }
+    
+    /// Copy properties from another ``ChannelInfosResponse`` to the current ``ChannelInfosResponse`` instance.
+    /// - Parameter otherResponse: the ``ChannelInfosResponse`` where the infos will be taken of.
     public mutating func copyProperties(of otherResponse: ChannelInfosResponse) {
         self.avatarThumbnails = otherResponse.avatarThumbnails
         self.bannerThumbnails = otherResponse.bannerThumbnails
@@ -824,8 +856,8 @@ public struct ChannelInfosResponse: YouTubeResponse {
         self.name = otherResponse.name
         self.handle = otherResponse.handle
         self.subscribeStatus = otherResponse.subscribeStatus
-        self.subscribersCount = otherResponse.subscribersCount
-        self.videosCount = otherResponse.videosCount
+        self.subscriberCount = otherResponse.subscriberCount
+        self.videoCount = otherResponse.videoCount
     }
     
     /// Put the `channelContent` into ``ChannelInfosResponse/channelContentStore`` with `category` as key.
