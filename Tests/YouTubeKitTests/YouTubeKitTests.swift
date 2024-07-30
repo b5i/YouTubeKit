@@ -703,7 +703,7 @@ final class YouTubeKitTests: XCTestCase {
         
         let TEST_NAME = "Test: testAutoCompletionResponse() -> "
         
-        let query: String = "mrbe"
+        let query: String = "hugo"
         
         let requestResult = try await AutoCompletionResponse.sendThrowingRequest(youtubeModel: YTM, data: [.query: query])
                 

@@ -22,8 +22,8 @@ public struct AutoCompletionResponse: YouTubeResponse {
     public var autoCompletionEntries: [String] = []
     
     public static func decodeData(data: Data) throws -> AutoCompletionResponse {
-        var dataString = String(decoding: data, as: UTF8.self)
-            .replacingOccurrences(of: "window.google.ac.h(", with: "")
+        guard var dataString = String(data: data, encoding: String.Encoding.windowsCP1254)?
+            .replacingOccurrences(of: "window.google.ac.h(", with: "") else { throw ResponseExtractionError(reponseType: Self.self, stepDescription: "Couldn't convert the response data to a string.") }
         dataString = String(dataString.dropLast())
         
         let json = JSON(parseJSON: dataString)
@@ -69,10 +69,9 @@ public struct AutoCompletionResponse: YouTubeResponse {
                 for autoCompletionEntry in autoCompletionEntriesArray {
                     if let autoCompletionEntry = autoCompletionEntry.array {
                         for entryPartsOfArray in autoCompletionEntry {
-                            if let autoCompletionString = entryPartsOfArray.string {
-                                response.autoCompletionEntries.append(autoCompletionString)
-                                break
-                            }
+                            guard let entryString = entryPartsOfArray.string else { continue }
+                            response.autoCompletionEntries.append(entryString)
+                            break
                         }
                     }
                 }
