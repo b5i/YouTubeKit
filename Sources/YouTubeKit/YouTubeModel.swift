@@ -412,24 +412,49 @@ public class YouTubeModel {
                 url: URL(string: "https://www.youtube.com/youtubei/v1/player")!,
                 method: .POST,
                 headers: [
-                    .init(name: "Accept", content: "*/*"),
+                    .init(name: "Accept", content: "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8"),
                     .init(name: "Accept-Encoding", content: "gzip, deflate, br"),
                     .init(name: "Host", content: "www.youtube.com"),
-                    .init(name: "User-Agent", content: "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.1 Safari/605.1.15"),
+                    .init(name: "User-Agent", content: "com.google.ios.youtube/19.29.1 (iPhone16,2; U; CPU iOS 17_5_1 like Mac OS X;)"),
                     .init(name: "Accept-Language", content: "\(self.selectedLocale);q=0.9"),
                     .init(name: "Origin", content: "https://www.youtube.com/"),
                     .init(name: "Referer", content: "https://www.youtube.com/"),
                     .init(name: "Content-Type", content: "application/json"),
-                    .init(name: "X-Origin", content: "https://www.youtube.com")
+                    .init(name: "X-Origin", content: "https://www.youtube.com"),
+                    .init(name: "X-Youtube-Client-Name", content: "5"),
+                    .init(name: "X-Youtube-Client-Version", content: "19.29.1"),
+                    .init(name: "Cookie", content: "PREF=hl=\(self.selectedLocaleLanguageCode)&tz=UTC; SOCS=CAI; GPS=1; VISITOR_INFO1_LIVE=X454mME5IB0; VISITOR_PRIVACY_METADATA=CgJDSBIEGgAgKQ%3D%3D") // yt-dlp
                 ],
                 addQueryAfterParts: [
-                    .init(index: 0, encode: true),
-                    .init(index: 1, encode: true)
+                    .init(index: 0, encode: false, content: .query)
                 ],
                 httpBody: [
-                    "{\"context\":{\"client\":{\"deviceMake\":\"Apple\",\"deviceModel\":\"\",\"userAgent\":\"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.5 Safari/605.1.15,gzip(gfe)\",\"clientName\":\"WEB\",\"clientVersion\":\"2.20230602.01.00\",\"osName\":\"Macintosh\",\"osVersion\":\"10_15_7\",\"platform\":\"DESKTOP\",\"clientFormFactor\":\"UNKNOWN_FORM_FACTOR\",\"configInfo\":{},\"screenDensityFloat\":2,\"userInterfaceTheme\":\"USER_INTERFACE_THEME_DARK\",\"timeZone\":\"Europe/Zurich\",\"browserName\":\"Safari\",\"browserVersion\":\"16.5\",\"acceptHeader\":\"text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8\",\"utcOffsetMinutes\":120,\"clientScreen\":\"WATCH\",\"mainAppWebInfo\":{\"graftUrl\":\"/watch?v=",
-                    "&pp=YAHIAQE%3D\",\"webDisplayMode\":\"WEB_DISPLAY_MODE_BROWSER\",\"isWebNativeShareAvailable\":true}},\"user\":{\"lockedSafetyMode\":false},\"request\":{\"useSsl\":true,\"internalExperimentFlags\":[],\"consistencyTokenJars\":[]}},\"videoId\":\"",
-                    "\",\"params\":\"YAHIAQE%3D\",\"playbackContext\":{\"contentPlaybackContext\":{\"vis\":5,\"splay\":false,\"autoCaptionsDefaultOn\":false,\"autonavState\":\"STATE_NONE\",\"html5Preference\":\"HTML5_PREF_WANTS\",\"signatureTimestamp\":19508,\"autoplay\":true,\"autonav\":true,\"referer\":\"https://www.youtube.com/\",\"lactMilliseconds\":\"-1\",\"watchAmbientModeContext\":{\"hasShownAmbientMode\":true,\"watchAmbientModeEnabled\":true}}},\"racyCheckOk\":false,\"contentCheckOk\":false}"
+                    #"""
+                    {
+                      "contentCheckOk": true,
+                      "context": {
+                        "client": {
+                          "clientName": "IOS",
+                          "clientVersion": "19.29.1",
+                          "deviceMake": "Apple",
+                          "deviceModel": "iPhone16,2",
+                          "hl": "en",
+                          "osName": "iPhone",
+                          "osVersion": "17.5.1.21F90",
+                          "timeZone": "UTC",
+                          "userAgent": "com.google.ios.youtube/19.29.1 (iPhone16,2; U; CPU iOS 17_5_1 like Mac OS X;)",
+                          "utcOffsetMinutes": 0
+                        }
+                      },
+                      "playbackContext": {
+                        "contentPlaybackContext": {
+                          "html5Preference": "HTML5_PREF_WANTS"
+                        }
+                      },
+                      "racyCheckOk": true,
+                      "videoId": "
+                    """#,
+                    #""}"#
                 ],
                 parameters: [
                     .init(name: "prettyPrint", content: "false")

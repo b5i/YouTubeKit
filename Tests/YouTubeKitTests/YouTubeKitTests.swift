@@ -615,6 +615,9 @@ final class YouTubeKitTests: XCTestCase {
         XCTAssertNotNil(requestResult.videoId, TEST_NAME + "Checking if requestResult.videoId is not nil.")
         XCTAssertNotNil(requestResult.videoURLsExpireAt, TEST_NAME + "Checking if requestResult.videoURLsExpireAt is not nil.")
         XCTAssertNotNil(requestResult.viewCount, TEST_NAME + "Checking if requestResult.viewCount is not nil.")
+        XCTAssertNotNil(requestResult.aspectRatio, TEST_NAME + "Checking if requestResult.aspectRatio is not nil.")
+        //XCTAssertNotEqual(requestResult.downloadFormats.count, 0, TEST_NAME + "Checking if requestResult.downloadFormats is empty")
+        //XCTAssertNotEqual(requestResult.defaultFormats.count, 0, TEST_NAME + "Checking if requestResult.defaultFormats is empty")
         
         let captionsResults = try await VideoCaptionsResponse.sendThrowingRequest(youtubeModel: YTM, data: [.customURL: requestResult.captions.first!.url.absoluteString])
         
@@ -685,7 +688,7 @@ final class YouTubeKitTests: XCTestCase {
     
     func testVideoInfosWithDownloadFormatsResponse() async throws {
         let TEST_NAME = "Test: testVideoInfosWithDownloadFormatsResponse() -> "
-        
+                
         try VideoInfosWithDownloadFormatsResponse.removePlayerFilesFromDisk()
         
         for video in [YTVideo(videoId: "dSDbwfXX5_I"), YTVideo(videoId: "3ryID_SwU5E")] as [YTVideo] {
@@ -696,6 +699,7 @@ final class YouTubeKitTests: XCTestCase {
             XCTAssertNotEqual(requestResult.defaultFormats.count, 0, TEST_NAME + "Checking if requestResult.defaultFormats is empty")
             XCTAssertNotEqual(requestResult.videoInfos.streamingURL, nil, TEST_NAME + "Checking if requestResult.videoInfos.streamingURL is empty")
         }
+         
     }
 
     func testAutoCompletionResponse() async throws {

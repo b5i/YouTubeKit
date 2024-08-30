@@ -95,7 +95,7 @@ public struct VideoInfosWithDownloadFormatsResponse: YouTubeResponse {
         nParameterString: String
     ) -> [DownloadFormat] {
         return json.map({ encodedItem in
-            var item = decodeFromJSON(json: encodedItem)
+            var item = decodeFormatFromJSON(json: encodedItem)
             if let cipher = encodedItem["signatureCipher"].string {
                 guard let url = cipher.ytkFirstGroupMatch(for: "&?url=([^\\s|&]*)")?.removingPercentEncoding else { return item }
                                 
@@ -167,7 +167,7 @@ public struct VideoInfosWithDownloadFormatsResponse: YouTubeResponse {
     /// - Parameter textString: YouTube's player code.
     /// - Returns: The Javascript code in Data format.
     private static func extractNParameterFunction(fromFileText textString: String) -> Data {
-        guard let functionContents = textString.replacingOccurrences(of: "\n", with: "").ytkFirstGroupMatch(for: "(var b=a.split\\(\"\"\\)[\\s\\S]*?return b.join\\(\"\"\\)\\})") else { return Data() }
+        guard let functionContents = textString.replacingOccurrences(of: "\n", with: "").ytkFirstGroupMatch(for: #"function\(a\)\{(var b=(?:a.split\((?:(?:\"\"\))|(?:a\.slice\(0\,0\)))|(?:String\.prototype\.split\.call))[\s\S]*?(?:(?:Array\.prototype\.join\.call)|(?:return b.join\(\"\"\)\}))[\s\S]*?;)"#) else { return Data() }
                                 
         return ("function processNParameter(a) {" + functionContents).data(using: .utf8) ?? Data()
     }
@@ -517,7 +517,7 @@ public struct VideoInfosWithDownloadFormatsResponse: YouTubeResponse {
     /// Decode a ``DownloadFormat`` base informations from a JSON instance.
     /// - Parameter json: the JSON to be decoded.
     /// - Returns: A ``DownloadFormat``.
-    private static func decodeFromJSON(json: JSON) -> DownloadFormat {
+    static func decodeFormatFromJSON(json: JSON) -> DownloadFormat {
         if json["fps"].int != nil {
             /// Will return an instance of ``VideoInfosWithDownloadFormatsResponse/VideoDownloadFormat``
             return VideoInfosWithDownloadFormatsResponse.VideoDownloadFormat(
@@ -537,7 +537,7 @@ public struct VideoInfosWithDownloadFormatsResponse: YouTubeResponse {
                     }
                 }(),
                 isCopyrightedMedia: json["signatureCipher"].string != nil,
-                url: nil,
+                url: json["signatureCipher"].string == nil ? json["url"].url : nil,
                 mimeType: json["mimeType"].string?.ytkFirstGroupMatch(for: "([^;]*)"),
                 width: json["width"].int,
                 height: json["height"].int,
@@ -563,7 +563,7 @@ public struct VideoInfosWithDownloadFormatsResponse: YouTubeResponse {
                     }
                 }(),
                 isCopyrightedMedia: json["signatureCipher"].string != nil,
-                url: nil,
+                url: json["signatureCipher"].string == nil ? json["url"].url : nil,
                 mimeType: json["mimeType"].string?.ytkFirstGroupMatch(for: "([^;]*)"),
                 audioSampleRate: {
                     if let audioSampleRate = json["audioSampleRate"].string {
@@ -581,7 +581,7 @@ public struct VideoInfosWithDownloadFormatsResponse: YouTubeResponse {
     /// Remove all player mappings from disk.
     public static func removePlayerFilesFromDisk() throws {
         let playersDirectory = try getDocumentDirectory()
-        let filesInDir = FileManager.default.enumerator(atPath: playersDirectory.absoluteString)
+        let filesInDir = FileManager.default.enumerator(at: playersDirectory, includingPropertiesForKeys: nil)
         guard let filesInDir = filesInDir else { return }
         for file in filesInDir {
             if let file = file as? URL {

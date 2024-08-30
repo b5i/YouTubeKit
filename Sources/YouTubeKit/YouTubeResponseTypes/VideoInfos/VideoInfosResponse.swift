@@ -71,6 +71,17 @@ public struct VideoInfosResponse: YouTubeResponse {
     
     /// Count of view of the video, usually an integer in the string.
     public var viewCount: String?
+    
+    /// The aspect ratio of the video (width/height).
+    public var aspectRatio: Double?
+    
+    /// Array of formats used to download the video, they usually contain both audio and video data and the download speed is higher than the ``VideoInfosResponse/downloadFormats``.
+    @available(*, deprecated, message: "This property is unstable for the moment.")
+    public var defaultFormats: [any DownloadFormat]
+    
+    /// Array of formats used to download the video, usually sorted from highest video quality to lowest followed by audio formats.
+    @available(*, deprecated, message: "This property is unstable for the moment.")
+    public var downloadFormats: [any DownloadFormat]
 
     public init(
         captions: [YTCaption] = [],
@@ -83,7 +94,10 @@ public struct VideoInfosResponse: YouTubeResponse {
         videoDescription: String? = nil,
         videoId: String? = nil,
         videoURLsExpireAt: Date? = nil,
-        viewCount: String? = nil
+        viewCount: String? = nil,
+        aspectRatio: Double? = nil,
+        defaultFormats: [any DownloadFormat] = [],
+        downloadFormats: [any DownloadFormat] = []
     ) {
         self.captions = captions
         self.channel = channel
@@ -96,6 +110,9 @@ public struct VideoInfosResponse: YouTubeResponse {
         self.videoId = videoId
         self.videoURLsExpireAt = videoURLsExpireAt
         self.viewCount = viewCount
+        self.aspectRatio = aspectRatio
+        self.defaultFormats = defaultFormats
+        self.downloadFormats = downloadFormats
     }
     
     /// Decode json to give an instance of ``VideoInfosResponse``.
@@ -148,7 +165,10 @@ public struct VideoInfosResponse: YouTubeResponse {
                 }
                 return videoURLsExpireAt
             }(),
-            viewCount: videoDetailsJSON["viewCount"].string
+            viewCount: videoDetailsJSON["viewCount"].string,
+            aspectRatio: streamingJSON["aspectRatio"].double,
+            defaultFormats: streamingJSON["formats"].arrayValue.compactMap { VideoInfosWithDownloadFormatsResponse.decodeFormatFromJSON(json: $0) },
+            downloadFormats: streamingJSON["adaptiveFormats"].arrayValue.compactMap { VideoInfosWithDownloadFormatsResponse.decodeFormatFromJSON(json: $0) }
         )
     }
     
