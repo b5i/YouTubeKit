@@ -95,7 +95,7 @@ public struct PlaylistInfosResponse: ContinuableResponse {
         for videoTab in videoTabsArray {
             guard videoTab["tabRenderer"]["selected"].bool == true else { continue }
             
-            guard let secondVideoArray = videoTab["tabRenderer"]["content"]["sectionListRenderer"]["contents"].array else { continue }
+            guard let secondVideoArray = videoTab["tabRenderer"]["content"]["sectionListRenderer"]["contents"].array ?? videoTab["tabRenderer"]["content"]["playlistVideoListRenderer"]["contents"].array else { continue }
             for secondVideoArrayPart in secondVideoArray {
                 guard let thirdVideoArray = secondVideoArrayPart["itemSectionRenderer"]["contents"].array else { continue }
                 

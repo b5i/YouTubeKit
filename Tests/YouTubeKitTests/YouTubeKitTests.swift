@@ -782,7 +782,11 @@ final class YouTubeKitTests: XCTestCase {
                         
         var playlistInfosResult = try await playlist.fetchVideosThrowing(youtubeModel: YTM)
                 
+        XCTAssertFalse(playlistInfosResult.results.isEmpty)
+        
         let playlistContinuation = try await playlistInfosResult.fetchContinuationThrowing(youtubeModel: YTM)
+        
+        XCTAssertFalse(playlistContinuation.results.isEmpty)
                 
         let videoCount = playlistInfosResult.results.count + playlistContinuation.results.count
         playlistInfosResult.mergeWithContinuation(playlistContinuation)
