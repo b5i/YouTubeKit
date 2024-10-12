@@ -118,7 +118,11 @@ public struct VideoInfosResponse: YouTubeResponse {
     /// Decode json to give an instance of ``VideoInfosResponse``.
     /// - Parameter json: the json to be decoded.
     /// - Returns: an instance of ``VideoInfosResponse``.
-    public static func decodeJSON(json: JSON) -> VideoInfosResponse {
+    public static func decodeJSON(json: JSON) throws -> VideoInfosResponse {
+        guard json["playabilityStatus"]["status"].string != "LOGIN_REQUIRED" else {
+            throw ResponseExtractionError(reponseType: self.self, stepDescription: "Login is required to get access to the video streaming info.")
+        }
+        
         /// Extract the dictionnaries that contains the video details and streaming data.
         let videoDetailsJSON = json["videoDetails"]
         let streamingJSON = json["streamingData"]

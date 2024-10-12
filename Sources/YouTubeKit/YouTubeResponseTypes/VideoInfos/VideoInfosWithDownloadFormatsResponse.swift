@@ -54,7 +54,7 @@ public struct VideoInfosWithDownloadFormatsResponse: YouTubeResponse {
         
         let json = JSON(parseJSON: stringJSONData)
         
-        var toReturn = self.decodeJSON(json: json)
+        var toReturn = try self.decodeJSON(json: json)
         
         // Extract the default formats.
         
@@ -79,8 +79,8 @@ public struct VideoInfosWithDownloadFormatsResponse: YouTubeResponse {
     }
     
     /// Function that creates a ``VideoInfosWithDownloadFormatsResponse`` but that fills only the ``VideoInfosWithDownloadFormatsResponse/videoInfos`` entry and let the other propertes to nil/empty values.
-    public static func decodeJSON(json: JSON) -> VideoInfosWithDownloadFormatsResponse {
-        return VideoInfosWithDownloadFormatsResponse(defaultFormats: [], downloadFormats: [], videoInfos: VideoInfosResponse.decodeJSON(json: json))
+    public static func decodeJSON(json: JSON) throws -> VideoInfosWithDownloadFormatsResponse {
+        return VideoInfosWithDownloadFormatsResponse(defaultFormats: [], downloadFormats: [], videoInfos: try VideoInfosResponse.decodeJSON(json: json))
     }
     
     /// Get an array of ``DownloadFormat`` from a JSON array.

@@ -541,9 +541,9 @@ final class YouTubeKitTests: XCTestCase {
     func testSearchResponseContinuation() async throws {
         let TEST_NAME = "Test: testSearchResponseContinuation() -> "
         
-        var searchResult = try await SearchResponse.sendThrowingRequest(youtubeModel: YTM, data: [.query: "hugodécrypte"])
+        var searchResult = try await SearchResponse.sendThrowingRequest(youtubeModel: YTM, data: [.query: "Zen Emission"])
         
-        // hugodécrypte has special channel json containing the video count of his channel
+        // Zen Emission has special channel json containing the video count of his channel
         
         if let firstChannel = searchResult.results.first(where: {$0 as? YTChannel != nil}) as? YTChannel {
             XCTAssertNotNil(firstChannel.name)
