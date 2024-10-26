@@ -965,32 +965,38 @@ final class YouTubeKitTests: XCTestCase {
     }
     
     func testHistoryResponse() async throws {
+        func testResponse(query: String = "") async throws {
+            let historyResponse = try await HistoryResponse.sendThrowingRequest(youtubeModel: YTM, data: [.query: query], useCookies: true)
+                    
+            XCTAssertNotNil(historyResponse.title, TEST_NAME + "Checking if historyResponse.title has been extracted.")
+            XCTAssertNotEqual(historyResponse.results.count, 0, TEST_NAME + "Checking if historyResponse.results is not empty.")
+            
+            guard let firstVideoToken = (historyResponse.results.first?.contentsArray.first(where: {$0 as? HistoryResponse.HistoryBlock.VideoWithToken != nil}) as! HistoryResponse.HistoryBlock.VideoWithToken).suppressToken else { XCTFail(TEST_NAME + "Could not find a video with a suppressToken in the history"); return }
+            
+            try await historyResponse.removeVideoThrowing(withSuppressToken: firstVideoToken, youtubeModel: YTM)
+            
+            if let shortsBlock = (historyResponse.results.first?.contentsArray.first(where: {$0 as? HistoryResponse.HistoryBlock.ShortsBlock != nil}) as? HistoryResponse.HistoryBlock.ShortsBlock) {
+                XCTAssertNotNil(shortsBlock.suppressTokens.compactMap({$0}), TEST_NAME + "Checking if suppressTokens of ShortBlock is not full of nil values.")
+            }
+            
+            if historyResponse.continuationToken != nil {
+                let continuationResponse = try await historyResponse.fetchContinuation(youtubeModel: YTM)
+                
+                XCTAssertNotEqual(continuationResponse.results.count, 0, TEST_NAME + "Checking if continuationResponse.results is not empty.")
+                
+                if let shortsBlock = (continuationResponse.results.first?.contentsArray.first(where: {$0 as? HistoryResponse.HistoryBlock.ShortsBlock != nil}) as? HistoryResponse.HistoryBlock.ShortsBlock) {
+                    XCTAssertNotNil(shortsBlock.suppressTokens.compactMap({$0}), TEST_NAME + "Checking if suppressTokens of ShortBlock is not full of nil values.")
+                }
+            }
+        }
+        
         let TEST_NAME = "Test: testHistoryResponse() -> "
         guard cookies != "" else { return }
         YTM.cookies = cookies
         
-        let historyResponse = try await HistoryResponse.sendThrowingRequest(youtubeModel: YTM, data: [:], useCookies: true)
-                
-        XCTAssertNotNil(historyResponse.title, TEST_NAME + "Checking if historyResponse.title has been extracted.")
-        XCTAssertNotEqual(historyResponse.results.count, 0, TEST_NAME + "Checking if historyResponse.results is not empty.")
+        try await testResponse()
         
-        guard let firstVideoToken = (historyResponse.results.first?.contentsArray.first(where: {$0 as? HistoryResponse.HistoryBlock.VideoWithToken != nil}) as! HistoryResponse.HistoryBlock.VideoWithToken).suppressToken else { XCTFail(TEST_NAME + "Could not find a video with a suppressToken in the history"); return }
-        
-        try await historyResponse.removeVideoThrowing(withSuppressToken: firstVideoToken, youtubeModel: YTM)
-        
-        if let shortsBlock = (historyResponse.results.first?.contentsArray.first(where: {$0 as? HistoryResponse.HistoryBlock.ShortsBlock != nil}) as? HistoryResponse.HistoryBlock.ShortsBlock) {
-            XCTAssertNotNil(shortsBlock.suppressTokens.compactMap({$0}), TEST_NAME + "Checking if suppressTokens of ShortBlock is not full of nil values.")
-        }
-        
-        if historyResponse.continuationToken != nil {
-            let continuationResponse = try await historyResponse.fetchContinuation(youtubeModel: YTM)
-            
-            XCTAssertNotEqual(continuationResponse.results.count, 0, TEST_NAME + "Checking if continuationResponse.results is not empty.")
-            
-            if let shortsBlock = (continuationResponse.results.first?.contentsArray.first(where: {$0 as? HistoryResponse.HistoryBlock.ShortsBlock != nil}) as? HistoryResponse.HistoryBlock.ShortsBlock) {
-                XCTAssertNotNil(shortsBlock.suppressTokens.compactMap({$0}), TEST_NAME + "Checking if suppressTokens of ShortBlock is not full of nil values.")
-            }
-        }
+        try await testResponse(query: "test")
     }
     
     func testMoreVideoInfosResponse() async throws {

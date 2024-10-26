@@ -22,6 +22,7 @@ Please note that this is adapted from another iOS app and so is in constant deve
 ## Default requests:
 Here is a list of the default requests supported by YouTubeKit, all the informations you can get are:
 
+### General
 - [HomeScreenResponse](https://github.com/b5i/YouTubeKit/blob/8b418c4c59f68b3b1c00a71744e2626efef8f629/Sources/YouTubeKit/YouTubeResponseTypes/Home/HomeScreenResponse.swift#L11) -> get videos from the main page of YouTube, its [Continuation](https://github.com/b5i/YouTubeKit/blob/8b418c4c59f68b3b1c00a71744e2626efef8f629/Sources/YouTubeKit/YouTubeResponseTypes/Home/HomeScreenResponse.swift#L57) is also available.
 
 - [SearchResponse](https://github.com/b5i/YouTubeKit/blob/55633edd56a5a0c2ec4d315422f2590d2348ae20/Sources/YouTubeKit/YouTubeResponseTypes/Search/SearchResponse.swift#LL11C46-L11C46) -> get results for a text query, its [Continuation](https://github.com/b5i/YouTubeKit/blob/55633edd56a5a0c2ec4d315422f2590d2348ae20/Sources/YouTubeKit/YouTubeResponseTypes/Search/SearchResponse.swift#L94) is also available.
@@ -31,22 +32,38 @@ Here is a list of the default requests supported by YouTubeKit, all the informat
 - [VideoInfosResponse](https://github.com/b5i/YouTubeKit/blob/1aed7cf4ef662b3ba689ce28f05a8b0f496ed7e6/Sources/YouTubeKit/YouTubeResponseTypes/VideoInfos/VideoInfosResponse.swift#L11) -> get the infos of a video by ID.
 
 - [VideoInfosWithDownloadFormatsResponse](https://github.com/b5i/YouTubeKit/blob/3023f4468429f77d57f0e786f0c5b08b9a8dd51b/Sources/YouTubeKit/YouTubeResponseTypes/VideoInfos/VideoInfosWithDownloadFormatsResponse.swift#L18) -> get the infos of a video by ID and the DownloadFormats, consumes more bandwidth than [VideoInfosResponse](https://github.com/b5i/YouTubeKit/blob/1aed7cf4ef662b3ba689ce28f05a8b0f496ed7e6/Sources/YouTubeKit/YouTubeResponseTypes/VideoInfos/VideoInfosResponse.swift#L11) but has an array of DownloadFormat.
-
+- [MoreVideoInfosResponse](https://github.com/b5i/YouTubeKit/blob/9db43b336ceba6c11981dee2c7e9afad49ebda22/Sources/YouTubeKit/YouTubeResponseTypes/VideoInfos/MoreVideoInfosResponse.swift#L10C15-L10C37) to get various informations about a video (see documentation).
+- [TrendingVideosResponse]() to the trending tabs.
 - [AutoCompletionResponse](https://github.com/b5i/YouTubeKit/blob/1458b48d66d7cfc3b095186ca7f1e5d561188506/Sources/YouTubeKit/YouTubeResponseTypes/AutoCompletion/AutoCompletionResponse.swift#L13) -> get autoCompletion suggestions from a text query.
 
 - [ChannelInfosResponse](https://github.com/b5i/YouTubeKit/blob/be3ff98f57856ab8f75e00c07d8b49c2281004b3/Sources/YouTubeKit/YouTubeResponseTypes/ChannelInfos/ChannelInfosResponse.swift#L10C15-L10C35) -> get infos of a YouTube channel by its id.
     - Possiblity to fetch more infos about a channel like its [Videos](https://github.com/b5i/YouTubeKit/blob/be3ff98f57856ab8f75e00c07d8b49c2281004b3/Sources/YouTubeKit/YouTubeResponseTypes/ChannelInfos/ChannelInfosResponse.swift#L278), [Shorts](https://github.com/b5i/YouTubeKit/blob/be3ff98f57856ab8f75e00c07d8b49c2281004b3/Sources/YouTubeKit/YouTubeResponseTypes/ChannelInfos/ChannelInfosResponse.swift#L309), [Directs](https://github.com/b5i/YouTubeKit/blob/be3ff98f57856ab8f75e00c07d8b49c2281004b3/Sources/YouTubeKit/YouTubeResponseTypes/ChannelInfos/ChannelInfosResponse.swift#L340), [Playlists](https://github.com/b5i/YouTubeKit/blob/be3ff98f57856ab8f75e00c07d8b49c2281004b3/Sources/YouTubeKit/YouTubeResponseTypes/ChannelInfos/ChannelInfosResponse.swift#L371) and their continuation.
  
 - [PlaylistInfosResponse](https://github.com/b5i/YouTubeKit/blob/721120db20cdd00cf6b586fb3accc02345cb205a/Sources/YouTubeKit/YouTubeResponseTypes/PlaylistInfos/PlaylistInfosResponse.swift#L11) -> get a playlist's informations and the videos it contains. Its [Continuation](https://github.com/b5i/YouTubeKit/blob/721120db20cdd00cf6b586fb3accc02345cb205a/Sources/YouTubeKit/YouTubeResponseTypes/PlaylistInfos/PlaylistInfosResponse.swift#L130) is also available.
+### Account
 - [AccountInfosResponse](https://github.com/b5i/YouTubeKit/blob/9db43b336ceba6c11981dee2c7e9afad49ebda22/Sources/YouTubeKit/YouTubeResponseTypes/AuthenticatedResponses/AccountResponses/AccountInfosResponse.swift#L10C19-L10C19) to get the informations about a YouTube account (using the cookies).
 - [AccountLibraryResponse](https://github.com/b5i/YouTubeKit/blob/9db43b336ceba6c11981dee2c7e9afad49ebda22/Sources/YouTubeKit/YouTubeResponseTypes/AuthenticatedResponses/AccountResponses/AccountLibraryResponse.swift#L10C15-L10C37) to get the library of an account.
+- [AccountSubscriptionsFeedResponse]() to get the feed of the account's subscriptions.
+- [AccountSubscriptionsResponse]() to get the list of channel that the account is subscribed to.
 - [HistoryResponse](https://github.com/b5i/YouTubeKit/blob/62433f5af39b19e83b248188c9c5cd39ac7c280e/Sources/YouTubeKit/YouTubeResponseTypes/AuthenticatedResponses/HistoryActions/HistoryResponse.swift#L13) and [RemoveVideoFromHistroryResponse](https://github.com/b5i/YouTubeKit/blob/62433f5af39b19e83b248188c9c5cd39ac7c280e/Sources/YouTubeKit/YouTubeResponseTypes/AuthenticatedResponses/HistoryActions/RemoveVideoFromHistroryResponse.swift#L10) to get the history of an account and remove some videos of it.
 - [SubscribeChannelResponse](https://github.com/b5i/YouTubeKit/blob/9db43b336ceba6c11981dee2c7e9afad49ebda22/Sources/YouTubeKit/YouTubeResponseTypes/AuthenticatedResponses/ChannelsActions/SubscribeChannelResponse.swift#L10C15-L10C39) and [UnsubscribeChannelResponse](https://github.com/b5i/YouTubeKit/blob/9db43b336ceba6c11981dee2c7e9afad49ebda22/Sources/YouTubeKit/YouTubeResponseTypes/AuthenticatedResponses/ChannelsActions/UnsubscribeChannelResponse.swift#L10C15-L10C39).
+### Playlists
 - [AllPossibleHostPlaylistsResponse](https://github.com/b5i/YouTubeKit/blob/63205472997244f04405838a55f284e075193dba/Sources/YouTubeKit/YouTubeResponseTypes/AuthenticatedResponses/PlaylistsActions/AllPossibleHostPlaylistsResponse.swift#L10C15-L10C47) to get all the playlists a
   video could be added to and if the video is already present inside.
 - [AddVideoToPlaylistResponse](https://github.com/b5i/YouTubeKit/blob/9db43b336ceba6c11981dee2c7e9afad49ebda22/Sources/YouTubeKit/YouTubeResponseTypes/AuthenticatedResponses/PlaylistsActions/AddVideoToPlaylistResponse.swift#L10C15-L10C41), [CreatePlaylistResponse](https://github.com/b5i/YouTubeKit/blob/9db43b336ceba6c11981dee2c7e9afad49ebda22/Sources/YouTubeKit/YouTubeResponseTypes/AuthenticatedResponses/PlaylistsActions/CreatePlaylistResponse.swift#L10C15-L10C41), [DeletePlaylistResponse](https://github.com/b5i/YouTubeKit/blob/9db43b336ceba6c11981dee2c7e9afad49ebda22/Sources/YouTubeKit/YouTubeResponseTypes/AuthenticatedResponses/PlaylistsActions/DeletePlaylistResponse.swift#L10C15-L10C37), [MoveVideoInPlaylistResponse](https://github.com/b5i/YouTubeKit/blob/9db43b336ceba6c11981dee2c7e9afad49ebda22/Sources/YouTubeKit/YouTubeResponseTypes/AuthenticatedResponses/PlaylistsActions/MoveVideoInPlaylistResponse.swift#L10C15-L10C42), [RemoveVideoByIdFromPlaylistResponse](https://github.com/b5i/YouTubeKit/blob/9db43b336ceba6c11981dee2c7e9afad49ebda22/Sources/YouTubeKit/YouTubeResponseTypes/AuthenticatedResponses/PlaylistsActions/RemoveVideoByIdFromPlaylistResponse.swift#L10C15-L10C50) and [RemoveVideoFromPlaylistResponse](https://github.com/b5i/YouTubeKit/blob/9db43b336ceba6c11981dee2c7e9afad49ebda22/Sources/YouTubeKit/YouTubeResponseTypes/AuthenticatedResponses/PlaylistsActions/RemoveVideoFromPlaylistResponse.swift#L10C15-L10C46) to manage an account's playlists.
 - [LikeVideoResponse](https://github.com/b5i/YouTubeKit/blob/9db43b336ceba6c11981dee2c7e9afad49ebda22/Sources/YouTubeKit/YouTubeResponseTypes/AuthenticatedResponses/VideosActions/LikeVideoResponse.swift#L10C15-L10C32), [DislikeVideoResponse](https://github.com/b5i/YouTubeKit/blob/9db43b336ceba6c11981dee2c7e9afad49ebda22/Sources/YouTubeKit/YouTubeResponseTypes/AuthenticatedResponses/VideosActions/DislikeVideoResponse.swift#L10C15-L10C35) and [RemoveLikeFromVideoResponse](https://github.com/b5i/YouTubeKit/blob/9db43b336ceba6c11981dee2c7e9afad49ebda22/Sources/YouTubeKit/YouTubeResponseTypes/AuthenticatedResponses/VideosActions/RemoveLikeFromVideoResponse.swift#L10C15-L10C42).
-- [MoreVideoInfosResponse](https://github.com/b5i/YouTubeKit/blob/9db43b336ceba6c11981dee2c7e9afad49ebda22/Sources/YouTubeKit/YouTubeResponseTypes/VideoInfos/MoreVideoInfosResponse.swift#L10C15-L10C37) to get various informations about a video (see documentation).
+### Comments (for replying and editing, comments and replies to comments are differentiated)
+- [CreateCommentResponse]() to create a comment on a video.
+- [EditCommentResponse]() to edit a comment on a video.
+- [DeleteCommentResponse]() to delete a comment from a video.
+- [ReplyCommentResponse]() to create a reply to a comment.
+- [EditReplyCommandResponse]() to edit a reply to a comment on a video.
+- [DislikeCommentResponse]() to dislike a comment on a video.
+- [LikeCommentResponse]() to like a comment on a video.
+- [RemoveDislikeCommentResponse]() to remove a dislike from a comment.
+- [RemoveLikeCommentResponse]() to remove a like from a comment.
+- [CommentTranslationResponse]() to get the translation to a comment (does not require an account).
+
 
 ## Make requests:
 Every possible request within YouTubeKit conforms to the protocol [YouTubeResponse](https://github.com/b5i/YouTubeKit/blob/c858d62d49946658df7c00f9380b04f3f78e32d0/Sources/YouTubeKit/YouTubeResponse.swift#L31), it contains a few useful methods: 

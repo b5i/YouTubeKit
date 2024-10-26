@@ -121,6 +121,7 @@ public enum HeaderTypes: Codable, Sendable {
     case deletePlaylistHeaders
     
     /// Get the history of the account.
+    /// - Parameter query: Search query in the history (optional)
     case historyHeaders
     
     /// Get the history's continuation.
