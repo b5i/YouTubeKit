@@ -3,7 +3,7 @@
 //
 //  Created by Antoine Bollengier (github.com/b5i) on 20.06.2023.
 //  Copyright © 2023 - 2024 Antoine Bollengier. All rights reserved.
-//  
+//
 
 import Foundation
 
@@ -35,4 +35,10 @@ public protocol DownloadFormat: Sendable {
     /// Is usually "video/mp4", "video/webm", "audio/mp4" or "audio/webm".
     /// - Note: The WebM (mimeType: "audio/webm" or "video/webm") format isn't supported natively by AVFoundation.
     var mimeType: String? { get set }
+    
+    /// The codec of the format.
+    ///
+    /// It can be "avc1", "mp4a" or "av01" for example.
+    /// - Note: The AV1 codec (codec: "av01") isn't supported natively by AVFoundation (for the moment) if you use it with an `AVMutableComposition`.
+    var codec: String? { get set }
 }
