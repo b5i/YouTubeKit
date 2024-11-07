@@ -779,10 +779,12 @@ final class YouTubeKitTests: XCTestCase {
         let TEST_NAME = "Test: testGetPlaylistInfos() -> "
         
         let playlist = YTPlaylist(playlistId: "VLPLw-VjHDlEOgs658kAHR_LAaILBXb-s6Q5")
-                        
+        
         var playlistInfosResult = try await playlist.fetchVideosThrowing(youtubeModel: YTM)
                 
         XCTAssertFalse(playlistInfosResult.results.isEmpty)
+        XCTAssertNotNil(playlistInfosResult.title)
+        XCTAssertNotNil(playlistInfosResult.channel.first?.name)
         
         let playlistContinuation = try await playlistInfosResult.fetchContinuationThrowing(youtubeModel: YTM)
         

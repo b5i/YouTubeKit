@@ -54,46 +54,24 @@ public struct PlaylistInfosResponse: ContinuableResponse {
     public static func decodeJSON(json: JSON) -> PlaylistInfosResponse {
         var toReturn = PlaylistInfosResponse()
         
-        let playlistInfosJSON = json["header"]["playlistHeaderRenderer"]
-        
-        if let channelInfosArray = playlistInfosJSON["ownerText"]["runs"].array {
-            for channelInfosPart in channelInfosArray {
-                guard let channelId = channelInfosPart["navigationEndpoint"]["browseEndpoint"]["browseId"].string else { continue }
-                
-                let newChannel = YTLittleChannelInfos(channelId: channelId, name: channelInfosPart["text"].string)
-                toReturn.channel.append(newChannel)
-            }
+        if json["header"]["pageHeaderRenderer"].exists() {
+            Self.processNewInfoModel(json: json, response: &toReturn)
+        } else {
+            Self.processOldInfoModel(json: json, response: &toReturn)
         }
-        
-        toReturn.playlistDescription = playlistInfosJSON["descriptionText"]["simpleText"].string
-        
-        if let playlistId = playlistInfosJSON["playlistId"].string {
-            /// The request wouldn't work if we don't add a "VL" before the playlistId.
-            toReturn.playlistId = "VL" + playlistId
-        }
-        
-        toReturn.privacy = YTPrivacy(rawValue: playlistInfosJSON["privacy"].stringValue)
-        
-        YTThumbnail.appendThumbnails(json: playlistInfosJSON["playlistHeaderBanner"]["heroPlaylistThumbnailRenderer"]["thumbnail"], thumbnailList: &toReturn.thumbnails)
-        
-        toReturn.title = playlistInfosJSON["title"]["simpleText"].string
-        
-        if let videoCountArray = playlistInfosJSON["numVideosText"]["runs"].array {
-            toReturn.videoCount = videoCountArray.map({$0["text"].stringValue}).joined()
-        }
-        
-        toReturn.viewCount = playlistInfosJSON["viewCountText"]["simpleText"].string
-        
-        toReturn.userInteractions.canBeDeleted = playlistInfosJSON["editableDetails"]["canDelete"].bool
-        
-        toReturn.userInteractions.isSaveButtonDisabled = playlistInfosJSON["saveButton"]["toggleButtonRenderer"]["isDisabled"].bool
-        
-        toReturn.userInteractions.isSaveButtonToggled = playlistInfosJSON["saveButton"]["toggleButtonRenderer"]["isToggled"].bool
         
         guard let videoTabsArray = json["contents"]["twoColumnBrowseResultsRenderer"]["tabs"].array else { return toReturn }
         
         for videoTab in videoTabsArray {
             guard videoTab["tabRenderer"]["selected"].bool == true else { continue }
+            
+            if let playlistId = videoTab["tabRenderer"]["content"]["sectionListRenderer"]["targetId"].string {
+                if playlistId.hasPrefix("VL") {
+                    toReturn.playlistId = playlistId
+                } else {
+                    toReturn.playlistId = "VL" + playlistId
+                }
+            }
             
             guard let secondVideoArray = videoTab["tabRenderer"]["content"]["sectionListRenderer"]["contents"].array ?? videoTab["tabRenderer"]["content"]["playlistVideoListRenderer"]["contents"].array else { continue }
             for secondVideoArrayPart in secondVideoArray {
@@ -103,9 +81,9 @@ public struct PlaylistInfosResponse: ContinuableResponse {
                     guard let finalVideoArray = thirdVideoArrayPart["playlistVideoListRenderer"]["contents"].array else { continue }
                     let secondHeader = thirdVideoArrayPart["playlistVideoListRenderer"]
 
-                    toReturn.userInteractions.isEditable = playlistInfosJSON["isEditable"].bool ?? secondHeader["isEditable"].bool
+                    toReturn.userInteractions.isEditable = json["header"]["playlistHeaderRenderer"]["isEditable"].bool ?? secondHeader["isEditable"].bool
 
-                    toReturn.userInteractions.canReorder = playlistInfosJSON["canReorder"].bool ?? secondHeader["canReorder"].bool
+                    toReturn.userInteractions.canReorder = json["header"]["playlistHeaderRenderer"]["canReorder"].bool ?? secondHeader["canReorder"].bool
 
                     if toReturn.userInteractions.isEditable ?? false {
                         toReturn.videoIdsInPlaylist = []
@@ -156,7 +134,7 @@ public struct PlaylistInfosResponse: ContinuableResponse {
         /// Ids related to the playlist of the videos, generally only defined when the ``YouTubeModel/cookies`` are defined, used in the request and the user owns the playlist.
         public var videoIdsInPlaylist: [String?] = []
         
-        public static func decodeJSON(json: JSON) -> PlaylistInfosResponse.Continuation {            
+        public static func decodeJSON(json: JSON) -> PlaylistInfosResponse.Continuation {
             var toReturn = Continuation()
             guard let continuationActionsArray = json["onResponseReceivedActions"].array else { return toReturn }
             for continationAction in continuationActionsArray {
@@ -194,10 +172,10 @@ public struct PlaylistInfosResponse: ContinuableResponse {
         /// Boolean indicating if the playlist can be deleted by the user.
         public var canBeDeleted: Bool?
         
-        /// Boolean indicating if the playlist can be reordered by the user (history for example could not). Generally defined only when the account owns the playlist.
+        /// Boolean indicating if the playlist can be reordered by the user (history for example could not). Generally defined only when the account owns the playlist. Non-nil value does not implies that the action can actually be performed, check if ``PlaylistInfosResponse/videoIdsInPlaylist`` is not empty for that.
         public var canReorder: Bool?
         
-        /// Boolean indicating if the playlist can be modified by the user.
+        /// Boolean indicating if the playlist can be modified by the user. Generally defined only when the account owns the playlist. Non-nil value does not implies that the action can actually be performed, check if ``PlaylistInfosResponse/videoIdsInPlaylist`` is not empty for that.
         public var isEditable: Bool?
         
         /// Boolean indicating if the playlist can be saved by the user.
@@ -205,5 +183,74 @@ public struct PlaylistInfosResponse: ContinuableResponse {
         
         /// Boolean indicating if the playlist is already saved by the user.
         public var isSaveButtonToggled: Bool?
+    }
+    
+    private static func processOldInfoModel(json: JSON, response: inout PlaylistInfosResponse) {
+        let playlistInfosJSON = json["header"]["playlistHeaderRenderer"]
+        
+        if let channelInfosArray = playlistInfosJSON["ownerText"]["runs"].array {
+            for channelInfosPart in channelInfosArray {
+                guard let channelId = channelInfosPart["navigationEndpoint"]["browseEndpoint"]["browseId"].string else { continue }
+                
+                let newChannel = YTLittleChannelInfos(channelId: channelId, name: channelInfosPart["text"].string)
+                response.channel.append(newChannel)
+            }
+        }
+        
+        response.playlistDescription = playlistInfosJSON["descriptionText"]["simpleText"].string
+        
+        if let playlistId = playlistInfosJSON["playlistId"].string {
+            /// The request wouldn't work if we don't add a "VL" before the playlistId.
+            response.playlistId = "VL" + playlistId
+        }
+        
+        response.privacy = YTPrivacy(rawValue: playlistInfosJSON["privacy"].stringValue)
+        
+        YTThumbnail.appendThumbnails(json: playlistInfosJSON["playlistHeaderBanner"]["heroPlaylistThumbnailRenderer"]["thumbnail"], thumbnailList: &response.thumbnails)
+        
+        response.title = playlistInfosJSON["title"]["simpleText"].string
+        
+        if let videoCountArray = playlistInfosJSON["numVideosText"]["runs"].array {
+            response.videoCount = videoCountArray.map({$0["text"].stringValue}).joined()
+        }
+        
+        response.viewCount = playlistInfosJSON["viewCountText"]["simpleText"].string
+        
+        response.userInteractions.canBeDeleted = playlistInfosJSON["editableDetails"]["canDelete"].bool
+        
+        response.userInteractions.isSaveButtonDisabled = playlistInfosJSON["saveButton"]["toggleButtonRenderer"]["isDisabled"].bool
+        
+        response.userInteractions.isSaveButtonToggled = playlistInfosJSON["saveButton"]["toggleButtonRenderer"]["isToggled"].bool
+    }
+    
+    private static func processNewInfoModel(json: JSON, response: inout PlaylistInfosResponse) {
+        response.title = json["header"]["pageHeaderRenderer"]["pageTitle"].string
+        YTThumbnail.appendThumbnails(json: json["header"]["pageHeaderRenderer"]["content"]["pageHeaderViewModel"]["heroImage"]["contentPreviewImageViewModel"], thumbnailList: &response.thumbnails)
+        
+        if let channelInfosArray = json["sidebar"]["playlistSidebarRenderer"]["items"].arrayValue.first(where: {$0["playlistSidebarSecondaryInfoRenderer"].exists()})?["playlistSidebarSecondaryInfoRenderer"]["videoOwner"]["videoOwnerRenderer"], let channelId = channelInfosArray["navigationEndpoint"]["browseEndpoint"]["browseId"].string {
+            var channel = YTLittleChannelInfos(channelId: channelId)
+            channel.name = channelInfosArray["title"]["runs"].array?.map({$0["text"].stringValue}).joined()
+            YTThumbnail.appendThumbnails(json: channelInfosArray["thumbnail"], thumbnailList: &channel.thumbnails)
+            
+            response.channel.append(channel)
+        }
+                
+        if let primarySidebarRenderer = json["sidebar"]["playlistSidebarRenderer"]["items"].arrayValue.first(where: {$0["playlistSidebarPrimaryInfoRenderer"].exists()})?["playlistSidebarPrimaryInfoRenderer"] {
+            response.playlistDescription = primarySidebarRenderer["description"]["runs"].array?.map({$0["text"].stringValue}).joined()
+            
+            if let selectedPrivacy = primarySidebarRenderer["privacyForm"]["dropdownFormFieldRenderer"]["dropdown"]["dropdownRenderer"]["entries"].arrayValue.first(where: {$0["privacyDropdownItemRenderer"]["isSelected"].bool == true})?["privacyDropdownItemRenderer"]["icon"]["iconType"].stringValue, let privacy = selectedPrivacy.ytkFirstGroupMatch(for: "PRIVACY_([A-Z]+)") {
+                response.privacy = YTPrivacy(rawValue: privacy)
+            } else if let privacy = primarySidebarRenderer["badges"].arrayValue.first(where: {$0["metadataBadgeRenderer"]["icon"]["iconType"].stringValue.ytkFirstGroupMatch(for: "PRIVACY_([A-Z]+)") != nil})?["metadataBadgeRenderer"]["icon"]["iconType"].stringValue.ytkFirstGroupMatch(for: "PRIVACY_([A-Z]+)") {
+                response.privacy = YTPrivacy(rawValue: privacy)
+            } else {
+                response.privacy = .public // assume it's public
+            }
+        }
+                
+        // TODO: response.userInteractions.canBeDeleted
+        
+        // TODO: response.userInteractions.isSaveButtonDisabled
+        
+        // TODO: response.userInteractions.isSaveButtonToggled
     }
 }

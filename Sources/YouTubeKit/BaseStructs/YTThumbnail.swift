@@ -3,7 +3,7 @@
 //
 //  Created by Antoine Bollengier (github.com/b5i) on 20.06.2023.
 //  Copyright © 2023 - 2024 Antoine Bollengier. All rights reserved.
-//  
+//
 
 import Foundation
 
@@ -29,6 +29,12 @@ public struct YTThumbnail: Codable, Equatable, Hashable, Sendable {
     ///   - json: the JSON of the thumbnails, of form
     ///     {
     ///         "thumbnails": [thumbnailsHere]
+    ///     }
+    ///     or
+    ///     {
+    ///         "image": {
+    ///             "sources": [thumbnailsHere]
+    ///         }
     ///     }
     ///   - thumbnailList: the array of `Thumbnail` where the ones in the given JSON have to be appended.
     public static func appendThumbnails(json: JSON, thumbnailList: inout [YTThumbnail]) {
