@@ -57,7 +57,11 @@ public struct HistoryResponse: AuthenticatedContinuableResponse {
             if contentGroup["itemSectionRenderer"].exists() {
                 let videoGroup = contentGroup["itemSectionRenderer"]
 
-                toReturn.results.append(self.decodeHistoryBlock(historyBlockJSON: videoGroup))
+                let historyBlock = self.decodeHistoryBlock(historyBlockJSON: videoGroup)
+
+                if !historyBlock.contentsArray.isEmpty {
+                    toReturn.results.append(historyBlock)
+                }
             } else if contentGroup["continuationItemRenderer"].exists() {
                 toReturn.continuationToken = contentGroup["continuationItemRenderer"]["continuationEndpoint"]["continuationCommand"]["token"].string
             }
@@ -115,7 +119,11 @@ public struct HistoryResponse: AuthenticatedContinuableResponse {
                     if contentGroup["itemSectionRenderer"].exists() {
                         let videoGroup = contentGroup["itemSectionRenderer"]
 
-                        toReturn.results.append(HistoryResponse.decodeHistoryBlock(historyBlockJSON: videoGroup))
+                        let historyBlock = HistoryResponse.decodeHistoryBlock(historyBlockJSON: videoGroup)
+
+                        if !historyBlock.contentsArray.isEmpty {
+                            toReturn.results.append(historyBlock)
+                        }
                     } else if contentGroup["continuationItemRenderer"].exists() {
                         toReturn.continuationToken = contentGroup["continuationItemRenderer"]["continuationEndpoint"]["continuationCommand"]["token"].string
                     }
