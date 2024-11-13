@@ -67,7 +67,8 @@ public struct AccountLibraryResponse: AuthenticatedResponse {
                         if libraryContentItem["itemSectionRenderer"]["targetId"].string == "library-playlists-shelf" {
                             let playlistsListRenderer = libraryContentItemContents["shelfRenderer"]["content"]["horizontalListRenderer"]["items"].array ?? libraryContentItemContents["shelfRenderer"]["content"]["gridRenderer"]["items"].arrayValue
                             for playlist in playlistsListRenderer {
-                                if let decodedPlaylist = YTPlaylist.decodeJSON(json: playlist["gridPlaylistRenderer"]) {
+                                if let decodedPlaylist = YTPlaylist.decodeJSON(json: playlist["gridPlaylistRenderer"]) ?? YTPlaylist.decodeLockupJSON(json: playlist["lockupViewModel"]),
+                                   !["VLLL", "VLWL", "FEhistory"].contains(decodedPlaylist.playlistId) {
                                     toReturn.playlists.append(decodedPlaylist)
                                 }
                             }

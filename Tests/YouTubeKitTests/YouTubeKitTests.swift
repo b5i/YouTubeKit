@@ -1368,4 +1368,17 @@ final class YouTubeKitTests: XCTestCase {
         try await Task.sleep(nanoseconds: 5_000_000_000)
         try await createdComment.commentAction(youtubeModel: YTM, action: .delete)
     }
+    
+    /// Use this to test responses from local files
+    func testLocalFile() throws {
+        guard false else { return } // should not be run by default
+        
+        let fileURL = URL(string: "file:///....json")!
+        
+        let data = try Data(contentsOf: fileURL)
+        
+        let result = try AccountLibraryResponse.decodeData(data: data)
+        
+        print(result)
+    }
 }

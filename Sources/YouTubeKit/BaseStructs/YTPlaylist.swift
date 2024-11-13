@@ -61,6 +61,46 @@ public struct YTPlaylist: YTSearchResult, Sendable {
         return playlist
     }
     
+    public static func decodeLockupJSON(json: JSON) -> YTPlaylist? {
+        guard let playlistId = json["contentId"].string, json["contentType"] == "LOCKUP_CONTENT_TYPE_PLAYLIST" else { return nil }
+        
+        var playlist = YTPlaylist(playlistId: playlistId.hasPrefix("VL") ? playlistId : "VL" + playlistId)
+        
+        playlist.title = json["metadata"]["lockupMetadataViewModel"]["title"]["content"].string
+        
+        let channelElement1 = json["metadata"]["lockupMetadataViewModel"]["metadata"]["contentMetadataViewModel"]["metadataRows"]
+            .arrayValue.compactMap { metadataPart in
+                metadataPart["metadataParts"].array
+            }
+        
+        let channelElement2 = channelElement1
+            .first(where: { metadataPart in
+                metadataPart.first(where: {
+                    $0["text"]["commandRuns"]
+                        .arrayValue
+                        .first?["onTap"]["innertubeCommand"]["commandMetadata"]["webCommandMetadata"]["webPageType"]
+                        .string == "WEB_PAGE_TYPE_CHANNEL"
+                }) != nil
+            })
+            
+        if let channelElement = channelElement2?.first(where: {
+                $0["text"]["commandRuns"]
+                    .arrayValue
+                    .first?["onTap"]["innertubeCommand"]["commandMetadata"]["webCommandMetadata"]["webPageType"]
+                    .string == "WEB_PAGE_TYPE_CHANNEL"
+            })?["text"],
+            let channelId = channelElement["commandRuns"]
+            .array?
+            .first?["onTap"]["innertubeCommand"]["browseEndpoint"]["browseId"].string
+        {
+            playlist.channel = YTLittleChannelInfos(channelId: channelId, name: channelElement["content"].string)
+        }
+            
+        YTThumbnail.appendThumbnails(json: json["contentImage"]["collectionThumbnailViewModel"]["primaryThumbnail"]["thumbnailViewModel"], thumbnailList: &playlist.thumbnails)
+        
+        return playlist
+    }
+    
     public static let type: YTSearchResultType = .playlist
     
     public var id: Int?
