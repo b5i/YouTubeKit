@@ -179,4 +179,20 @@ public struct VideoInfosResponse: YouTubeResponse {
     public static func createEmpty() -> VideoInfosResponse {
         return VideoInfosResponse(keywords: [], thumbnails: [])
     }
+    
+    // Fix for the cookies thing
+    public static func sendNonThrowingRequest(
+        youtubeModel: YouTubeModel,
+        data: RequestData,
+        useCookies: Bool? = nil,
+        result: @escaping @Sendable (Result<Self, Error>) -> ()
+    ) {
+        /// Call YouTubeModel's `sendRequest` function to have a more readable use.
+        youtubeModel.sendRequest(
+            responseType: Self.self,
+            data: data,
+            useCookies: false,
+            result: result
+        )
+    }
 }

@@ -415,14 +415,14 @@ public class YouTubeModel {
                     .init(name: "Accept", content: "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8"),
                     .init(name: "Accept-Encoding", content: "gzip, deflate, br"),
                     .init(name: "Host", content: "www.youtube.com"),
-                    .init(name: "User-Agent", content: "com.google.ios.youtube/19.40.4 (iPhone16,2; U; CPU iOS 18_1 like Mac OS X)"),
+                    .init(name: "User-Agent", content: "com.google.ios.youtube/19.45.4 (iPhone16,2; U; CPU iOS 18_1_0 like Mac OS X;)"),
                     .init(name: "Accept-Language", content: "\(self.selectedLocale);q=0.9"),
                     .init(name: "Origin", content: "https://www.youtube.com/"),
                     .init(name: "Referer", content: "https://www.youtube.com/"),
                     .init(name: "Content-Type", content: "application/json"),
                     .init(name: "X-Origin", content: "https://www.youtube.com"),
                     .init(name: "X-Youtube-Client-Name", content: "5"),
-                    .init(name: "X-Youtube-Client-Version", content: "19.40.4"),
+                    .init(name: "X-Youtube-Client-Version", content: "19.45.4"),
                     .init(name: "Cookie", content: "PREF=hl=\(self.selectedLocaleLanguageCode)&tz=UTC; SOCS=CAI; GPS=1; VISITOR_INFO1_LIVE=X454mME5IB0; VISITOR_PRIVACY_METADATA=CgJDSBIEGgAgKQ%3D%3D") // yt-dlp
                 ],
                 addQueryAfterParts: [
@@ -435,14 +435,14 @@ public class YouTubeModel {
                       "context": {
                         "client": {
                           "clientName": "IOS",
-                          "clientVersion": "19.40.4",
+                          "clientVersion": "19.45.4",
                           "deviceMake": "Apple",
                           "deviceModel": "iPhone16,2",
                           "hl": "\#(self.selectedLocaleLanguageCode)",
                           "osName": "iPhone",
                           "osVersion": "iOS 18_1",
                           "timeZone": "UTC",
-                          "userAgent": "com.google.ios.youtube/19.40.4 (iPhone16,2; U; CPU iOS 18_1 like Mac OS X)",
+                          "userAgent": "com.google.ios.youtube/19.45.4 (iPhone16,2; U; CPU iOS 18_1 like Mac OS X)",
                           "utcOffsetMinutes": 0
                         }
                       },

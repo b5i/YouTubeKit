@@ -59,6 +59,7 @@ public protocol YouTubeVideo {
     /// - Parameters:
     ///   - youtubeModel: the ``YouTubeModel`` that has to be used to know which headers to use.
     ///   - infos: A ``VideoInfosResponse`` or an error.
+    /// - Warning: For some reason, making this request using cookies will fail, therefore cookies are disabled when doing the request. Private videos will unfortunately not be accessible.
     func fetchStreamingInfos(
         youtubeModel: YouTubeModel,
         useCookies: Bool?,
@@ -71,6 +72,7 @@ public protocol YouTubeVideo {
     ///   - youtubeModel: the ``YouTubeModel`` that has to be used to know which headers to use.
     ///   - useCookies: boolean that precises if the request should include the model's ``YouTubeModel/cookies``, if set to nil, the value will be taken from ``YouTubeModel/alwaysUseCookies``. The cookies will be added to the `Cookie` HTTP header if one is already present or a new one will be created if not.
     /// - Returns: A ``VideoInfosResponse`` or an error.
+    /// - Warning: For some reason, making this request using cookies will fail, therefore cookies are disabled when doing the request. Private videos will unfortunately not be accessible.
     func fetchStreamingInfosThrowing(
         youtubeModel: YouTubeModel,
         useCookies: Bool?
