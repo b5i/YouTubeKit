@@ -43,6 +43,8 @@ extension HeaderTypes: RawRepresentable {
             return "userAccountHeaders"
         case .usersLibraryHeaders:
             return "usersLibraryHeaders"
+        case .usersPlaylistsHeaders:
+            return "usersPlaylistsHeaders"
         case .usersAllPlaylistsHeaders:
             return "usersAllPlaylistsHeaders"
         case .createPlaylistHeaders:

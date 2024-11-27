@@ -68,6 +68,9 @@ public enum HeaderTypes: Codable, Sendable {
     /// Get a user's library.
     case usersLibraryHeaders
     
+    /// Get all the playlists of a user. Differs from `usersAllPlaylistsHeaders` because it doesn't include the info whether a certain video is already in the playlist or not.
+    case usersPlaylistsHeaders
+    
     /// Get a user's subscriptions.
     case usersSubscriptionsHeaders
     
@@ -80,7 +83,7 @@ public enum HeaderTypes: Codable, Sendable {
     /// Get a users's subscriptions feed continuation.
     case usersSubscriptionsFeedContinuationHeaders
     
-    /// Get all playlists where a video could be added, also includes the info whether the video is already in the playlist or not.
+    /// Get all playlists where a **video** could be added, also includes the info whether the video is already in the playlist or not.
     /// - Parameter browseId: The video's id to check, should be taken from ``YTVideo/videoId``.
     case usersAllPlaylistsHeaders
     

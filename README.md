@@ -43,6 +43,7 @@ Here is a list of the default requests supported by YouTubeKit, all the informat
 ### Account
 - [AccountInfosResponse](https://github.com/b5i/YouTubeKit/blob/9db43b336ceba6c11981dee2c7e9afad49ebda22/Sources/YouTubeKit/YouTubeResponseTypes/AuthenticatedResponses/AccountResponses/AccountInfosResponse.swift#L10C19-L10C19) to get the informations about a YouTube account (using the cookies).
 - [AccountLibraryResponse](https://github.com/b5i/YouTubeKit/blob/9db43b336ceba6c11981dee2c7e9afad49ebda22/Sources/YouTubeKit/YouTubeResponseTypes/AuthenticatedResponses/AccountResponses/AccountLibraryResponse.swift#L10C15-L10C37) to get the library of an account.
+- [AccountPlaylistsResponse]() to get the playlists of an account.
 - [AccountSubscriptionsFeedResponse]() to get the feed of the account's subscriptions.
 - [AccountSubscriptionsResponse]() to get the list of channel that the account is subscribed to.
 - [HistoryResponse](https://github.com/b5i/YouTubeKit/blob/62433f5af39b19e83b248188c9c5cd39ac7c280e/Sources/YouTubeKit/YouTubeResponseTypes/AuthenticatedResponses/HistoryActions/HistoryResponse.swift#L13) and [RemoveVideoFromHistroryResponse](https://github.com/b5i/YouTubeKit/blob/62433f5af39b19e83b248188c9c5cd39ac7c280e/Sources/YouTubeKit/YouTubeResponseTypes/AuthenticatedResponses/HistoryActions/RemoveVideoFromHistroryResponse.swift#L10) to get the history of an account and remove some videos of it.

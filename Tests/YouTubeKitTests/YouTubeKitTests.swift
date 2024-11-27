@@ -853,6 +853,24 @@ final class YouTubeKitTests: XCTestCase {
         XCTAssertNotEqual(response.playlists.count, 0, TEST_NAME + "Checking if account's playlists have been extracted.")
     }
     
+    func testAccountPlaylists() async throws {
+        guard cookies != "" else { return }
+        let TEST_NAME = "Test: testAccountPlaylists() -> "
+        YTM.cookies = cookies
+        
+        let response = try await AccountPlaylistsResponse.sendThrowingRequest(youtubeModel: YTM, data: [:])
+                
+        guard !response.isDisconnected else { XCTFail(TEST_NAME + "Checking if cookies were defined"); return }
+        
+        XCTAssertNotEqual(response.results.count, 0, TEST_NAME + "Checking if account's playlists have been extracted.")
+        
+        let firstPlaylist = response.results.first!
+        
+        XCTAssertNotNil(firstPlaylist.title, TEST_NAME + "Checking if the title of the first playlist has been extracted.")
+        XCTAssertNotEqual(firstPlaylist.thumbnails.count, 0, TEST_NAME + "Checking if the thumbnails of the first playlist have been extracted.")
+        XCTAssertNotNil(firstPlaylist.playlistId, TEST_NAME + "Checking if the playlistId of the first playlist has been extracted.")
+    }
+    
     func testPlaylistActions() async throws {
         guard cookies != "" else { return }
         let TEST_NAME = "Test: testPlaylistActions() -> "

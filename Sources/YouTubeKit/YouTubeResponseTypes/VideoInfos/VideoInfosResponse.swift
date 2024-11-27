@@ -76,11 +76,11 @@ public struct VideoInfosResponse: YouTubeResponse {
     public var aspectRatio: Double?
     
     /// Array of formats used to download the video, they usually contain both audio and video data and the download speed is higher than the ``VideoInfosResponse/downloadFormats``.
-    @available(*, deprecated, message: "This property is unstable for the moment.")
+    //@available(*, deprecated, message: "This property is unstable for the moment.")
     public var defaultFormats: [any DownloadFormat]
     
     /// Array of formats used to download the video, usually sorted from highest video quality to lowest followed by audio formats.
-    @available(*, deprecated, message: "This property is unstable for the moment.")
+    //@available(*, deprecated, message: "This property is unstable for the moment.")
     public var downloadFormats: [any DownloadFormat]
 
     public init(
