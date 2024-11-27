@@ -8,6 +8,7 @@
 
 import Foundation
 
+/// Response containing information about the account.
 public struct AccountInfosResponse: AuthenticatedResponse {
     public static let headersType: HeaderTypes = .userAccountHeaders
     

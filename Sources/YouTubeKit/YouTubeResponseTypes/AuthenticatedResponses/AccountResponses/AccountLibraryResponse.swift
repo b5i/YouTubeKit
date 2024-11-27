@@ -8,6 +8,7 @@
 
 import Foundation
 
+/// Response containing some elements of the user's library.
 public struct AccountLibraryResponse: AuthenticatedResponse {
     public static let headersType: HeaderTypes = .usersLibraryHeaders
     

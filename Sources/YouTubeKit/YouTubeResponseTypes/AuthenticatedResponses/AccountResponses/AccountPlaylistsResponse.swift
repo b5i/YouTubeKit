@@ -8,6 +8,7 @@
 
 import Foundation
 
+/// Response containing all the playlists of a user.
 public struct AccountPlaylistsResponse: AuthenticatedResponse {
     public static let headersType: HeaderTypes = .usersPlaylistsHeaders
     
