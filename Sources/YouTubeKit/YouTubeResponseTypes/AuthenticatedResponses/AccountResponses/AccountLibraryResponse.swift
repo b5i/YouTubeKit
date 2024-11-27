@@ -61,40 +61,44 @@ public struct AccountLibraryResponse: AuthenticatedResponse {
         }
         
         for libraryTab in json["contents"]["twoColumnBrowseResultsRenderer"]["tabs"].arrayValue {
-            if libraryTab["tabRenderer"]["tabIdentifier"].string == "FElibrary" {
-                for libraryContentItem in libraryTab["tabRenderer"]["content"]["sectionListRenderer"]["contents"].arrayValue {
-                    for libraryContentItemContents in libraryContentItem["itemSectionRenderer"]["contents"].arrayValue {
-                        if libraryContentItem["itemSectionRenderer"]["targetId"].string == "library-playlists-shelf" {
-                            let playlistsListRenderer = libraryContentItemContents["shelfRenderer"]["content"]["horizontalListRenderer"]["items"].array ?? libraryContentItemContents["shelfRenderer"]["content"]["gridRenderer"]["items"].arrayValue
-                            for playlist in playlistsListRenderer {
-                                if let decodedPlaylist = YTPlaylist.decodeJSON(json: playlist["gridPlaylistRenderer"]) ?? YTPlaylist.decodeLockupJSON(json: playlist["lockupViewModel"]),
-                                   !["VLLL", "VLWL", "FEhistory"].contains(decodedPlaylist.playlistId) {
-                                    toReturn.playlists.append(decodedPlaylist)
+            if libraryTab["tabRenderer"]["tabIdentifier"].stringValue.hasSuffix("FElibrary") {
+                for libraryContentItem in libraryTab["tabRenderer"]["content"]["sectionListRenderer"]["contents"].array ?? libraryTab["tabRenderer"]["content"]["richGridRenderer"]["contents"].arrayValue {
+                    if let libArray = libraryContentItem["itemSectionRenderer"]["contents"].array {
+                        for libraryContentItemContents in libArray {
+                            if libraryContentItem["itemSectionRenderer"]["targetId"].string ?? libraryContentItem["itemSectionRenderer"]["targetId"].string == "library-playlists-shelf" {
+                                let playlistsListRenderer = libraryContentItemContents["shelfRenderer"]["content"]["horizontalListRenderer"]["items"].array ?? libraryContentItemContents["shelfRenderer"]["content"]["gridRenderer"]["items"].arrayValue
+                                for playlist in playlistsListRenderer {
+                                    if let decodedPlaylist = YTPlaylist.decodeJSON(json: playlist["gridPlaylistRenderer"]) ?? YTPlaylist.decodeLockupJSON(json: playlist["lockupViewModel"]),
+                                       !["VLLL", "VLWL", "FEhistory"].contains(decodedPlaylist.playlistId) {
+                                        toReturn.playlists.append(decodedPlaylist)
+                                    }
                                 }
-                            }
-                        } else {
-                            if let browseId = libraryContentItemContents["shelfRenderer"]["endpoint"]["browseEndpoint"]["browseId"].string {
-                                switch browseId {
-                                case "FEhistory":
-                                    toReturn.history = YTPlaylist(playlistId: "FEhistory")
-                                    decodeDefaultPlaylist(playlist: &(toReturn.history!), json: libraryContentItemContents["shelfRenderer"])
-                                    break
-                                case "VLWL":
-                                    toReturn.watchLater = YTPlaylist(playlistId: "VLWL")
-                                    decodeDefaultPlaylist(playlist: &(toReturn.watchLater!), json: libraryContentItemContents["shelfRenderer"])
-                                    break
-                                case "VLLL":
-                                    toReturn.likes = YTPlaylist(playlistId: "VLLL")
-                                    decodeDefaultPlaylist(playlist: &(toReturn.likes!), json: libraryContentItemContents["shelfRenderer"])
-                                    break
-                                case "FEclips": // Not supported yet
-                                    break
-                                default:
+                            } else {
+                                if let browseId = libraryContentItemContents["shelfRenderer"]["endpoint"]["browseEndpoint"]["browseId"].string {
+                                    switch browseId {
+                                    case "FEhistory":
+                                        toReturn.history = YTPlaylist(playlistId: "FEhistory")
+                                        decodeDefaultPlaylist(playlist: &(toReturn.history!), json: libraryContentItemContents["shelfRenderer"])
+                                        break
+                                    case "VLWL":
+                                        toReturn.watchLater = YTPlaylist(playlistId: "VLWL")
+                                        decodeDefaultPlaylist(playlist: &(toReturn.watchLater!), json: libraryContentItemContents["shelfRenderer"])
+                                        break
+                                    case "VLLL":
+                                        toReturn.likes = YTPlaylist(playlistId: "VLLL")
+                                        decodeDefaultPlaylist(playlist: &(toReturn.likes!), json: libraryContentItemContents["shelfRenderer"])
+                                        break
+                                    case "FEclips": // Not supported yet
+                                        break
+                                    default:
+                                        break
+                                    }
                                     break
                                 }
-                                break
                             }
                         }
+                    } else {
+                        self.decodeNextGenLibraryElement(result: &toReturn, json: libraryContentItem)
                     }
                 }
                 break
@@ -104,13 +108,42 @@ public struct AccountLibraryResponse: AuthenticatedResponse {
         return toReturn
     }
     
+    private static func decodeNextGenLibraryElement(result: inout AccountLibraryResponse, json: JSON) {
+        switch json["richSectionRenderer"]["content"]["richShelfRenderer"]["endpoint"]["browseEndpoint"]["browseId"].stringValue {
+        case "FEplaylist_aggregation":
+            for playlist in json["richSectionRenderer"]["content"]["richShelfRenderer"]["contents"].arrayValue.map({ $0["richItemRenderer"]["content"] }) {
+                if let decodedPlaylist = YTPlaylist.decodeLockupJSON(json: playlist["lockupViewModel"]),
+                   !["VLLL", "VLWL", "FEhistory"].contains(decodedPlaylist.playlistId) {
+                    result.playlists.append(decodedPlaylist)
+                }
+            }
+        case "FEhistory":
+            result.history = YTPlaylist(playlistId: "FEhistory")
+            decodeDefaultPlaylist(playlist: &(result.history!), json: json["richSectionRenderer"]["content"]["richShelfRenderer"]["contents"])
+            break
+        case "VLWL":
+            result.watchLater = YTPlaylist(playlistId: "VLWL")
+            decodeDefaultPlaylist(playlist: &(result.watchLater!), json: json["richSectionRenderer"]["content"]["richShelfRenderer"]["contents"])
+            break
+        case "VLLL":
+            result.likes = YTPlaylist(playlistId: "VLLL")
+            decodeDefaultPlaylist(playlist: &(result.likes!), json: json["richSectionRenderer"]["content"]["richShelfRenderer"]["contents"])
+            break
+        case "FEclips": // Not supported yet
+            break
+        default:
+            break
+        }
+    }
+    
     /// Decode history, likes, etc..
     private static func decodeDefaultPlaylist(playlist: inout YTPlaylist, json: JSON) {
         playlist.title = json["title"]["runs"].arrayValue.map({return $0["text"].stringValue}).joined(separator: " ")
         playlist.videoCount = json["titleAnnotation"]["simpleText"].string
-        let frontVideosListRenderer = json["content"]["horizontalListRenderer"]["items"].array ?? json["content"]["gridRenderer"]["items"].arrayValue
+        let frontVideosListRenderer = json["content"]["horizontalListRenderer"]["items"].array ?? json["content"]["gridRenderer"]["items"].array ??
+            json.arrayValue.map({ $0["richItemRenderer"]["content"] })
         for frontVideo in frontVideosListRenderer {
-            if let video = YTVideo.decodeJSON(json: frontVideo["gridVideoRenderer"]) {
+            if let video = YTVideo.decodeJSON(json: frontVideo["gridVideoRenderer"].exists() ? frontVideo["gridVideoRenderer"] : frontVideo["videoRenderer"]) {
                 playlist.frontVideos.append(video)
             }
         }
