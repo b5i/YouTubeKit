@@ -121,14 +121,38 @@ public struct AccountLibraryResponse: AuthenticatedResponse {
         case "FEhistory":
             result.history = YTPlaylist(playlistId: "FEhistory")
             decodeDefaultPlaylist(playlist: &(result.history!), json: json["richSectionRenderer"]["content"]["richShelfRenderer"]["contents"])
+            
+            if result.history?.title == nil || result.history?.title == "" {
+                result.history?.title = json["richSectionRenderer"]["content"]["richShelfRenderer"]["title"]["runs"].array?.map({return $0["text"].stringValue}).joined(separator: " ")
+            }
+            
+            if result.history?.videoCount == nil || result.history?.videoCount == "" {
+                result.history?.videoCount = json["richSectionRenderer"]["content"]["richShelfRenderer"]["subtitle"]["runs"].array?.map({return $0["text"].stringValue}).joined(separator: " ")
+            }
             break
         case "VLWL":
             result.watchLater = YTPlaylist(playlistId: "VLWL")
             decodeDefaultPlaylist(playlist: &(result.watchLater!), json: json["richSectionRenderer"]["content"]["richShelfRenderer"]["contents"])
+            
+            if result.watchLater?.title == nil || result.watchLater?.title == "" {
+                result.watchLater?.title = json["richSectionRenderer"]["content"]["richShelfRenderer"]["title"]["runs"].array?.map({return $0["text"].stringValue}).joined(separator: " ")
+            }
+            
+            if result.watchLater?.videoCount == nil || result.watchLater?.videoCount == "" {
+                result.watchLater?.videoCount = json["richSectionRenderer"]["content"]["richShelfRenderer"]["subtitle"]["runs"].array?.map({return $0["text"].stringValue}).joined(separator: " ")
+            }
             break
         case "VLLL":
             result.likes = YTPlaylist(playlistId: "VLLL")
             decodeDefaultPlaylist(playlist: &(result.likes!), json: json["richSectionRenderer"]["content"]["richShelfRenderer"]["contents"])
+            
+            if result.likes?.title == nil || result.likes?.title == "" {
+                result.likes?.title = json["richSectionRenderer"]["content"]["richShelfRenderer"]["title"]["runs"].array?.map({return $0["text"].stringValue}).joined(separator: " ")
+            }
+            
+            if result.likes?.videoCount == nil || result.likes?.videoCount == "" {
+                result.likes?.videoCount = json["richSectionRenderer"]["content"]["richShelfRenderer"]["subtitle"]["runs"].array?.map({return $0["text"].stringValue}).joined(separator: " ")
+            }
             break
         case "FEclips": // Not supported yet
             break
