@@ -98,6 +98,15 @@ public struct YTPlaylist: YTSearchResult, Sendable {
             
         YTThumbnail.appendThumbnails(json: json["contentImage"]["collectionThumbnailViewModel"]["primaryThumbnail"]["thumbnailViewModel"], thumbnailList: &playlist.thumbnails)
         
+        mainLoop: for thumbnailOverlay in json["contentImage"]["collectionThumbnailViewModel"]["primaryThumbnail"]["thumbnailViewModel"]["overlays"].arrayValue {
+            for thumbnailBadge in thumbnailOverlay["thumbnailOverlayBadgeViewModel"]["thumbnailBadges"].arrayValue {
+                if thumbnailBadge["thumbnailBadgeViewModel"]["icon"]["sources"].arrayValue.first?["clientResource"]["imageName"].string == "PLAYLISTS", let text = thumbnailBadge["thumbnailBadgeViewModel"]["text"].string {
+                    playlist.videoCount = text
+                    break mainLoop
+                }
+            }
+        }
+        
         return playlist
     }
     
