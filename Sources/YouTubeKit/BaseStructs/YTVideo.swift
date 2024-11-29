@@ -77,6 +77,30 @@ public struct YTVideo: YTSearchResult, YouTubeVideo, Codable, Sendable {
         return video
     }
     
+    /// Give a `lockupViewModel` to decode.
+    public static func decodeLockupJSON(json: JSON) -> YTVideo? {
+        guard let videoId = json["contentId"].string, json["contentType"] == "LOCKUP_CONTENT_TYPE_VIDEO" else { return nil }
+        
+        var video = YTVideo(videoId: videoId)
+        
+        video.title = json["metadata"]["lockupMetadataViewModel"]["title"]["content"].string
+                      
+        if let channelJSON = json["metadata"]["lockupMetadataViewModel"]["metadata"]["contentMetadataViewModel"]["metadataRows"].array?.first(where: { $0["metadataParts"].array?.first?["text"]["commandRuns"].array?.first?["onTap"]["innertubeCommand"]["commandMetadata"]["webCommandMetadata"]["webPageType"].string == "WEB_PAGE_TYPE_CHANNEL" }), let channelId = channelJSON["metadataParts"].array?.first?["text"]["commandRuns"].array?.first?["onTap"]["innertubeCommand"]["browseEndpoint"]["browseId"].string {
+            video.channel = YTLittleChannelInfos(channelId: channelId, name: channelJSON["metadataParts"].array?.first?["text"]["content"].string)
+        }
+            
+        let viewCountAndDateJSON = json["metadata"]["lockupMetadataViewModel"]["metadata"]["contentMetadataViewModel"]["metadataRows"].array?.first(where: { $0["metadataParts"].array?.first?["text"]["commandRuns"].array?.first?["onTap"]["innertubeCommand"]["commandMetadata"]["webCommandMetadata"]["webPageType"].string != "WEB_PAGE_TYPE_CHANNEL" })
+        
+        video.viewCount = viewCountAndDateJSON?["metadataParts"].array?.first?["text"]["content"].string
+        video.timePosted = viewCountAndDateJSON?["metadataParts"].array?.last?["text"]["content"].string
+        
+        YTThumbnail.appendThumbnails(json: json["contentImage"]["thumbnailViewModel"], thumbnailList: &video.thumbnails)
+        
+        video.timeLength = json["contentImage"]["thumbnailViewModel"]["overlays"].array?.first?["thumbnailOverlayBadgeViewModel"]["thumbnailBadges"].array?.first?["thumbnailBadgeViewModel"]["text"].string
+        
+        return video
+    }
+    
     public static let type: YTSearchResultType = .video
     
     public var id: Int?

@@ -37,6 +37,8 @@ public struct HomeScreenResponse: ContinuableResponse {
             for video in videosArray {
                 if video["richItemRenderer"]["content"]["videoRenderer"]["videoId"].string != nil, let decodedVideo = YTVideo.decodeJSON(json: video["richItemRenderer"]["content"]["videoRenderer"]) {
                     toReturn.results.append(decodedVideo)
+                } else if video["richItemRenderer"]["content"]["lockupViewModel"].exists(), let video = YTVideo.decodeLockupJSON(json: video["richItemRenderer"]["content"]["lockupViewModel"]) {
+                    toReturn.results.append(video)
                 } else if let continuationToken = video["continuationItemRenderer"]["continuationEndpoint"]["continuationCommand"]["token"].string {
                     toReturn.continuationToken = continuationToken
                 }
@@ -71,6 +73,8 @@ public struct HomeScreenResponse: ContinuableResponse {
                 for video in continuationItemsArray {
                     if video["richItemRenderer"]["content"]["videoRenderer"]["videoId"].string != nil, let decodedVideo = YTVideo.decodeJSON(json: video["richItemRenderer"]["content"]["videoRenderer"]) {
                         toReturn.results.append(decodedVideo)
+                    } else if video["richItemRenderer"]["content"]["lockupViewModel"].exists(), let video = YTVideo.decodeLockupJSON(json: video["richItemRenderer"]["content"]["lockupViewModel"]) {
+                        toReturn.results.append(video)
                     } else if let continuationToken = video["continuationItemRenderer"]["continuationEndpoint"]["continuationCommand"]["token"].string {
                         toReturn.continuationToken = continuationToken
                     }

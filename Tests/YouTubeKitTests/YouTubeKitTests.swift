@@ -797,9 +797,10 @@ final class YouTubeKitTests: XCTestCase {
     }
     
     func testHomeResponse() async throws {
+        YTM.cookies = self.cookies
         let TEST_NAME = "Test: testHomeResponse() -> "
             
-        var homeMenuResult = try await HomeScreenResponse.sendThrowingRequest(youtubeModel: YTM, data: [:])
+        var homeMenuResult = try await HomeScreenResponse.sendThrowingRequest(youtubeModel: YTM, data: [:], useCookies: true)
         guard homeMenuResult.continuationToken != nil else {
             // Could fail because sometimes YouTube gives an empty page telling you to start browsing. We check this case here.
             if !(homeMenuResult.results.count == 0 && homeMenuResult.visitorData != nil) {
@@ -810,7 +811,7 @@ final class YouTubeKitTests: XCTestCase {
         
         XCTAssertNotNil(homeMenuResult.visitorData, TEST_NAME + "Checking if homeMenuResult.visitorData is defined.")
         
-        let homeMenuContinuationResult = try await homeMenuResult.fetchContinuationThrowing(youtubeModel: YTM)
+        let homeMenuContinuationResult = try await homeMenuResult.fetchContinuationThrowing(youtubeModel: YTM, useCookies: true)
                 
         guard homeMenuContinuationResult.continuationToken != nil else { XCTFail(TEST_NAME + "Checking if homeMenuContinuationResult.continuationToken is defined."); return }
         
