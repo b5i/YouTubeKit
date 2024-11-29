@@ -87,6 +87,8 @@ public struct YTVideo: YTSearchResult, YouTubeVideo, Codable, Sendable {
                       
         if let channelJSON = json["metadata"]["lockupMetadataViewModel"]["metadata"]["contentMetadataViewModel"]["metadataRows"].array?.first(where: { $0["metadataParts"].array?.first?["text"]["commandRuns"].array?.first?["onTap"]["innertubeCommand"]["commandMetadata"]["webCommandMetadata"]["webPageType"].string == "WEB_PAGE_TYPE_CHANNEL" }), let channelId = channelJSON["metadataParts"].array?.first?["text"]["commandRuns"].array?.first?["onTap"]["innertubeCommand"]["browseEndpoint"]["browseId"].string {
             video.channel = YTLittleChannelInfos(channelId: channelId, name: channelJSON["metadataParts"].array?.first?["text"]["content"].string)
+            YTThumbnail.appendThumbnails(json: json["metadata"]["lockupMetadataViewModel"]["image"]["decoratedAvatarViewModel"]["avatar"]["avatarViewModel"], thumbnailList: &video.channel!.thumbnails)
+                
         }
             
         let viewCountAndDateJSON = json["metadata"]["lockupMetadataViewModel"]["metadata"]["contentMetadataViewModel"]["metadataRows"].array?.first(where: { $0["metadataParts"].array?.first?["text"]["commandRuns"].array?.first?["onTap"]["innertubeCommand"]["commandMetadata"]["webCommandMetadata"]["webPageType"].string != "WEB_PAGE_TYPE_CHANNEL" })
