@@ -168,7 +168,7 @@ public struct AccountLibraryResponse: AuthenticatedResponse {
         let frontVideosListRenderer = json["content"]["horizontalListRenderer"]["items"].array ?? json["content"]["gridRenderer"]["items"].array ??
             json.arrayValue.map({ $0["richItemRenderer"]["content"] })
         for frontVideo in frontVideosListRenderer {
-            if let video = YTVideo.decodeJSON(json: frontVideo["gridVideoRenderer"].exists() ? frontVideo["gridVideoRenderer"] : frontVideo["videoRenderer"]) {
+            if let video = YTVideo.decodeJSON(json: frontVideo["gridVideoRenderer"]) ?? YTVideo.decodeJSON(json: frontVideo["videoRenderer"]) ?? YTVideo.decodeLockupJSON(json: frontVideo["lockupViewModel"]) {
                 playlist.frontVideos.append(video)
             }
         }
