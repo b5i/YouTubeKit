@@ -28,4 +28,23 @@ public extension YTVideo {
         
         return video
     }
+    
+    // Process the JSON and give a decoded version of it.
+    /// - Parameter json: the JSON to be decoded, should be a `shortsLockupViewModel`.
+    /// - Returns: An instance of YTVideo, that is actually representing a short.
+    ///
+    /// The informations about shorts are very little compared to the informations you would get with a normal video.
+    static func decodeShortFromLockupJSON(json: JSON) -> YTVideo? {
+        guard let videoId = json["onTap"]["innertubeCommand"]["reelWatchEndpoint"]["videoId"].string else { return nil }
+        
+        var video = YTVideo(videoId: videoId)
+        
+        video.title = json["overlayMetadata"]["primaryText"]["content"].string
+        
+        video.viewCount = json["overlayMetadata"]["secondaryText"]["content"].string
+        
+        YTThumbnail.appendThumbnails(json: json["thumbnail"], thumbnailList: &video.thumbnails)
+        
+        return video
+    }
 }

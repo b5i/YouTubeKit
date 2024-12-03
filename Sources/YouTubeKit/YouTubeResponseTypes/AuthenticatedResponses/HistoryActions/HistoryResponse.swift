@@ -80,7 +80,7 @@ public struct HistoryResponse: AuthenticatedContinuableResponse {
             } else if videoJSON["reelShelfRenderer"].exists() {
                 var block = HistoryBlock.ShortsBlock(shorts: [], suppressTokens: [])
                 for shortJSON in videoJSON["reelShelfRenderer"]["items"].arrayValue {
-                    if let short = YTVideo.decodeShortFromJSON(json: shortJSON["reelItemRenderer"]) {
+                    if let short = YTVideo.decodeShortFromJSON(json: shortJSON["reelItemRenderer"]) ?? YTVideo.decodeShortFromLockupJSON(json: shortJSON["shortsLockupViewModel"]) {
                         block.shorts.append(short)
                         block.suppressTokens.append(shortJSON["reelItemRenderer"]["menu"]["menuRenderer"]["items"].arrayValue.first?["menuServiceItemRenderer"]["serviceEndpoint"]["feedbackEndpoint"]["feedbackToken"].string)
                     }

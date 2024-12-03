@@ -190,7 +190,7 @@ public struct VideoCommentsResponse: ContinuableResponse {
         if json["content"]["videoRenderer"].exists() {
             return YTVideo.decodeJSON(json: json["content"]["videoRenderer"])
         } else {
-            return YTVideo.decodeShortFromJSON(json: json["content"]["reelItemRenderer"])
+            return YTVideo.decodeShortFromJSON(json: json["content"]["reelItemRenderer"]) ?? YTVideo.decodeShortFromLockupJSON(json: json["content"]["shortsLockupViewModel"])
         }
     }
     

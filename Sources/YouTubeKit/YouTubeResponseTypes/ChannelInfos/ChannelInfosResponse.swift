@@ -664,8 +664,8 @@ public struct ChannelInfosResponse: YouTubeResponse {
             var result = Shorts()
             
             for continuationItem in itemsArray {
-                let shortJSON = continuationItem["richItemRenderer"]["content"]["reelItemRenderer"]
-                if let decodedShort = YTVideo.decodeShortFromJSON(json: shortJSON) {
+                let shortJSON = continuationItem["richItemRenderer"]["content"]
+                if let decodedShort = YTVideo.decodeShortFromJSON(json: shortJSON["reelItemRenderer"]) ?? YTVideo.decodeShortFromLockupJSON(json: shortJSON["shortsLockupViewModel"]) {
                     result.items.append(decodedShort)
                 } else if let continuationToken = continuationItem["continuationItemRenderer"]["continuationEndpoint"]["continuationCommand"]["token"].string {
                     toReturn.newContinuationToken = continuationToken
@@ -681,8 +681,7 @@ public struct ChannelInfosResponse: YouTubeResponse {
             guard let videosArray = tab["tabRenderer"]["content"]["richGridRenderer"]["contents"].array else { return nil }
             var toReturn = Shorts()
             for video in videosArray {
-                let videoJSON = video["richItemRenderer"]["content"]["reelItemRenderer"]
-                if YTVideo.canBeDecoded(json: videoJSON), var decodedVideo = YTVideo.decodeShortFromJSON(json: videoJSON) {
+                if var decodedVideo = YTVideo.decodeShortFromJSON(json: video["richItemRenderer"]["content"]["reelItemRenderer"]) ?? YTVideo.decodeShortFromLockupJSON(json: video["richItemRenderer"]["content"]["shortsLockupViewModel"]) {
                     if let channelInfos = channelInfos {
                         decodedVideo.channel = channelInfos
                     }
@@ -801,8 +800,7 @@ public struct ChannelInfosResponse: YouTubeResponse {
                 for secondPlaylistGroup in secondPlaylistGroupArray {
                     guard let playlistArray = secondPlaylistGroup["gridRenderer"]["items"].array else { continue }
                     for playlist in playlistArray {
-                        let playlistJSON = playlist["gridPlaylistRenderer"]
-                        if YTPlaylist.canBeDecoded(json: playlistJSON), var decodedPlaylist = YTPlaylist.decodeJSON(json: playlistJSON) {
+                        if var decodedPlaylist = YTPlaylist.decodeJSON(json: playlist["gridPlaylistRenderer"]) ?? YTPlaylist.decodeLockupJSON(json: playlist["lockupViewModel"]) {
                             if let channelInfos = channelInfos {
                                 decodedPlaylist.channel = channelInfos
                             }

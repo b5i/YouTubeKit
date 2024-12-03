@@ -25,7 +25,7 @@ public struct YTVideo: YTSearchResult, YouTubeVideo, Codable, Sendable {
     }
     
     public static func canBeDecoded(json: JSON) -> Bool {
-        return json["videoId"].string != nil
+        return json["videoId"].string != nil || json["onTap"]["innertubeCommand"]["reelWatchEndpoint"]["videoId"].string != nil
     }
     
     public static func decodeJSON(json: JSON) -> YTVideo? {
