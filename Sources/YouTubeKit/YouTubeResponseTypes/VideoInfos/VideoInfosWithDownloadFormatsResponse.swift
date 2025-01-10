@@ -143,12 +143,13 @@ public struct VideoInfosWithDownloadFormatsResponse: YouTubeResponse {
             
             guard let nParameter = nParameter else { return item }
             
-            //verify if path is / ok
             let context = JSContext()
             
             guard let context = context else { return item }
             
             context.evaluateScript(nParameterString)
+            
+            // TODO: make sure that the result is what we expect
             
             let testFunction = context.objectForKeyedSubscript("processNParameter")
             let result = testFunction?.call(withArguments: [nParameter])
@@ -166,10 +167,13 @@ public struct VideoInfosWithDownloadFormatsResponse: YouTubeResponse {
     /// Extract the nParameter Javascript function from YouTube's player code.
     /// - Parameter textString: YouTube's player code.
     /// - Returns: The Javascript code in Data format.
-    private static func extractNParameterFunction(fromFileText textString: String) -> Data {
-        guard let functionContents = textString.replacingOccurrences(of: "\n", with: "").ytkFirstGroupMatch(for: #"function\(a\)\{(var b=(?:a.split\((?:(?:\"\"\))|(?:a\.slice\(0\,0\)))|(?:String\.prototype\.split\.call))[\s\S]*?(?:(?:Array\.prototype\.join\.call)|(?:return b.join\(\"\"\)\}))[\s\S]*?;)"#) else { return Data() }
-                                
-        return ("function processNParameter(a) {" + functionContents).data(using: .utf8) ?? Data()
+    private static func extractNParameterFunction(fromFileText textString: String) -> Data {        
+        guard let functionContentsStrings = textString.replacingOccurrences(of: "\n", with: "").ytkRegexMatches(for: #"function\((.)\)\{(var .=(?:.\.split\((?:(?:\"\"\))|(?:.\.slice\(0\,0\)))|(?:String\.prototype\.split\.call))[\s\S]*?(?:(?:Array\.prototype\.join\.call)|(?:return .\.join\(\"\"\)\}))[\s\S]*?;)"#).first, functionContentsStrings.count > 2 else { return Data() }
+                 
+        let functionArgumentName = functionContentsStrings[1]
+        let functionContents = functionContentsStrings[2]
+        
+        return ("function processNParameter(\(functionArgumentName)) {" + functionContents).data(using: .utf8) ?? Data()
     }
     
     /// Get the player's decoding functions to un-throttle download format links download speed.
@@ -221,65 +225,59 @@ public struct VideoInfosWithDownloadFormatsResponse: YouTubeResponse {
         
         var instructionsArray: [PlayerCipherDecodeInstruction] = []
         
-        var nParameterFunction: String? = nil
+        let nParameterFunctionData: Data = extractNParameterFunction(fromFileText: dataString)
+        
+        guard !nParameterFunctionData.isEmpty else { throw ResponseError(step: .scrapPlayer, reason: "Could not get n-parameter function.") }
+        
+        let nParameterFunction = String(decoding: nParameterFunctionData, as: UTF8.self)
         
         for line in separatedByLinePlayer {
-            if line.contains("a=a.split(\"\");") {
-                guard let instructionsString = line.ytkFirstGroupMatch(for: "=function\\(a\\)\\{a=a.split\\(\"\"\\);([\\s\\S]*?)return") else { throw ResponseError(step: .scrapPlayer, reason: "Could not get n-parameter instructions.") }
+            guard let instructionsString = line.ytkFirstGroupMatch(for: #"=function\(.\)\{.=.\.split\(""\);([\s\S]*?)return"#) else { continue }
+            
+            let instructionsStringArray = instructionsString.split(separator: ";").map { String($0) } // not using components(...), so we don't have an empty item at the end of the array
+            
+            for instruction in instructionsStringArray {
+                guard let currentFunctionName = instruction.ytkFirstGroupMatch(for: "\\.([\\S]*?)\\(") else { continue }
                 
-                let instructionsStringArray = instructionsString.split(separator: ";").map { String($0) } // not using components(...), so we don't have an empty item at the end of the array
+                guard let currentPotentialIntParameter = instruction.ytkFirstGroupMatch(for: "\\([^0-9]*([0-9]*)"), let currentIntParameter = Int(currentPotentialIntParameter) else { continue }
                 
-                for instruction in instructionsStringArray {
-                    guard let currentFunctionName = instruction.ytkFirstGroupMatch(for: "\\.([\\S]*?)\\(") else { continue }
-                    
-                    guard let currentPotentialIntParameter = instruction.ytkFirstGroupMatch(for: "\\([^0-9]*([0-9]*)"), let currentIntParameter = Int(currentPotentialIntParameter) else { continue }
-                    
-                    if knownPlayerCipherDecodeInstructions[currentFunctionName] == nil {
-                        knownPlayerCipherDecodeInstructions[currentFunctionName] = PlayerCipherDecodeInstruction.getInstructionTypeByName(
-                            currentFunctionName, separatedByLinesPlayerScript:
-                                separatedByLinePlayer
-                        )
-                    }
-                    
-                    switch knownPlayerCipherDecodeInstructions[currentFunctionName] {
-                    case .swap(_):
-                        instructionsArray.append(.swap(currentIntParameter))
-                    case .splice(_):
-                        instructionsArray.append(.splice(currentIntParameter))
-                    default:
-                        instructionsArray.append(knownPlayerCipherDecodeInstructions[currentFunctionName] ?? .unknown)
-                    }
-                }
-                let documentDirectoryPath: String
-                
-                if #available(macOS 13, iOS 16.0, watchOS 9.0, tvOS 16.0, *) {
-                    documentDirectoryPath = try getDocumentDirectory().path()
-                } else {
-                    documentDirectoryPath = try getDocumentDirectory().path
-                }
-                do {
-                    FileManager.default.createFile(
-                        atPath: documentDirectoryPath + "YouTubeKitPlayers-\(playerName).ab",
-                        contents: try JSONEncoder().encode(instructionsArray)
+                if knownPlayerCipherDecodeInstructions[currentFunctionName] == nil {
+                    knownPlayerCipherDecodeInstructions[currentFunctionName] = PlayerCipherDecodeInstruction.getInstructionTypeByName(
+                        currentFunctionName, separatedByLinesPlayerScript:
+                            separatedByLinePlayer
                     )
-                    
-                    let nParameterFunctionData: Data = extractNParameterFunction(fromFileText: dataString)
-                    
-                    FileManager.default.createFile(
-                        atPath: documentDirectoryPath + "YouTubeKitPlayers-\(playerName).abn",
-                        contents: nParameterFunctionData
-                    )
-                    
-                    nParameterFunction = String(decoding: nParameterFunctionData, as: UTF8.self)
-                } catch {}
-                break
+                }
+                
+                switch knownPlayerCipherDecodeInstructions[currentFunctionName] {
+                case .swap(_):
+                    instructionsArray.append(.swap(currentIntParameter))
+                case .splice(_):
+                    instructionsArray.append(.splice(currentIntParameter))
+                default:
+                    instructionsArray.append(knownPlayerCipherDecodeInstructions[currentFunctionName] ?? .unknown)
+                }
             }
+            let documentDirectoryPath: String
+            
+            if #available(macOS 13, iOS 16.0, watchOS 9.0, tvOS 16.0, *) {
+                documentDirectoryPath = try getDocumentDirectory().path()
+            } else {
+                documentDirectoryPath = try getDocumentDirectory().path
+            }
+            do {
+                FileManager.default.createFile(
+                    atPath: documentDirectoryPath + "YouTubeKitPlayers-\(playerName).ab",
+                    contents: try JSONEncoder().encode(instructionsArray)
+                )
+                
+                FileManager.default.createFile(
+                    atPath: documentDirectoryPath + "YouTubeKitPlayers-\(playerName).abn",
+                    contents: nParameterFunctionData
+                )
+            } catch {}
+            break
         }
-        if let nParameterFunction = nParameterFunction {
-            return (instructionsArray, nParameterFunction)
-        } else {
-            throw ResponseError(step: .scrapPlayer, reason: "Could not extract the n-parameter function.")
-        }
+        return (instructionsArray, nParameterFunction)
     }
     
     /// Download the player with its URL.
