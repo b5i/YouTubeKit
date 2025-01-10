@@ -281,6 +281,13 @@ public struct MoreVideoInfosResponse: YouTubeResponse {
             }
         }
         
+        // Sometimes, YouTube inverts the likesCount's defaultState and likeState
+        
+        if let likesCountNonClickedString = toReturn.likesCount.defaultState, let likesCountClickedString = toReturn.likesCount.clickedState, let likesCountNonClicked = Int(likesCountNonClickedString), let likesCountClicked = Int(likesCountClickedString) {
+            toReturn.likesCount.defaultState = likesCountClicked > likesCountNonClicked ? likesCountNonClickedString : likesCountClickedString
+            toReturn.likesCount.clickedState = likesCountClicked > likesCountNonClicked ? likesCountClickedString : likesCountNonClickedString
+        }
+        
         return toReturn
     }
     
