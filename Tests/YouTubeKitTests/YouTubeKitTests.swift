@@ -1288,6 +1288,8 @@ final class YouTubeKitTests: XCTestCase {
         XCTAssertNotNil(firstComment.timePosted)
         XCTAssertNotEqual(firstComment.text.count, 0)
         XCTAssertNotNil(firstComment.sender)
+        XCTAssertNotNil(firstComment.sender?.name)
+        XCTAssertNotNil(firstComment.sender?.thumbnails.first)
         XCTAssertNotNil(firstComment.replyLevel)
         XCTAssertNotNil(firstComment.likesCountWhenUserLiked)
         XCTAssertNotNil(firstComment.likesCount)
