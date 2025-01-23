@@ -11,7 +11,7 @@ import Foundation
 public struct VideoInfosResponse: YouTubeResponse {
     public static let headersType: HeaderTypes = .videoInfos
     
-    public static let parametersValidationList: ValidationList = [.query: .videoIdValidator]
+    public static let parametersValidationList: ValidationList = [.query: .videoIdValidator, .visitorData: .existenceValidator]
     
     /// An array of `Caption` representing the variety of captions that the video supports
     public var captions: [YTCaption]

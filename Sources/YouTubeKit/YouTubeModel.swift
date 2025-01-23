@@ -49,6 +49,17 @@ public class YouTubeModel {
     /// `"SAPISID=\(SAPISID); __Secure-1PAPISID=\(PAPISID); __Secure-1PSID=\(PSID1)"`
     public var cookies: String = ""
     
+    /// A unique string given by YouTube to access some features.
+    ///
+    /// Can be obtained for example using a simple ``SearchResponse`` and accessing the ``SearchResponse/visitorData`` property.
+    ///
+    /// Usually takes the form of: `CgtmbWo5ZXBHTlNTVsiJtim9BjIIRgJDSNWDGgAgWw%3D%3D`
+    ///
+    /// If set, it will automatically added when needed to requests, otherwise you'll have to manually add it to the request's parameters.
+    ///
+    /// If you specify it for a request in its call, the value you specified will be used instead of this one.
+    public var visitorData: String = ""
+    
     /// Boolean indicating whether to include the ``YouTubeModel/cookies`` in the request or not, its value can be overwritten in ``YouTubeModel/sendRequest(responseType:data:useCookies:result:)`` with the `useCookies` parameter.
     public var alwaysUseCookies: Bool = false
     
@@ -107,6 +118,10 @@ public class YouTubeModel {
         }
         
         do {
+            if data[.visitorData] == nil, self.visitorData != "" {
+                data[.visitorData] = self.visitorData
+            }
+            
             try ResponseType.validateRequest(data: &data)
 
             /// Create request
@@ -417,14 +432,18 @@ public class YouTubeModel {
                     .init(name: "Accept", content: "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8"),
                     .init(name: "Accept-Encoding", content: "gzip, deflate, br"),
                     .init(name: "Host", content: "www.youtube.com"),
-                    .init(name: "User-Agent", content: "com.google.ios.youtube/20.02.3 (iPhone16,2; U; CPU iOS 18_3 like Mac OS X;)"),
+                    .init(name: "User-Agent", content: "com.google.ios.youtube/20.02.3 (iPhone16,2; U; CPU iOS 18_2_1 like Mac OS X;)"),
                     .init(name: "Accept-Language", content: "\(self.selectedLocale);q=0.9"),
                     .init(name: "Origin", content: "https://www.youtube.com/"),
                     .init(name: "Referer", content: "https://www.youtube.com/"),
                     .init(name: "Content-Type", content: "application/json"),
                     .init(name: "X-Origin", content: "https://www.youtube.com"),
                     .init(name: "X-Youtube-Client-Name", content: "5"),
-                    .init(name: "X-Youtube-Client-Version", content: "19.45.4")                ],
+                    .init(name: "X-Youtube-Client-Version", content: "20.02.3"),
+                ],
+                customHeaders: [
+                    "X-Goog-Visitor-Id": .visitorData
+                ],
                 addQueryAfterParts: [
                     .init(index: 0, encode: false, content: .query)
                 ],
@@ -440,9 +459,9 @@ public class YouTubeModel {
                           "deviceModel": "iPhone16,2",
                           "hl": "\#(self.selectedLocaleLanguageCode)",
                           "osName": "iPhone",
-                          "osVersion": "18.3.0.22D5040d",
+                          "osVersion": "18.2.1.22C161",
                           "timeZone": "UTC",
-                          "userAgent": "com.google.ios.youtube/20.02.3 (iPhone16,2; U; CPU iOS 18_3 like Mac OS X;)",
+                          "userAgent": "com.google.ios.youtube/20.02.3 (iPhone16,2; U; CPU iOS 18_2_1 like Mac OS X;)",
                           "utcOffsetMinutes": 0
                         }
                       },

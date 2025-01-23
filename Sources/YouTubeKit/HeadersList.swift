@@ -13,11 +13,12 @@ import FoundationNetworking
 /// Main structure used to define headers, and convert them to a valid `URLRequest`.
 public struct HeadersList: Codable {
     
-    public init(isEmpty: Bool = false, url: URL, method: HTTPMethod, headers: [Header], addQueryAfterParts: [AddQueryInfo]? = nil, httpBody: [String]? = nil, parameters: [ParameterToAdd]? = nil) {
+    public init(isEmpty: Bool = false, url: URL, method: HTTPMethod, headers: [Header], customHeaders: [String: AddQueryInfo.ContentTypes]? = nil, addQueryAfterParts: [AddQueryInfo]? = nil, httpBody: [String]? = nil, parameters: [ParameterToAdd]? = nil) {
         self.isEmpty = isEmpty
         self.url = url
         self.method = method
         self.headers = headers
+        self.customHeaders = customHeaders
         self.addQueryAfterParts = addQueryAfterParts
         self.httpBody = httpBody
         self.parameters = parameters
@@ -44,6 +45,9 @@ public struct HeadersList: Codable {
     
     /// HTTP headers used in the call.
     public var headers: [Header]
+    
+    /// A dictionnary of custom headers to add, if it is already present in the ``headers``, the one in customHeaders is used.
+    public var customHeaders: [String: AddQueryInfo.ContentTypes]?
     
     /// The body is usually splitted in multiple parts where a dynamic string has to be placed, setting the ``addQueryAfterParts`` lets you specify what to place between those parts of body and if it should encode it or not.
     ///
@@ -208,6 +212,10 @@ public struct HeadersList: Codable {
         /// Looping each header and add it to the request
         for header in content.headers {
             request.setValue(header.content, forHTTPHeaderField: header.name)
+        }
+                
+        for (headerName, content) in content.customHeaders ?? [:] {
+            request.setValue(data[content], forHTTPHeaderField: headerName)
         }
         
         /// Adding the body if the request is of type POST.

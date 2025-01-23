@@ -600,6 +600,11 @@ final class YouTubeKitTests: XCTestCase {
     func testVideoInfosResponse() async throws {
         let TEST_NAME = "Test: testVideoInfosResponse() -> "
         let video = YTVideo(videoId: "90RLzVUuXe4")
+                
+        if YTM.visitorData == "" {
+            guard let visitorData = try await SearchResponse.sendThrowingRequest(youtubeModel: YTM, data: [.query: "home"]).visitorData else { XCTFail("VisitorData is not present in SearchResponse."); return }
+            YTM.visitorData = visitorData
+        }
         
         let requestResult = try await video.fetchStreamingInfosThrowing(youtubeModel: YTM)
         
@@ -717,6 +722,11 @@ final class YouTubeKitTests: XCTestCase {
     
     func testChannelInfosResponse() async throws {
         let TEST_NAME = "Test: testChannelInfosResponse() -> "
+            
+        if YTM.visitorData == "" {
+            guard let visitorData = try await SearchResponse.sendThrowingRequest(youtubeModel: YTM, data: [.query: "home"]).visitorData else { XCTFail("VisitorData is not present in SearchResponse."); return }
+            YTM.visitorData = visitorData
+        }
         
         let videoResult = try await VideoInfosResponse.sendThrowingRequest(youtubeModel: YTM, data: [.query: "bvUNXch3rdI"]) /// T-Series' video because they have continuation in every category
                 
