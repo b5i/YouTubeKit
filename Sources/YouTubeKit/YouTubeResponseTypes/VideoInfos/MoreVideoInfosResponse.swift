@@ -382,6 +382,8 @@ public struct MoreVideoInfosResponse: YouTubeResponse {
                     for element in action["appendContinuationItemsAction"]["continuationItems"].arrayValue {
                         if element["compactVideoRenderer"]["videoId"].exists(), let decodedVideo = YTVideo.decodeJSON(json: element["compactVideoRenderer"]) {
                             toReturn.results.append(decodedVideo)
+                        } else if element["lockupViewModel"]["contentType"].string == "LOCKUP_CONTENT_TYPE_VIDEO", let decodedVideo = YTVideo.decodeLockupJSON(json: element["lockupViewModel"]) {
+                            toReturn.results.append(decodedVideo)
                         } else if let continuationToken = element["continuationItemRenderer"]["continuationEndpoint"]["continuationCommand"]["token"].string {
                             toReturn.continuationToken = continuationToken
                         }

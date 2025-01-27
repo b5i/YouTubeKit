@@ -25,7 +25,7 @@ public struct YTVideo: YTSearchResult, YouTubeVideo, Codable, Sendable {
     }
     
     public static func canBeDecoded(json: JSON) -> Bool {
-        return json["videoId"].string != nil || json["onTap"]["innertubeCommand"]["reelWatchEndpoint"]["videoId"].string != nil
+        return json["videoId"].string != nil || json["onTap"]["innertubeCommand"]["reelWatchEndpoint"]["videoId"].string != nil || json["contentType"].string == "LOCKUP_CONTENT_TYPE_VIDEO"
     }
     
     public static func decodeJSON(json: JSON) -> YTVideo? {
@@ -84,14 +84,16 @@ public struct YTVideo: YTSearchResult, YouTubeVideo, Codable, Sendable {
         var video = YTVideo(videoId: videoId)
         
         video.title = json["metadata"]["lockupMetadataViewModel"]["title"]["content"].string
-                      
-        if let channelJSON = json["metadata"]["lockupMetadataViewModel"]["metadata"]["contentMetadataViewModel"]["metadataRows"].array?.first(where: { $0["metadataParts"].array?.first?["text"]["commandRuns"].array?.first?["onTap"]["innertubeCommand"]["commandMetadata"]["webCommandMetadata"]["webPageType"].string == "WEB_PAGE_TYPE_CHANNEL" }), let channelId = channelJSON["metadataParts"].array?.first?["text"]["commandRuns"].array?.first?["onTap"]["innertubeCommand"]["browseEndpoint"]["browseId"].string {
+                   
+        let metadataRows = json["metadata"]["lockupMetadataViewModel"]["metadata"]["contentMetadataViewModel"]["metadataRows"]
+        
+        if let channelJSON = metadataRows.array?.first(where: { $0["metadataParts"].array?.first?["text"]["commandRuns"].array?.first?["onTap"]["innertubeCommand"]["commandMetadata"]["webCommandMetadata"]["webPageType"].string == "WEB_PAGE_TYPE_CHANNEL" }) ?? metadataRows.array?.first {
+            let channelId = channelJSON["metadataParts"].array?.first?["text"]["commandRuns"].array?.first?["onTap"]["innertubeCommand"]["browseEndpoint"]["browseId"].string ?? ""
             video.channel = YTLittleChannelInfos(channelId: channelId, name: channelJSON["metadataParts"].array?.first?["text"]["content"].string)
             YTThumbnail.appendThumbnails(json: json["metadata"]["lockupMetadataViewModel"]["image"]["decoratedAvatarViewModel"]["avatar"]["avatarViewModel"], thumbnailList: &video.channel!.thumbnails)
-                
         }
             
-        let viewCountAndDateJSON = json["metadata"]["lockupMetadataViewModel"]["metadata"]["contentMetadataViewModel"]["metadataRows"].array?.first(where: { $0["metadataParts"].array?.first?["text"]["commandRuns"].array?.first?["onTap"]["innertubeCommand"]["commandMetadata"]["webCommandMetadata"]["webPageType"].string != "WEB_PAGE_TYPE_CHANNEL" })
+        let viewCountAndDateJSON = metadataRows.array?.filter({ $0["metadataParts"].array?.first?["text"]["commandRuns"].array?.first?["onTap"]["innertubeCommand"]["commandMetadata"]["webCommandMetadata"]["webPageType"].string != "WEB_PAGE_TYPE_CHANNEL" || $0["badges"].exists() }).last
         
         video.viewCount = viewCountAndDateJSON?["metadataParts"].array?.first?["text"]["content"].string
         video.timePosted = viewCountAndDateJSON?["metadataParts"].array?.last?["text"]["content"].string
