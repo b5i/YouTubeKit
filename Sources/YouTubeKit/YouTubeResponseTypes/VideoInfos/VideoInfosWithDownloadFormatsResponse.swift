@@ -167,13 +167,18 @@ public struct VideoInfosWithDownloadFormatsResponse: YouTubeResponse {
     /// Extract the nParameter Javascript function from YouTube's player code.
     /// - Parameter textString: YouTube's player code.
     /// - Returns: The Javascript code in Data format.
-    private static func extractNParameterFunction(fromFileText textString: String) -> Data {        
-        guard let functionContentsStrings = textString.replacingOccurrences(of: "\n", with: "").ytkRegexMatches(for: #"function\((.)\)\{(var .=(?:.\.split\((?:(?:\"\"\))|(?:.\.slice\(0\,0\)))|(?:String\.prototype\.split\.call))[\s\S]*?(?:(?:Array\.prototype\.join\.call)|(?:return .\.join\(\"\"\)\}))[\s\S]*?;)"#).first, functionContentsStrings.count > 2 else { return Data() }
+    private static func extractNParameterFunction(fromFileText textString: String) -> Data {
+        guard let qFunctionsArray = textString.ytkFirstGroupMatch(for: #"(var q=\[(?:.|\r\n|\r|\n)*?]),"#) else { return Data() } // the player now has a "q" array containing a bunch of references to functions and keywords, e.g. var q = ["set", "//", "L", "eb", "indexOf", "/videoplayback", "toString", "s", ",", "length", "", ...
+        // to find the n-param function, we can look for \d{10} and see if we see a big weird function
+        guard let functionContentsStrings = textString.ytkRegexMatches(for: #"=function\((\w)\)\{(var l=\w\[q\[(?:.|\r\n|\r|\n)*?return l\[q(?:.|\r\n|\r|\n)*?\};)"#).first, functionContentsStrings.count > 2 else { return Data() }
+            // = function\(\w\) \{(?:.|\r\n|\r|\n)*?return l\[q.*(?:.|\r\n|\r|\n)*?};
+        // obsolete?
+        //guard let functionContentsStrings = textString.replacingOccurrences(of: "\n", with: "").ytkRegexMatches(for: #"function\((.)\)\{(var .=(?:.\.split\((?:(?:\"\"\))|(?:.\.slice\(0\,0\)))|(?:String\.prototype\.split\.call))[\s\S]*?(?:(?:Array\.prototype\.join\.call)|(?:return .\.join\(\"\"\)\}))[\s\S]*?;)"#).first, functionContentsStrings.count > 2 else { return Data() }
                  
         let functionArgumentName = functionContentsStrings[1]
         let functionContents = functionContentsStrings[2]
         
-        return ("function processNParameter(\(functionArgumentName)) {" + functionContents).data(using: .utf8) ?? Data()
+        return ("\(qFunctionsArray); function processNParameter(\(functionArgumentName)) {" + functionContents).data(using: .utf8) ?? Data()
     }
     
     /// Get the player's decoding functions to un-throttle download format links download speed.
