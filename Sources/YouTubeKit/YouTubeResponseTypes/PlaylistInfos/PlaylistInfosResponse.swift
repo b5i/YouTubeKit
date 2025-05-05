@@ -100,8 +100,12 @@ public struct PlaylistInfosResponse: ContinuableResponse {
                             toReturn.videoIdsInPlaylist?.append(videoJSON["playlistVideoListRenderer"]["setVideoId"].string)
                             
                             toReturn.results.append(video)
-                        } else if let continuationToken = videoJSON["continuationItemRenderer"]["continuationEndpoint"]["continuationCommand"]["token"].string {
-                            toReturn.continuationToken = continuationToken
+                        } else if videoJSON["continuationItemRenderer"]["continuationEndpoint"].exists() {
+                            if let token = videoJSON["continuationItemRenderer"]["continuationEndpoint"]["continuationCommand"]["token"].string {
+                                toReturn.continuationToken = token
+                            } else if let commandsArray = videoJSON["continuationItemRenderer"]["continuationEndpoint"]["commandExecutorCommand"]["commands"].array, let token = commandsArray.first(where: {$0["continuationCommand"]["token"].string != nil })?["continuationCommand"]["token"].string {
+                                toReturn.continuationToken = token
+                            }
                         }
                     }
                 }

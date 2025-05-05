@@ -70,9 +70,9 @@ public class YouTubeModel {
     /// Generate the authentication hash from user's cookies required by YouTube.
     /// - Parameter cookies: user's authentification cookies.
     /// - Returns: A SAPISIDHASH cookie value, is generally used as the value for an HTTP header with name `Authorization`.
-    public func generateSAPISIDHASHForCookies(_ cookies: String) -> String? {
+    public func generateSAPISIDHASHForCookies(_ cookies: String, time: Int? = nil) -> String? {
         guard let SAPISID = cookies.ytkFirstGroupMatch(for: "SAPISID=([^\\s|;]*)") else { return nil }
-        let time = Int(Date().timeIntervalSince1970)
+        let time = time ?? Int(Date().timeIntervalSince1970)
         let data = Data("\(time) \(SAPISID) https://www.youtube.com".utf8)
         var digest = [UInt8](repeating: 0, count: Int(CC_SHA1_DIGEST_LENGTH))
         data.withUnsafeBytes {
@@ -594,7 +594,7 @@ public class YouTubeModel {
                     .init(index: 0, encode: false, content: .browseId)
                 ],
                 httpBody: [
-                    "{\"context\":{\"client\":{\"hl\":\"\(self.selectedLocaleLanguageCode)\",\"gl\":\"\(self.selectedLocaleCountryCode.uppercased())\",\"userAgent\":\"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.2 Safari/605.1.15,gzip(gfe)\",\"clientName\":\"WEB\",\"clientVersion\":\"2.20241105.02.00\",\"acceptHeader\":\"text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8\",\"mainAppWebInfo\":{\"webDisplayMode\":\"WEB_DISPLAY_MODE_BROWSER\",\"isWebNativeShareAvailable\":true}},\"user\":{\"lockedSafetyMode\":false},\"request\":{\"useSsl\":true,\"internalExperimentFlags\":[],\"consistencyTokenJars\":[]}},\"browseId\":\"",
+                    "{\"context\":{\"client\":{\"hl\":\"\(self.selectedLocaleLanguageCode)\",\"gl\":\"\(self.selectedLocaleCountryCode.uppercased())\",\"userAgent\":\"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.2 Safari/605.1.15,gzip(gfe)\",\"clientName\":\"WEB\",\"clientVersion\":\"2.20250312.04.00\",\"acceptHeader\":\"text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8\",\"mainAppWebInfo\":{\"webDisplayMode\":\"WEB_DISPLAY_MODE_BROWSER\",\"isWebNativeShareAvailable\":true}},\"user\":{\"lockedSafetyMode\":false},\"request\":{\"useSsl\":true,\"internalExperimentFlags\":[],\"consistencyTokenJars\":[]}},\"browseId\":\"",
                     "\"}"
                 ],
                 parameters: [
