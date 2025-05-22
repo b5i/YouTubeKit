@@ -432,14 +432,14 @@ public class YouTubeModel {
                     .init(name: "Accept", content: "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8"),
                     .init(name: "Accept-Encoding", content: "gzip, deflate, br"),
                     .init(name: "Host", content: "www.youtube.com"),
-                    .init(name: "User-Agent", content: "com.google.ios.youtube/20.02.3 (iPhone16,2; U; CPU iOS 18_2_1 like Mac OS X;)"),
+                    .init(name: "User-Agent", content: "com.google.ios.youtube/20.10.4 (iPhone16,2; U; CPU iOS 18_3_2 like Mac OS X;)"),
                     .init(name: "Accept-Language", content: "\(self.selectedLocale);q=0.9"),
                     .init(name: "Origin", content: "https://www.youtube.com/"),
                     .init(name: "Referer", content: "https://www.youtube.com/"),
                     .init(name: "Content-Type", content: "application/json"),
                     .init(name: "X-Origin", content: "https://www.youtube.com"),
                     .init(name: "X-Youtube-Client-Name", content: "5"),
-                    .init(name: "X-Youtube-Client-Version", content: "20.02.3"),
+                    .init(name: "X-Youtube-Client-Version", content: "20.10.4"),
                 ],
                 customHeaders: [
                     "X-Goog-Visitor-Id": .visitorData
@@ -454,14 +454,14 @@ public class YouTubeModel {
                       "context": {
                         "client": {
                           "clientName": "IOS",
-                          "clientVersion": "20.02.3",
+                          "clientVersion": "20.10.4",
                           "deviceMake": "Apple",
                           "deviceModel": "iPhone16,2",
                           "hl": "\#(self.selectedLocaleLanguageCode)",
                           "osName": "iPhone",
-                          "osVersion": "18.2.1.22C161",
+                          "osVersion": "18.3.2.22D82",
                           "timeZone": "UTC",
-                          "userAgent": "com.google.ios.youtube/20.02.3 (iPhone16,2; U; CPU iOS 18_2_1 like Mac OS X;)",
+                          "userAgent": "com.google.ios.youtube/20.10.4 (iPhone16,2; U; CPU iOS 18_3_2 like Mac OS X;)",
                           "utcOffsetMinutes": 0
                         }
                       },
