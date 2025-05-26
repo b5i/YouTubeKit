@@ -265,11 +265,7 @@ private func unwrap(_ object: Any) -> Any {
     case let array as [Any]:
         return array.map(unwrap)
     case let dictionary as [String: Any]:
-        var d = dictionary
-        dictionary.forEach { pair in
-            d[pair.key] = unwrap(pair.value)
-        }
-        return d
+        return dictionary.mapValues(unwrap)
     default:
         return object
     }
@@ -439,10 +435,7 @@ extension JSON {
      let name = json[path]
      ```
     
-     The same as:
-     ```swift
-     let name = json[9]["list"]["person"]["name"]
-     ```
+     The same as: let name = json[9]["list"]["person"]["name"]
     
      - parameter path: The target json's path.
     
@@ -470,11 +463,10 @@ extension JSON {
      Find a json in the complex data structures by using array of Int and/or String as path.
 
      - parameter path: The target json's path. Example:
-
      ```swift
      let name = json[9,"list","person","name"]
      ```
-
+    
      The same as:
      ```swift
      let name = json[9]["list"]["person"]["name"]
@@ -532,7 +524,7 @@ extension JSON: Swift.ExpressibleByFloatLiteral {
 
 extension JSON: Swift.ExpressibleByDictionaryLiteral {
     public init(dictionaryLiteral elements: (String, Any)...) {
-        let dictionary = elements.reduce(into: [String: Any](), { $0[$1.0] = $1.1})
+        let dictionary = Dictionary(elements, uniquingKeysWith: { $1 })
         self.init(dictionary)
     }
 }
@@ -684,7 +676,7 @@ extension JSON {
 
     //Optional [JSON]
     public var array: [JSON]? {
-        return type == .array ? rawArray.map { JSON($0) } : nil
+        return type == .array ? rawArray.map(JSON.init(_:)) : nil
     }
 
     //Non-optional [JSON]
@@ -713,11 +705,7 @@ extension JSON {
     //Optional [String : JSON]
     public var dictionary: [String: JSON]? {
         if type == .dictionary {
-            var d = [String: JSON](minimumCapacity: rawDictionary.count)
-            rawDictionary.forEach { pair in
-                d[pair.key] = JSON(pair.value)
-            }
-            return d
+            return rawDictionary.mapValues(JSON.init(_:))
         } else {
             return nil
         }
@@ -799,7 +787,7 @@ extension JSON {
             switch type {
             case .string: return object as? String ?? ""
             case .number: return rawNumber.stringValue
-            case .bool:   return (object as? Bool).map { String($0) } ?? ""
+            case .bool:   return (object as? Bool).map(String.init) ?? ""
             default:      return ""
             }
         }
