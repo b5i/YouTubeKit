@@ -13,18 +13,18 @@ public extension YTPlaylist {
     /// - Returns: A playlist if the decoding was successful, or nil if it wasn't. You can already know if the decoding is going to be successful using the `canShowBeDecoded` method.
     static func decodeShowFromJSON(json: JSON) -> YTPlaylist? {
         /// Decode the playlist that is named a "show" by YouTube.
-        guard let playlistId = json["navigationEndpoint"]["browseEndpoint"]["browseId"].string else { return nil }
+        guard let playlistId = json["navigationEndpoint", "browseEndpoint", "browseId"].string else { return nil }
         var playlist = YTPlaylist(playlistId: playlistId.hasPrefix("VL") ? playlistId : "VL" + playlistId)
-        playlist.title = json["title"]["simpleText"].string
+        playlist.title = json["title", "simpleText"].string
         
-        YTThumbnail.appendThumbnails(json: json["thumbnailRenderer"]["showCustomThumbnailRenderer"]["thumbnail"], thumbnailList: &playlist.thumbnails)
+        YTThumbnail.appendThumbnails(json: json["thumbnailRenderer", "showCustomThumbnailRenderer", "thumbnail"], thumbnailList: &playlist.thumbnails)
         
         guard let videoCountArray = json["thumbnailOverlays"].array else { return playlist }
         
         for videoCountPotential in videoCountArray {
-            if let videoCount = videoCountPotential["thumbnailOverlayBottomPanelRenderer"]["text"]["simpleText"].string {
+            if let videoCount = videoCountPotential["thumbnailOverlayBottomPanelRenderer", "text", "simpleText"].string {
                 playlist.videoCount = videoCount
-            } else if let videoCountTextArray = videoCountPotential["thumbnailOverlayBottomPanelRenderer"]["text"]["runs"].array {
+            } else if let videoCountTextArray = videoCountPotential["thumbnailOverlayBottomPanelRenderer", "text", "runs"].array {
                 playlist.videoCount = videoCountTextArray.map({$0["text"].stringValue}).joined()
             }
         }

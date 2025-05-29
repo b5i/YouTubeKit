@@ -58,7 +58,7 @@ public struct VideoInfosWithDownloadFormatsResponse: YouTubeResponse {
         
         // Extract the default formats.
         
-        if let downloadFormatsJSONArray = json["streamingData"]["formats"].array {
+        if let downloadFormatsJSONArray = json["streamingData", "formats"].array {
             toReturn.defaultFormats = convertJSONToDownloadFormats(
                 json: downloadFormatsJSONArray,
                 instructionsArray: instructionArray,
@@ -68,7 +68,7 @@ public struct VideoInfosWithDownloadFormatsResponse: YouTubeResponse {
         
         // Extract the download formats.
         
-        if let downloadFormatsJSONArray = json["streamingData"]["adaptiveFormats"].array {
+        if let downloadFormatsJSONArray = json["streamingData", "adaptiveFormats"].array {
             toReturn.downloadFormats = convertJSONToDownloadFormats(
                 json: downloadFormatsJSONArray,
                 instructionsArray: instructionArray,
@@ -584,7 +584,7 @@ public struct VideoInfosWithDownloadFormatsResponse: YouTubeResponse {
                     }
                 }(),
                 loudness: json["loudnessDb"].double,
-                formatLocaleInfos: json["audioTrack"]["id"].string != nil ? .init(displayName: json["audioTrack"]["displayName"].string, localeId: json["audioTrack"]["id"].string, isDefaultAudioFormat: json["audioTrack"]["audioIsDefault"].bool) : nil
+                formatLocaleInfos: json["audioTrack", "id"].string != nil ? .init(displayName: json["audioTrack", "displayName"].string, localeId: json["audioTrack", "id"].string, isDefaultAudioFormat: json["audioTrack", "audioIsDefault"].bool) : nil
             )
         }
     }

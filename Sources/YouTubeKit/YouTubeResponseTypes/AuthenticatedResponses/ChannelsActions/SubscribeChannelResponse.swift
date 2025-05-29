@@ -23,7 +23,7 @@ public struct SubscribeChannelResponse: SimpleActionAuthenticatedResponse {
     public static func decodeJSON(json: JSON) -> SubscribeChannelResponse {
         var toReturn = SubscribeChannelResponse()
         
-        guard !(json["responseContext"]["mainAppWebResponseContext"]["loggedOut"].bool ?? true) else { return toReturn }
+        guard !(json["responseContext", "mainAppWebResponseContext", "loggedOut"].bool ?? true) else { return toReturn }
         
         toReturn.isDisconnected = false
         

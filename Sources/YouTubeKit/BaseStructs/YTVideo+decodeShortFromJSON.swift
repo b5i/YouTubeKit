@@ -20,9 +20,9 @@ public extension YTVideo {
         /// Inititalize a new ``YTSearchResultType/Video-swift.struct`` instance to put the informations in it.
         var video = YTVideo(videoId: videoId)
                     
-        video.title = json["headline"]["simpleText"].string
+        video.title = json["headline", "simpleText"].string
                 
-        video.viewCount = json["viewCountText"]["simpleText"].string
+        video.viewCount = json["viewCountText", "simpleText"].string
         
         YTThumbnail.appendThumbnails(json: json["thumbnail"], thumbnailList: &video.thumbnails)
         
@@ -35,13 +35,13 @@ public extension YTVideo {
     ///
     /// The informations about shorts are very little compared to the informations you would get with a normal video.
     static func decodeShortFromLockupJSON(json: JSON) -> YTVideo? {
-        guard let videoId = json["onTap"]["innertubeCommand"]["reelWatchEndpoint"]["videoId"].string else { return nil }
+        guard let videoId = json["onTap", "innertubeCommand", "reelWatchEndpoint", "videoId"].string else { return nil }
         
         var video = YTVideo(videoId: videoId)
         
-        video.title = json["overlayMetadata"]["primaryText"]["content"].string
+        video.title = json["overlayMetadata", "primaryText", "content"].string
         
-        video.viewCount = json["overlayMetadata"]["secondaryText"]["content"].string
+        video.viewCount = json["overlayMetadata", "secondaryText", "content"].string
         
         YTThumbnail.appendThumbnails(json: json["thumbnail"], thumbnailList: &video.thumbnails)
         

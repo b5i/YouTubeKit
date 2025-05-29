@@ -87,7 +87,7 @@ public struct ChannelInfosResponse: YouTubeResponse {
     ///     /// Make conform to ChannelContent
     ///     static var type: ChannelInfosResponse.RequestTypes = .custom("RecommendedChannels")
     ///     static func canDecode(json: JSON) -> Bool {
-    ///         guard let endpoint: String = json["endpoint"]["commandMetadata"]["webCommandMetadata"]["url"].string else { return false }
+    ///         guard let endpoint: String = json["endpoint", "commandMetadata", "webCommandMetadata", "url"].string else { return false }
     ///         return endpoint.components(separatedBy: "/").last == "channels"
     ///     }
     ///
@@ -162,7 +162,7 @@ public struct ChannelInfosResponse: YouTubeResponse {
     public static func decodeJSON(json: JSON) -> ChannelInfosResponse {
         var toReturn = ChannelInfosResponse()
                 
-        if json["header"]["pageHeaderRenderer"].exists() {
+        if json["header", "pageHeaderRenderer"].exists() {
             toReturn.extractChannelInfosFromPageHeaderRenderer(json: json)
         } else {
             toReturn.extractChannelInfosFromC4TabbedHeaderRenderer(json: json)
@@ -170,7 +170,7 @@ public struct ChannelInfosResponse: YouTubeResponse {
         
         /// Time to get the params to be able to make channel content requests.
         
-        guard let tabsArray = json["contents"]["twoColumnBrowseResultsRenderer"]["tabs"].array else { return toReturn }
+        guard let tabsArray = json["contents", "twoColumnBrowseResultsRenderer", "tabs"].array else { return toReturn }
         
         var nonCheckedRequestTypes = requestTypes
         
@@ -178,7 +178,7 @@ public struct ChannelInfosResponse: YouTubeResponse {
             for (requestType, requestClass) in nonCheckedRequestTypes {
                 if requestClass.isTabOfSelfType(json: tab) {
                     /// The request already given one of the ``ChannelContent`` so we decode it.
-                    if tab["tabRenderer"]["selected"].bool ?? false, requestClass.canDecode(json: tab) {
+                    if tab["tabRenderer", "selected"].bool ?? false, requestClass.canDecode(json: tab) {
                         if let channelId = toReturn.channelId {
                             let decodedContent = requestClass.decodeJSONFromTab(
                                 tab,
@@ -207,7 +207,7 @@ public struct ChannelInfosResponse: YouTubeResponse {
     
     // TODO: remove that possibility in the future if it's definitely not used anymore
     private mutating func extractChannelInfosFromC4TabbedHeaderRenderer(json: JSON) {
-        let channelInfos = json["header"]["c4TabbedHeaderRenderer"]
+        let channelInfos = json["header", "c4TabbedHeaderRenderer"]
         
         
         self.channelId = channelInfos["channelId"].string
@@ -219,45 +219,45 @@ public struct ChannelInfosResponse: YouTubeResponse {
         
         if let badgesList = channelInfos["badges"].array {
             for badge in badgesList {
-                if let badgeName = badge["metadataBadgeRenderer"]["style"].string {
+                if let badgeName = badge["metadataBadgeRenderer", "style"].string {
                     self.badges.append(badgeName)
                 }
             }
         }
         
-        self.isSubcribeButtonEnabled = channelInfos["subscribeButton"]["subscribeButtonRenderer"]["enabled"].bool
+        self.isSubcribeButtonEnabled = channelInfos["subscribeButton", "subscribeButtonRenderer", "enabled"].bool
         
         self.name = channelInfos["title"].string
-        if let handle = channelInfos["channelHandleText"]["runs"].array?.first?["text"].string, !handle.isEmpty {
+        if let handle = channelInfos["channelHandleText", "runs"].array?.first?["text"].string, !handle.isEmpty {
             self.handle = handle
         } else {
-            self.handle = channelInfos["navigationEndpoint"]["browseEndpoint"]["canonicalBaseUrl"].string?.replacingOccurrences(of: "/", with: "") // Need to remove the first slash because the string is like "/@ChannelHandle"
+            self.handle = channelInfos["navigationEndpoint", "browseEndpoint", "canonicalBaseUrl"].string?.replacingOccurrences(of: "/", with: "") // Need to remove the first slash because the string is like "/@ChannelHandle"
         }
         
-        self.subscribeStatus = channelInfos["subscribeButton"]["subscribeButtonRenderer"]["subscribed"].bool
+        self.subscribeStatus = channelInfos["subscribeButton", "subscribeButtonRenderer", "subscribed"].bool
         
-        self.subscriberCount = channelInfos["subscriberCountText"]["simpleText"].string
+        self.subscriberCount = channelInfos["subscriberCountText", "simpleText"].string
         
-        self.videoCount = channelInfos["videosCountText"]["runs"].arrayValue.map({$0["text"].stringValue}).joined()
+        self.videoCount = channelInfos["videosCountText", "runs"].arrayValue.map({$0["text"].stringValue}).joined()
     }
     
     private mutating func extractChannelInfosFromPageHeaderRenderer(json: JSON) {
-        let channelInfos = json["header"]["pageHeaderRenderer"]["content"]["pageHeaderViewModel"]
-        let metadata = json["metadata"]["channelMetadataRenderer"]
+        let channelInfos = json["header", "pageHeaderRenderer", "content", "pageHeaderViewModel"]
+        let metadata = json["metadata", "channelMetadataRenderer"]
         
-        let subscribeButton: JSON? = channelInfos["actions"]["flexibleActionsViewModel"]["actionsRows"].arrayValue.reduce([] as [JSON], {var mutArray = $0; mutArray.append(contentsOf: $1["actions"].arrayValue); return mutArray}).first(where: {$0["subscribeButtonViewModel"].exists()})?["subscribeButtonViewModel"]
+        let subscribeButton: JSON? = channelInfos["actions", "flexibleActionsViewModel", "actionsRows"].arrayValue.reduce([] as [JSON], {var mutArray = $0; mutArray.append(contentsOf: $1["actions"].arrayValue); return mutArray}).first(where: {$0["subscribeButtonViewModel"].exists()})?["subscribeButtonViewModel"]
         
         self.channelId = metadata["externalId"].string ?? subscribeButton?["channelId"].string
         
         /// Create a new json to replace the "avatar" dictionnary key to the "thumbnail" for the extraction with ``YTThumbnail/appendThumbnails(json:thumbnailList:)`` to work.
-        YTThumbnail.appendThumbnails(json: channelInfos["image"]["decoratedAvatarViewModel"]["avatar"]["avatarViewModel"], thumbnailList: &self.avatarThumbnails)
+        YTThumbnail.appendThumbnails(json: channelInfos["image", "decoratedAvatarViewModel", "avatar", "avatarViewModel"], thumbnailList: &self.avatarThumbnails)
         
-        YTThumbnail.appendThumbnails(json: channelInfos["banner"]["imageBannerViewModel"], thumbnailList: &self.bannerThumbnails)
+        YTThumbnail.appendThumbnails(json: channelInfos["banner", "imageBannerViewModel"], thumbnailList: &self.bannerThumbnails)
         
         /* badges are disabled for the moment
         if let badgesList = channelInfos["badges"].array {
             for badge in badgesList {
-                if let badgeName = badge["metadataBadgeRenderer"]["style"].string {
+                if let badgeName = badge["metadataBadgeRenderer", "style"].string {
                     self.badges.append(badgeName)
                 }
             }
@@ -266,24 +266,24 @@ public struct ChannelInfosResponse: YouTubeResponse {
         
         self.isSubcribeButtonEnabled = !(subscribeButton?["disableSubscribeButton"].bool ?? true) // TODO: add notificationBell
         
-        self.name = channelInfos["title"]["dynamicTextViewModel"]["text"]["content"].string ?? metadata["title"].string
+        self.name = channelInfos["title", "dynamicTextViewModel", "text", "content"].string ?? metadata["title"].string
         
-        let metadataRows = channelInfos["metadata"]["contentMetadataViewModel"]["metadataRows"]
+        let metadataRows = channelInfos["metadata", "contentMetadataViewModel", "metadataRows"]
         
         /*
          metadata -> contentMetadataViewModel -> [metadataRows] -> [metadataParts] -> text -> content
          */
         self.handle = metadataRows.arrayValue
-            .first(where: {$0["metadataParts"].arrayValue.contains(where: {$0["text"]["content"].stringValue.starts(with: "@")})})?["metadataParts"].arrayValue // selects the metadataParts
-            .first(where: {$0["text"]["content"].stringValue.starts(with: "@")})?["text"]["content"].string
+            .first(where: {$0["metadataParts"].arrayValue.contains(where: {$0["text", "content"].stringValue.starts(with: "@")})})?["metadataParts"].arrayValue // selects the metadataParts
+            .first(where: {$0["text", "content"].stringValue.starts(with: "@")})?["text", "content"].string
                 
-        //self.subscribeStatus = channelInfos["subscribeButton"]["subscribeButtonRenderer"]["subscribed"].bool TODO: broken at the moment
+        //self.subscribeStatus = channelInfos["subscribeButton", "subscribeButtonRenderer", "subscribed"].bool TODO: broken at the moment
         
         // TODO: implement badges extraction via dynamicTextViewModel -> text -> attachmentRuns
         
-        self.subscriberCount = !metadataRows.arrayValue.isEmpty ? metadataRows.arrayValue.last!["metadataParts"].arrayValue.first?["text"]["content"].string : nil
+        self.subscriberCount = !metadataRows.arrayValue.isEmpty ? metadataRows.arrayValue.last!["metadataParts"].arrayValue.first?["text", "content"].string : nil
         
-        self.videoCount = !metadataRows.arrayValue.isEmpty ? metadataRows.arrayValue.last!["metadataParts"].arrayValue.count > 1 ? metadataRows.arrayValue.last!["metadataParts"].arrayValue[1]["text"]["content"].string : nil : nil
+        self.videoCount = !metadataRows.arrayValue.isEmpty ? metadataRows.arrayValue.last!["metadataParts"].arrayValue.count > 1 ? metadataRows.arrayValue.last!["metadataParts"].arrayValue[1]["text", "content"].string : nil : nil
         
         self.shortDescription = metadata["description"].string
         
@@ -597,10 +597,10 @@ public struct ChannelInfosResponse: YouTubeResponse {
         }
         
         public static func decodeJSONFromTab(_ tab: JSON, channelInfos: YTLittleChannelInfos?) -> Videos? {
-            guard let videosArray = tab["tabRenderer"]["content"]["richGridRenderer"]["contents"].array else { return nil }
+            guard let videosArray = tab["tabRenderer", "content", "richGridRenderer", "contents"].array else { return nil }
             var toReturn = Videos()
             for video in videosArray {
-                let videoJSON = video["richItemRenderer"]["content"]["videoRenderer"]
+                let videoJSON = video["richItemRenderer", "content", "videoRenderer"]
                 if var decodedVideo = YTVideo.decodeJSON(json: videoJSON) {
                     if let channelInfos = channelInfos {
                         decodedVideo.channel = channelInfos
@@ -616,16 +616,16 @@ public struct ChannelInfosResponse: YouTubeResponse {
             guard
                 let itemsArray = json["onResponseReceivedActions"].array,
                     itemsArray.count > 0,
-                    let itemsArray = itemsArray[0]["appendContinuationItemsAction"]["continuationItems"].array
+                    let itemsArray = itemsArray[0]["appendContinuationItemsAction", "continuationItems"].array
             else { return toReturn }
             
             var result = Videos()
             
             for continuationItem in itemsArray {
-                let videoJSON = continuationItem["richItemRenderer"]["content"]["videoRenderer"]
+                let videoJSON = continuationItem["richItemRenderer", "content", "videoRenderer"]
                 if let decodedVideo = YTVideo.decodeJSON(json: videoJSON) {
                     result.items.append(decodedVideo)
-                } else if let continuationToken = continuationItem["continuationItemRenderer"]["continuationEndpoint"]["continuationCommand"]["token"].string {
+                } else if let continuationToken = continuationItem["continuationItemRenderer", "continuationEndpoint", "continuationCommand", "token"].string {
                     toReturn.newContinuationToken = continuationToken
                 }
             }
@@ -636,7 +636,7 @@ public struct ChannelInfosResponse: YouTubeResponse {
         }
         
         public static func isTabOfSelfType(json: JSON) -> Bool {
-            guard let tabURL = json["tabRenderer"]["endpoint"]["commandMetadata"]["webCommandMetadata"]["url"].string else { return false }
+            guard let tabURL = json["tabRenderer", "endpoint", "commandMetadata", "webCommandMetadata", "url"].string else { return false }
             return tabURL.ytkFirstGroupMatch(for: "[\\S]*\\/([\\S]*)") == "videos" // last component of the path
         }
     }
@@ -658,16 +658,16 @@ public struct ChannelInfosResponse: YouTubeResponse {
             guard
                 let itemsArray = json["onResponseReceivedActions"].array,
                     itemsArray.count > 0,
-                    let itemsArray = itemsArray[0]["appendContinuationItemsAction"]["continuationItems"].array
+                    let itemsArray = itemsArray[0]["appendContinuationItemsAction", "continuationItems"].array
             else { return toReturn }
             
             var result = Shorts()
             
             for continuationItem in itemsArray {
-                let shortJSON = continuationItem["richItemRenderer"]["content"]
+                let shortJSON = continuationItem["richItemRenderer", "content"]
                 if let decodedShort = YTVideo.decodeShortFromJSON(json: shortJSON["reelItemRenderer"]) ?? YTVideo.decodeShortFromLockupJSON(json: shortJSON["shortsLockupViewModel"]) {
                     result.items.append(decodedShort)
-                } else if let continuationToken = continuationItem["continuationItemRenderer"]["continuationEndpoint"]["continuationCommand"]["token"].string {
+                } else if let continuationToken = continuationItem["continuationItemRenderer", "continuationEndpoint", "continuationCommand", "token"].string {
                     toReturn.newContinuationToken = continuationToken
                 }
             }
@@ -678,10 +678,10 @@ public struct ChannelInfosResponse: YouTubeResponse {
         }
         
         public static func decodeJSONFromTab(_ tab: JSON, channelInfos: YTLittleChannelInfos?) -> Shorts? {
-            guard let videosArray = tab["tabRenderer"]["content"]["richGridRenderer"]["contents"].array else { return nil }
+            guard let videosArray = tab["tabRenderer", "content", "richGridRenderer", "contents"].array else { return nil }
             var toReturn = Shorts()
             for video in videosArray {
-                if var decodedVideo = YTVideo.decodeShortFromJSON(json: video["richItemRenderer"]["content"]["reelItemRenderer"]) ?? YTVideo.decodeShortFromLockupJSON(json: video["richItemRenderer"]["content"]["shortsLockupViewModel"]) {
+                if var decodedVideo = YTVideo.decodeShortFromJSON(json: video["richItemRenderer", "content", "reelItemRenderer"]) ?? YTVideo.decodeShortFromLockupJSON(json: video["richItemRenderer", "content", "shortsLockupViewModel"]) {
                     if let channelInfos = channelInfos {
                         decodedVideo.channel = channelInfos
                     }
@@ -692,7 +692,7 @@ public struct ChannelInfosResponse: YouTubeResponse {
         }
         
         public static func isTabOfSelfType(json: JSON) -> Bool {
-            guard let tabURL = json["tabRenderer"]["endpoint"]["commandMetadata"]["webCommandMetadata"]["url"].string else { return false }
+            guard let tabURL = json["tabRenderer", "endpoint", "commandMetadata", "webCommandMetadata", "url"].string else { return false }
             return tabURL.ytkFirstGroupMatch(for: "[\\S]*\\/([\\S]*)") == "shorts" // last component of the path
         }
     }
@@ -714,16 +714,16 @@ public struct ChannelInfosResponse: YouTubeResponse {
             guard
                 let itemsArray = json["onResponseReceivedActions"].array,
                     itemsArray.count > 0,
-                    let itemsArray = itemsArray[0]["appendContinuationItemsAction"]["continuationItems"].array
+                    let itemsArray = itemsArray[0]["appendContinuationItemsAction", "continuationItems"].array
             else { return toReturn }
             
             var result = Directs()
             
             for continuationItem in itemsArray {
-                let videoJSON = continuationItem["richItemRenderer"]["content"]["videoRenderer"]
+                let videoJSON = continuationItem["richItemRenderer", "content", "videoRenderer"]
                 if let decodedVideo = YTVideo.decodeJSON(json: videoJSON) {
                     result.items.append(decodedVideo)
-                } else if let continuationToken = continuationItem["continuationItemRenderer"]["continuationEndpoint"]["continuationCommand"]["token"].string {
+                } else if let continuationToken = continuationItem["continuationItemRenderer", "continuationEndpoint", "continuationCommand", "token"].string {
                     toReturn.newContinuationToken = continuationToken
                 }
             }
@@ -734,10 +734,10 @@ public struct ChannelInfosResponse: YouTubeResponse {
         }
         
         public static func decodeJSONFromTab(_ tab: JSON, channelInfos: YTLittleChannelInfos?) -> Directs? {
-            guard let videosArray = tab["tabRenderer"]["content"]["richGridRenderer"]["contents"].array else { return nil }
+            guard let videosArray = tab["tabRenderer", "content", "richGridRenderer", "contents"].array else { return nil }
             var toReturn = Directs()
             for video in videosArray {
-                let videoJSON = video["richItemRenderer"]["content"]["videoRenderer"]
+                let videoJSON = video["richItemRenderer", "content", "videoRenderer"]
                 if YTVideo.canBeDecoded(json: videoJSON), var decodedVideo = YTVideo.decodeJSON(json: videoJSON) {
                     if let channelInfos = channelInfos {
                         decodedVideo.channel = channelInfos
@@ -749,7 +749,7 @@ public struct ChannelInfosResponse: YouTubeResponse {
         }
         
         public static func isTabOfSelfType(json: JSON) -> Bool {
-            guard let tabURL = json["tabRenderer"]["endpoint"]["commandMetadata"]["webCommandMetadata"]["url"].string else { return false }
+            guard let tabURL = json["tabRenderer", "endpoint", "commandMetadata", "webCommandMetadata", "url"].string else { return false }
             return tabURL.ytkFirstGroupMatch(for: "[\\S]*\\/([\\S]*)") == "streams" // last component of the path
         }
     }
@@ -771,7 +771,7 @@ public struct ChannelInfosResponse: YouTubeResponse {
             guard
                 let itemsArray = json["onResponseReceivedActions"].array,
                     itemsArray.count > 0,
-                    let itemsArray = itemsArray[0]["appendContinuationItemsAction"]["continuationItems"].array
+                    let itemsArray = itemsArray[0]["appendContinuationItemsAction", "continuationItems"].array
             else { return toReturn }
             
             var result = Playlists()
@@ -782,7 +782,7 @@ public struct ChannelInfosResponse: YouTubeResponse {
                 } else if let decodedPlaylist = YTPlaylist.decodeJSON(json: continuationItem["gridPlaylistRenderer"]) {
                     /// Decoding normal playlist
                     result.items.append(decodedPlaylist)
-                } else if let continuationToken = continuationItem["continuationItemRenderer"]["continuationEndpoint"]["continuationCommand"]["token"].string {
+                } else if let continuationToken = continuationItem["continuationItemRenderer", "continuationEndpoint", "continuationCommand", "token"].string {
                     toReturn.newContinuationToken = continuationToken
                 }
             }
@@ -793,12 +793,12 @@ public struct ChannelInfosResponse: YouTubeResponse {
         }
         
         public static func decodeJSONFromTab(_ tab: JSON, channelInfos: YTLittleChannelInfos?) -> Playlists? {
-            guard let playlistGroupsArray = tab["tabRenderer"]["content"]["sectionListRenderer"]["contents"].array else { return nil }
+            guard let playlistGroupsArray = tab["tabRenderer", "content", "sectionListRenderer", "contents"].array else { return nil }
             var toReturn = Playlists()
             for playlistGroup in playlistGroupsArray {
-                guard let secondPlaylistGroupArray = playlistGroup["itemSectionRenderer"]["contents"].array else { continue }
+                guard let secondPlaylistGroupArray = playlistGroup["itemSectionRenderer", "contents"].array else { continue }
                 for secondPlaylistGroup in secondPlaylistGroupArray {
-                    guard let playlistArray = secondPlaylistGroup["gridRenderer"]["items"].array else { continue }
+                    guard let playlistArray = secondPlaylistGroup["gridRenderer", "items"].array else { continue }
                     for playlist in playlistArray {
                         if var decodedPlaylist = YTPlaylist.decodeJSON(json: playlist["gridPlaylistRenderer"]) ?? YTPlaylist.decodeLockupJSON(json: playlist["lockupViewModel"]) {
                             if let channelInfos = channelInfos {
@@ -813,13 +813,13 @@ public struct ChannelInfosResponse: YouTubeResponse {
         }
         
         public static func getContinuationFromTab(json: JSON) -> String? {
-            guard let playlistGroupsArray = json["tabRenderer"]["content"]["sectionListRenderer"]["contents"].array else { return nil }
+            guard let playlistGroupsArray = json["tabRenderer", "content", "sectionListRenderer", "contents"].array else { return nil }
             for playlistGroup in playlistGroupsArray {
-                guard let secondPlaylistGroupArray = playlistGroup["itemSectionRenderer"]["contents"].array else { continue }
+                guard let secondPlaylistGroupArray = playlistGroup["itemSectionRenderer", "contents"].array else { continue }
                 for secondPlaylistGroup in secondPlaylistGroupArray {
-                    guard let playlistArray = secondPlaylistGroup["gridRenderer"]["items"].array else { continue }
+                    guard let playlistArray = secondPlaylistGroup["gridRenderer", "items"].array else { continue }
                     for potentialContinuation in playlistArray.reversed() {
-                        if let token = potentialContinuation["continuationItemRenderer"]["continuationEndpoint"]["continuationCommand"]["token"].string {
+                        if let token = potentialContinuation["continuationItemRenderer", "continuationEndpoint", "continuationCommand", "token"].string {
                             return token
                         }
                     }
@@ -829,7 +829,7 @@ public struct ChannelInfosResponse: YouTubeResponse {
         }
         
         public static func isTabOfSelfType(json: JSON) -> Bool {
-            guard let tabURL = json["tabRenderer"]["endpoint"]["commandMetadata"]["webCommandMetadata"]["url"].string else { return false }
+            guard let tabURL = json["tabRenderer", "endpoint", "commandMetadata", "webCommandMetadata", "url"].string else { return false }
             return tabURL.ytkFirstGroupMatch(for: "[\\S]*\\/([\\S]*)") == "playlists" // last component of the path
         }
     }
@@ -885,7 +885,7 @@ public struct ChannelInfosResponse: YouTubeResponse {
     /// - Parameter json: the JSON to be decoded.
     /// - Returns: The params that would be used to make the request, in a custom ``ChannelContent``conforming struct you would typically put its custom ``ChannelInfosResponse/RequestTypes-swift.enum`` associated with the params in ``ChannelInfosResponse/requestParams``.
     public static func getParams(json: JSON) -> String? {
-        return json["tabRenderer"]["endpoint"]["browseEndpoint"]["params"].string
+        return json["tabRenderer", "endpoint", "browseEndpoint", "params"].string
     }
     
     /// Method that can be used to retrieve some request's params to make a request to get an instance of this ``ChannelContent`` type.

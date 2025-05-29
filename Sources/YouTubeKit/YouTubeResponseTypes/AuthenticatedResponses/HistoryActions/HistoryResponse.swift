@@ -43,15 +43,15 @@ public struct HistoryResponse: AuthenticatedContinuableResponse {
     public static func decodeJSON(json: JSON) -> HistoryResponse {
         var toReturn = HistoryResponse()
         
-        guard !(json["responseContext"]["mainAppWebResponseContext"]["loggedOut"].bool ?? true) else { return toReturn }
+        guard !(json["responseContext", "mainAppWebResponseContext", "loggedOut"].bool ?? true) else { return toReturn }
         
         toReturn.isDisconnected = false
         
-        guard let tabJSON = json["contents"]["twoColumnBrowseResultsRenderer"]["tabs"].array?.first(where: {$0["tabRenderer"]["selected"].bool == true})?["tabRenderer"], tabJSON["tabIdentifier"].string == "FEhistory" else { return toReturn }
+        guard let tabJSON = json["contents", "twoColumnBrowseResultsRenderer", "tabs"].array?.first(where: {$0["tabRenderer", "selected"].bool == true})?["tabRenderer"], tabJSON["tabIdentifier"].string == "FEhistory" else { return toReturn }
         
-        toReturn.title = json["header"]["pageHeaderRenderer"]["pageTitle"].string
+        toReturn.title = json["header", "pageHeaderRenderer", "pageTitle"].string
         
-        let responseContents = tabJSON["content"]["sectionListRenderer"]["contents"].arrayValue
+        let responseContents = tabJSON["content", "sectionListRenderer", "contents"].arrayValue
         
         for contentGroup in responseContents {
             if contentGroup["itemSectionRenderer"].exists() {
@@ -63,7 +63,7 @@ public struct HistoryResponse: AuthenticatedContinuableResponse {
                     toReturn.results.append(historyBlock)
                 }
             } else if contentGroup["continuationItemRenderer"].exists() {
-                toReturn.continuationToken = contentGroup["continuationItemRenderer"]["continuationEndpoint"]["continuationCommand"]["token"].string
+                toReturn.continuationToken = contentGroup["continuationItemRenderer", "continuationEndpoint", "continuationCommand", "token"].string
             }
         }
         
@@ -71,18 +71,18 @@ public struct HistoryResponse: AuthenticatedContinuableResponse {
     }
     
     static func decodeHistoryBlock(historyBlockJSON: JSON) -> HistoryBlock {
-        let title = historyBlockJSON["header"]["itemSectionHeaderRenderer"]["title"]["runs"].array?.map({$0["text"].stringValue}).joined() ?? historyBlockJSON["header"]["itemSectionHeaderRenderer"]["title"]["simpleText"].stringValue
+        let title = historyBlockJSON["header", "itemSectionHeaderRenderer", "title", "runs"].array?.map({$0["text"].stringValue}).joined() ?? historyBlockJSON["header", "itemSectionHeaderRenderer", "title", "simpleText"].stringValue
         var toAppend: HistoryBlock = .init(groupTitle: title, contentsArray: [])
         for videoJSON in historyBlockJSON["contents"].arrayValue {
             if let video = YTVideo.decodeJSON(json: videoJSON["videoRenderer"]) {
-                let block = HistoryBlock.VideoWithToken(video: video, suppressToken: videoJSON["videoRenderer"]["menu"]["menuRenderer"]["topLevelButtons"].array?.first?["buttonRenderer"]["serviceEndpoint"]["feedbackEndpoint"]["feedbackToken"].string)
+                let block = HistoryBlock.VideoWithToken(video: video, suppressToken: videoJSON["videoRenderer", "menu", "menuRenderer", "topLevelButtons"].array?.first?["buttonRenderer", "serviceEndpoint", "feedbackEndpoint", "feedbackToken"].string)
                 toAppend.contentsArray.append(block)
             } else if videoJSON["reelShelfRenderer"].exists() {
                 var block = HistoryBlock.ShortsBlock(shorts: [], suppressTokens: [])
-                for shortJSON in videoJSON["reelShelfRenderer"]["items"].arrayValue {
+                for shortJSON in videoJSON["reelShelfRenderer", "items"].arrayValue {
                     if let short = YTVideo.decodeShortFromJSON(json: shortJSON["reelItemRenderer"]) ?? YTVideo.decodeShortFromLockupJSON(json: shortJSON["shortsLockupViewModel"]) {
                         block.shorts.append(short)
-                        block.suppressTokens.append(shortJSON["reelItemRenderer"]["menu"]["menuRenderer"]["items"].arrayValue.first?["menuServiceItemRenderer"]["serviceEndpoint"]["feedbackEndpoint"]["feedbackToken"].string)
+                        block.suppressTokens.append(shortJSON["reelItemRenderer", "menu", "menuRenderer", "items"].arrayValue.first?["menuServiceItemRenderer", "serviceEndpoint", "feedbackEndpoint", "feedbackToken"].string)
                     }
                 }
                 toAppend.contentsArray.append(block)
@@ -108,13 +108,13 @@ public struct HistoryResponse: AuthenticatedContinuableResponse {
         public static func decodeJSON(json: JSON) -> HistoryResponse.Continuation {
             var toReturn = Continuation()
             
-            guard !(json["responseContext"]["mainAppWebResponseContext"]["loggedOut"].bool ?? true) else { return toReturn }
+            guard !(json["responseContext", "mainAppWebResponseContext", "loggedOut"].bool ?? true) else { return toReturn }
             
             toReturn.isDisconnected = false
             
             guard let continuationActionsArray = json["onResponseReceivedActions"].array else { return toReturn }
             for continationAction in continuationActionsArray {
-                guard let continuationItemsArray = continationAction["appendContinuationItemsAction"]["continuationItems"].array else { continue }
+                guard let continuationItemsArray = continationAction["appendContinuationItemsAction", "continuationItems"].array else { continue }
                 for contentGroup in continuationItemsArray {
                     if contentGroup["itemSectionRenderer"].exists() {
                         let videoGroup = contentGroup["itemSectionRenderer"]
@@ -125,7 +125,7 @@ public struct HistoryResponse: AuthenticatedContinuableResponse {
                             toReturn.results.append(historyBlock)
                         }
                     } else if contentGroup["continuationItemRenderer"].exists() {
-                        toReturn.continuationToken = contentGroup["continuationItemRenderer"]["continuationEndpoint"]["continuationCommand"]["token"].string
+                        toReturn.continuationToken = contentGroup["continuationItemRenderer", "continuationEndpoint", "continuationCommand", "token"].string
                     }
                 }
             }

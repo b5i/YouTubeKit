@@ -19,11 +19,11 @@ public struct DeleteCommentResponse: SimpleActionAuthenticatedResponse {
     public static func decodeJSON(json: JSON) -> Self {
         var toReturn = Self()
         
-        guard !(json["responseContext"]["mainAppWebResponseContext"]["loggedOut"].bool ?? true) else { return toReturn }
+        guard !(json["responseContext", "mainAppWebResponseContext", "loggedOut"].bool ?? true) else { return toReturn }
         
         toReturn.isDisconnected = false
         
-        toReturn.success = json["actions"].arrayValue.first(where: {$0["removeCommentAction"]["actionResult"]["status"].string == "STATUS_SUCCEEDED" && $0["removeCommentAction"]["actionResult"]["feedback"].string == "FEEDBACK_REMOVE"}) != nil
+        toReturn.success = json["actions"].arrayValue.first(where: {$0["removeCommentAction", "actionResult", "status"].string == "STATUS_SUCCEEDED" && $0["removeCommentAction", "actionResult", "feedback"].string == "FEEDBACK_REMOVE"}) != nil
         
         return toReturn
     }

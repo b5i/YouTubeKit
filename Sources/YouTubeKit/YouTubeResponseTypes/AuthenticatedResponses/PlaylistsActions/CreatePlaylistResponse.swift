@@ -24,7 +24,7 @@ public struct CreatePlaylistResponse: AuthenticatedResponse {
     public static func decodeJSON(json: JSON) -> CreatePlaylistResponse {
         var toReturn = CreatePlaylistResponse()
         
-        guard !(json["responseContext"]["mainAppWebResponseContext"]["loggedOut"].bool ?? true) else { return toReturn }
+        guard !(json["responseContext", "mainAppWebResponseContext", "loggedOut"].bool ?? true) else { return toReturn }
         
         toReturn.isDisconnected = false
         
@@ -37,7 +37,7 @@ public struct CreatePlaylistResponse: AuthenticatedResponse {
     public static func extractPlaylistAndCreatorIdsFrom(json: JSON) -> (playlistId: String?, creatorId: String?) {
         var toReturn: (playlistId: String?, creatorId: String?) = (nil, nil)
         for action in json["actions"].arrayValue {
-            if let results = action["runAttestationCommand"]["ids"].array {
+            if let results = action["runAttestationCommand", "ids"].array {
                 for result in results {
                     if let playlistId = result["playlistId"].string {
                         toReturn.playlistId = "VL" + playlistId

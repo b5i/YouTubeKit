@@ -28,18 +28,18 @@ public struct AccountInfosResponse: AuthenticatedResponse {
     public static func decodeJSON(json: JSON) -> AccountInfosResponse {
         var toReturn = AccountInfosResponse()
         
-        guard !(json["responseContext"]["mainAppWebResponseContext"]["loggedOut"].bool ?? true) else { return toReturn }
+        guard !(json["responseContext", "mainAppWebResponseContext", "loggedOut"].bool ?? true) else { return toReturn }
         
         toReturn.isDisconnected = false
         
         for action in json["actions"].arrayValue {
-            let accountInfos = action["openPopupAction"]["popup"]["multiPageMenuRenderer"]["header"]["activeAccountHeaderRenderer"]
+            let accountInfos = action["openPopupAction", "popup", "multiPageMenuRenderer", "header", "activeAccountHeaderRenderer"]
             if accountInfos.exists() {
                 YTThumbnail.appendThumbnails(json: accountInfos["accountPhoto"], thumbnailList: &toReturn.avatar)
                 
-                toReturn.channelHandle = accountInfos["channelHandle"]["simpleText"].string
+                toReturn.channelHandle = accountInfos["channelHandle", "simpleText"].string
                 
-                toReturn.name = accountInfos["accountName"]["simpleText"].string
+                toReturn.name = accountInfos["accountName", "simpleText"].string
                 
                 break
             }

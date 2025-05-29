@@ -54,18 +54,18 @@ public struct PlaylistInfosResponse: ContinuableResponse {
     public static func decodeJSON(json: JSON) -> PlaylistInfosResponse {
         var toReturn = PlaylistInfosResponse()
         
-        if json["header"]["pageHeaderRenderer"].exists() {
+        if json["header", "pageHeaderRenderer"].exists() {
             Self.processNewInfoModel(json: json, response: &toReturn)
         } else {
             Self.processOldInfoModel(json: json, response: &toReturn)
         }
         
-        guard let videoTabsArray = json["contents"]["twoColumnBrowseResultsRenderer"]["tabs"].array else { return toReturn }
+        guard let videoTabsArray = json["contents", "twoColumnBrowseResultsRenderer", "tabs"].array else { return toReturn }
         
         for videoTab in videoTabsArray {
-            guard videoTab["tabRenderer"]["selected"].bool == true else { continue }
+            guard videoTab["tabRenderer", "selected"].bool == true else { continue }
             
-            if let playlistId = videoTab["tabRenderer"]["content"]["sectionListRenderer"]["targetId"].string {
+            if let playlistId = videoTab["tabRenderer", "content", "sectionListRenderer", "targetId"].string {
                 if playlistId.hasPrefix("VL") {
                     toReturn.playlistId = playlistId
                 } else {
@@ -73,17 +73,17 @@ public struct PlaylistInfosResponse: ContinuableResponse {
                 }
             }
             
-            guard let secondVideoArray = videoTab["tabRenderer"]["content"]["sectionListRenderer"]["contents"].array ?? videoTab["tabRenderer"]["content"]["playlistVideoListRenderer"]["contents"].array else { continue }
+            guard let secondVideoArray = videoTab["tabRenderer", "content", "sectionListRenderer", "contents"].array ?? videoTab["tabRenderer", "content", "playlistVideoListRenderer", "contents"].array else { continue }
             for secondVideoArrayPart in secondVideoArray {
-                guard let thirdVideoArray = secondVideoArrayPart["itemSectionRenderer"]["contents"].array else { continue }
+                guard let thirdVideoArray = secondVideoArrayPart["itemSectionRenderer", "contents"].array else { continue }
                 
                 for thirdVideoArrayPart in thirdVideoArray {
-                    guard let finalVideoArray = thirdVideoArrayPart["playlistVideoListRenderer"]["contents"].array else { continue }
+                    guard let finalVideoArray = thirdVideoArrayPart["playlistVideoListRenderer", "contents"].array else { continue }
                     let secondHeader = thirdVideoArrayPart["playlistVideoListRenderer"]
 
-                    toReturn.userInteractions.isEditable = json["header"]["playlistHeaderRenderer"]["isEditable"].bool ?? secondHeader["isEditable"].bool
+                    toReturn.userInteractions.isEditable = json["header", "playlistHeaderRenderer", "isEditable"].bool ?? secondHeader["isEditable"].bool
 
-                    toReturn.userInteractions.canReorder = json["header"]["playlistHeaderRenderer"]["canReorder"].bool ?? secondHeader["canReorder"].bool
+                    toReturn.userInteractions.canReorder = json["header", "playlistHeaderRenderer", "canReorder"].bool ?? secondHeader["canReorder"].bool
 
                     if toReturn.userInteractions.isEditable ?? false {
                         toReturn.videoIdsInPlaylist = []
@@ -92,18 +92,18 @@ public struct PlaylistInfosResponse: ContinuableResponse {
                     for videoJSON in finalVideoArray {
                         if let video = YTVideo.decodeVideoFromPlaylist(json: videoJSON["playlistVideoRenderer"]) {
                             
-                            toReturn.videoIdsInPlaylist?.append(videoJSON["playlistVideoRenderer"]["setVideoId"].string)
+                            toReturn.videoIdsInPlaylist?.append(videoJSON["playlistVideoRenderer", "setVideoId"].string)
                             
                             toReturn.results.append(video)
                         } else if let video = YTVideo.decodeVideoFromPlaylist(json: videoJSON["playlistVideoListRenderer"]) {
                             
-                            toReturn.videoIdsInPlaylist?.append(videoJSON["playlistVideoListRenderer"]["setVideoId"].string)
+                            toReturn.videoIdsInPlaylist?.append(videoJSON["playlistVideoListRenderer", "setVideoId"].string)
                             
                             toReturn.results.append(video)
-                        } else if videoJSON["continuationItemRenderer"]["continuationEndpoint"].exists() {
-                            if let token = videoJSON["continuationItemRenderer"]["continuationEndpoint"]["continuationCommand"]["token"].string {
+                        } else if videoJSON["continuationItemRenderer", "continuationEndpoint"].exists() {
+                            if let token = videoJSON["continuationItemRenderer", "continuationEndpoint", "continuationCommand", "token"].string {
                                 toReturn.continuationToken = token
-                            } else if let commandsArray = videoJSON["continuationItemRenderer"]["continuationEndpoint"]["commandExecutorCommand"]["commands"].array, let token = commandsArray.first(where: {$0["continuationCommand"]["token"].string != nil })?["continuationCommand"]["token"].string {
+                            } else if let commandsArray = videoJSON["continuationItemRenderer", "continuationEndpoint", "commandExecutorCommand", "commands"].array, let token = commandsArray.first(where: {$0["continuationCommand", "token"].string != nil })?["continuationCommand", "token"].string {
                                 toReturn.continuationToken = token
                             }
                         }
@@ -142,19 +142,19 @@ public struct PlaylistInfosResponse: ContinuableResponse {
             var toReturn = Continuation()
             guard let continuationActionsArray = json["onResponseReceivedActions"].array else { return toReturn }
             for continationAction in continuationActionsArray {
-                guard let continuationItemsArray = continationAction["appendContinuationItemsAction"]["continuationItems"].array else { continue }
+                guard let continuationItemsArray = continationAction["appendContinuationItemsAction", "continuationItems"].array else { continue }
                 for videoJSON in continuationItemsArray {
                     if let video = YTVideo.decodeVideoFromPlaylist(json: videoJSON["playlistVideoRenderer"]) {
                         
-                        toReturn.videoIdsInPlaylist.append(videoJSON["playlistVideoRenderer"]["setVideoId"].string)
+                        toReturn.videoIdsInPlaylist.append(videoJSON["playlistVideoRenderer", "setVideoId"].string)
                         
                         toReturn.results.append(video)
                     } else if let video = YTVideo.decodeVideoFromPlaylist(json: videoJSON["playlistVideoListRenderer"]) {
                         
-                        toReturn.videoIdsInPlaylist.append(videoJSON["playlistVideoListRenderer"]["setVideoId"].string)
+                        toReturn.videoIdsInPlaylist.append(videoJSON["playlistVideoListRenderer", "setVideoId"].string)
                         
                         toReturn.results.append(video)
-                    } else if let continuationToken = videoJSON["continuationItemRenderer"]["continuationEndpoint"]["continuationCommand"]["token"].string {
+                    } else if let continuationToken = videoJSON["continuationItemRenderer", "continuationEndpoint", "continuationCommand", "token"].string {
                         toReturn.continuationToken = continuationToken
                     }
                 }
@@ -190,18 +190,18 @@ public struct PlaylistInfosResponse: ContinuableResponse {
     }
     
     private static func processOldInfoModel(json: JSON, response: inout PlaylistInfosResponse) {
-        let playlistInfosJSON = json["header"]["playlistHeaderRenderer"]
+        let playlistInfosJSON = json["header", "playlistHeaderRenderer"]
         
-        if let channelInfosArray = playlistInfosJSON["ownerText"]["runs"].array {
+        if let channelInfosArray = playlistInfosJSON["ownerText", "runs"].array {
             for channelInfosPart in channelInfosArray {
-                guard let channelId = channelInfosPart["navigationEndpoint"]["browseEndpoint"]["browseId"].string else { continue }
+                guard let channelId = channelInfosPart["navigationEndpoint", "browseEndpoint", "browseId"].string else { continue }
                 
                 let newChannel = YTLittleChannelInfos(channelId: channelId, name: channelInfosPart["text"].string)
                 response.channel.append(newChannel)
             }
         }
         
-        response.playlistDescription = playlistInfosJSON["descriptionText"]["simpleText"].string
+        response.playlistDescription = playlistInfosJSON["descriptionText", "simpleText"].string
         
         if let playlistId = playlistInfosJSON["playlistId"].string {
             /// The request wouldn't work if we don't add a "VL" before the playlistId.
@@ -210,41 +210,41 @@ public struct PlaylistInfosResponse: ContinuableResponse {
         
         response.privacy = YTPrivacy(rawValue: playlistInfosJSON["privacy"].stringValue)
         
-        YTThumbnail.appendThumbnails(json: playlistInfosJSON["playlistHeaderBanner"]["heroPlaylistThumbnailRenderer"]["thumbnail"], thumbnailList: &response.thumbnails)
+        YTThumbnail.appendThumbnails(json: playlistInfosJSON["playlistHeaderBanner", "heroPlaylistThumbnailRenderer", "thumbnail"], thumbnailList: &response.thumbnails)
         
-        response.title = playlistInfosJSON["title"]["simpleText"].string
+        response.title = playlistInfosJSON["title", "simpleText"].string
         
-        if let videoCountArray = playlistInfosJSON["numVideosText"]["runs"].array {
+        if let videoCountArray = playlistInfosJSON["numVideosText", "runs"].array {
             response.videoCount = videoCountArray.map({$0["text"].stringValue}).joined()
         }
         
-        response.viewCount = playlistInfosJSON["viewCountText"]["simpleText"].string
+        response.viewCount = playlistInfosJSON["viewCountText", "simpleText"].string
         
-        response.userInteractions.canBeDeleted = playlistInfosJSON["editableDetails"]["canDelete"].bool
+        response.userInteractions.canBeDeleted = playlistInfosJSON["editableDetails", "canDelete"].bool
         
-        response.userInteractions.isSaveButtonDisabled = playlistInfosJSON["saveButton"]["toggleButtonRenderer"]["isDisabled"].bool
+        response.userInteractions.isSaveButtonDisabled = playlistInfosJSON["saveButton", "toggleButtonRenderer", "isDisabled"].bool
         
-        response.userInteractions.isSaveButtonToggled = playlistInfosJSON["saveButton"]["toggleButtonRenderer"]["isToggled"].bool
+        response.userInteractions.isSaveButtonToggled = playlistInfosJSON["saveButton", "toggleButtonRenderer", "isToggled"].bool
     }
     
     private static func processNewInfoModel(json: JSON, response: inout PlaylistInfosResponse) {
-        response.title = json["header"]["pageHeaderRenderer"]["pageTitle"].string
-        YTThumbnail.appendThumbnails(json: json["header"]["pageHeaderRenderer"]["content"]["pageHeaderViewModel"]["heroImage"]["contentPreviewImageViewModel"], thumbnailList: &response.thumbnails)
+        response.title = json["header", "pageHeaderRenderer", "pageTitle"].string
+        YTThumbnail.appendThumbnails(json: json["header", "pageHeaderRenderer", "content", "pageHeaderViewModel", "heroImage", "contentPreviewImageViewModel"], thumbnailList: &response.thumbnails)
         
-        if let channelInfosArray = json["sidebar"]["playlistSidebarRenderer"]["items"].arrayValue.first(where: {$0["playlistSidebarSecondaryInfoRenderer"].exists()})?["playlistSidebarSecondaryInfoRenderer"]["videoOwner"]["videoOwnerRenderer"], let channelId = channelInfosArray["navigationEndpoint"]["browseEndpoint"]["browseId"].string {
+        if let channelInfosArray = json["sidebar", "playlistSidebarRenderer", "items"].arrayValue.first(where: {$0["playlistSidebarSecondaryInfoRenderer"].exists()})?["playlistSidebarSecondaryInfoRenderer", "videoOwner", "videoOwnerRenderer"], let channelId = channelInfosArray["navigationEndpoint", "browseEndpoint", "browseId"].string {
             var channel = YTLittleChannelInfos(channelId: channelId)
-            channel.name = channelInfosArray["title"]["runs"].array?.map({$0["text"].stringValue}).joined()
+            channel.name = channelInfosArray["title", "runs"].array?.map({$0["text"].stringValue}).joined()
             YTThumbnail.appendThumbnails(json: channelInfosArray["thumbnail"], thumbnailList: &channel.thumbnails)
             
             response.channel.append(channel)
         }
                 
-        if let primarySidebarRenderer = json["sidebar"]["playlistSidebarRenderer"]["items"].arrayValue.first(where: {$0["playlistSidebarPrimaryInfoRenderer"].exists()})?["playlistSidebarPrimaryInfoRenderer"] {
-            response.playlistDescription = primarySidebarRenderer["description"]["runs"].array?.map({$0["text"].stringValue}).joined()
+        if let primarySidebarRenderer = json["sidebar", "playlistSidebarRenderer", "items"].arrayValue.first(where: {$0["playlistSidebarPrimaryInfoRenderer"].exists()})?["playlistSidebarPrimaryInfoRenderer"] {
+            response.playlistDescription = primarySidebarRenderer["description", "runs"].array?.map({$0["text"].stringValue}).joined()
             
-            if let selectedPrivacy = primarySidebarRenderer["privacyForm"]["dropdownFormFieldRenderer"]["dropdown"]["dropdownRenderer"]["entries"].arrayValue.first(where: {$0["privacyDropdownItemRenderer"]["isSelected"].bool == true})?["privacyDropdownItemRenderer"]["icon"]["iconType"].stringValue, let privacy = selectedPrivacy.ytkFirstGroupMatch(for: "PRIVACY_([A-Z]+)") {
+            if let selectedPrivacy = primarySidebarRenderer["privacyForm", "dropdownFormFieldRenderer", "dropdown", "dropdownRenderer", "entries"].arrayValue.first(where: {$0["privacyDropdownItemRenderer", "isSelected"].bool == true})?["privacyDropdownItemRenderer", "icon", "iconType"].stringValue, let privacy = selectedPrivacy.ytkFirstGroupMatch(for: "PRIVACY_([A-Z]+)") {
                 response.privacy = YTPrivacy(rawValue: privacy)
-            } else if let privacy = primarySidebarRenderer["badges"].arrayValue.first(where: {$0["metadataBadgeRenderer"]["icon"]["iconType"].stringValue.ytkFirstGroupMatch(for: "PRIVACY_([A-Z]+)") != nil})?["metadataBadgeRenderer"]["icon"]["iconType"].stringValue.ytkFirstGroupMatch(for: "PRIVACY_([A-Z]+)") {
+            } else if let privacy = primarySidebarRenderer["badges"].arrayValue.first(where: {$0["metadataBadgeRenderer", "icon", "iconType"].stringValue.ytkFirstGroupMatch(for: "PRIVACY_([A-Z]+)") != nil})?["metadataBadgeRenderer", "icon", "iconType"].stringValue.ytkFirstGroupMatch(for: "PRIVACY_([A-Z]+)") {
                 response.privacy = YTPrivacy(rawValue: privacy)
             } else {
                 response.privacy = .public // assume it's public

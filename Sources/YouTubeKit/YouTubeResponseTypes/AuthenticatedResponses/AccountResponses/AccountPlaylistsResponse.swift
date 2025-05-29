@@ -21,15 +21,15 @@ public struct AccountPlaylistsResponse: AuthenticatedResponse {
     public static func decodeJSON(json: JSON) -> AccountPlaylistsResponse {
         var toReturn = AccountPlaylistsResponse()
         
-        guard !(json["responseContext"]["mainAppWebResponseContext"]["loggedOut"].bool ?? true) else { return toReturn }
+        guard !(json["responseContext", "mainAppWebResponseContext", "loggedOut"].bool ?? true) else { return toReturn }
         
         toReturn.isDisconnected = false
         
-        for tab in json["contents"]["twoColumnBrowseResultsRenderer"]["tabs"].arrayValue {
-            guard tab["tabRenderer"]["selected"].bool == true else { continue }
+        for tab in json["contents", "twoColumnBrowseResultsRenderer", "tabs"].arrayValue {
+            guard tab["tabRenderer", "selected"].bool == true else { continue }
             
-            for playlistJSON in tab["tabRenderer"]["content"]["richGridRenderer"]["contents"].arrayValue {
-                if let playlist = YTPlaylist.decodeLockupJSON(json: playlistJSON["richItemRenderer"]["content"]["lockupViewModel"]) {
+            for playlistJSON in tab["tabRenderer", "content", "richGridRenderer", "contents"].arrayValue {
+                if let playlist = YTPlaylist.decodeLockupJSON(json: playlistJSON["richItemRenderer", "content", "lockupViewModel"]) {
                     toReturn.results.append(playlist)
                 }
             }

@@ -24,13 +24,13 @@ public struct MoveVideoInPlaylistResponse: SimpleActionAuthenticatedResponse {
     public static func decodeJSON(json: JSON) -> MoveVideoInPlaylistResponse {
         var toReturn = MoveVideoInPlaylistResponse()
         
-        guard !(json["responseContext"]["mainAppWebResponseContext"]["loggedOut"].bool ?? true), json["status"].string == "STATUS_SUCCEEDED" else { return toReturn }
+        guard !(json["responseContext", "mainAppWebResponseContext", "loggedOut"].bool ?? true), json["status"].string == "STATUS_SUCCEEDED" else { return toReturn }
         
         toReturn.isDisconnected = false
         toReturn.success = true
         
         for action in json["actions"].arrayValue {
-            let newPlaylistRenderer = action["updatePlaylistAction"]["updatedRenderer"]["playlistVideoListRenderer"]
+            let newPlaylistRenderer = action["updatePlaylistAction", "updatedRenderer", "playlistVideoListRenderer"]
             if newPlaylistRenderer.exists() {
                 toReturn.playlistId = newPlaylistRenderer["playlistId"].string
                 break

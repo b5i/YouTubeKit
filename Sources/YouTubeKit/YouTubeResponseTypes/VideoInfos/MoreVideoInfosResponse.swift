@@ -104,24 +104,24 @@ public struct MoreVideoInfosResponse: YouTubeResponse {
         var toReturn = MoreVideoInfosResponse()
         
         var isAccountConnected: Bool = false
-        if !(json["responseContext"]["mainAppWebResponseContext"]["loggedOut"].bool ?? true) {
+        if !(json["responseContext", "mainAppWebResponseContext", "loggedOut"].bool ?? true) {
             // Response was made with authentication cookies
             isAccountConnected = true
             toReturn.authenticatedInfos = AuthenticatedData(likeStatus: nil as YTLikeStatus?)
         }
         
-        for contentPart in json["contents"]["twoColumnWatchNextResults"]["results"]["results"]["contents"].arrayValue {
+        for contentPart in json["contents", "twoColumnWatchNextResults", "results", "results", "contents"].arrayValue {
             if contentPart["videoPrimaryInfoRenderer"].exists() {
                 let videoPrimaryInfos = contentPart["videoPrimaryInfoRenderer"]
-                toReturn.videoTitle = videoPrimaryInfos["title"]["runs"].arrayValue.map({$0["text"].stringValue}).joined()
-                toReturn.viewsCount.fullViewsCount = videoPrimaryInfos["viewCount"]["videoViewCountRenderer"]["viewCount"]["simpleText"].string
-                toReturn.viewsCount.shortViewsCount = videoPrimaryInfos["viewCount"]["videoViewCountRenderer"]["extraShortViewCount"]["simpleText"].string ?? videoPrimaryInfos["viewCount"]["videoViewCountRenderer"]["shortViewCount"]["simpleText"].string
-                toReturn.timePosted.postedDate = videoPrimaryInfos["dateText"]["simpleText"].string
-                toReturn.timePosted.relativePostedDate = videoPrimaryInfos["relativeDateText"]["simpleText"].string
-                for button in videoPrimaryInfos["videoActions"]["menuRenderer"]["topLevelButtons"].arrayValue {
+                toReturn.videoTitle = videoPrimaryInfos["title", "runs"].arrayValue.map({$0["text"].stringValue}).joined()
+                toReturn.viewsCount.fullViewsCount = videoPrimaryInfos["viewCount", "videoViewCountRenderer", "viewCount", "simpleText"].string
+                toReturn.viewsCount.shortViewsCount = videoPrimaryInfos["viewCount", "videoViewCountRenderer", "extraShortViewCount", "simpleText"].string ?? videoPrimaryInfos["viewCount", "videoViewCountRenderer", "shortViewCount", "simpleText"].string
+                toReturn.timePosted.postedDate = videoPrimaryInfos["dateText", "simpleText"].string
+                toReturn.timePosted.relativePostedDate = videoPrimaryInfos["relativeDateText", "simpleText"].string
+                for button in videoPrimaryInfos["videoActions", "menuRenderer", "topLevelButtons"].arrayValue {
                     if button["segmentedLikeDislikeButtonRenderer"].exists() {
-                        let likeButton = button["segmentedLikeDislikeButtonRenderer"]["likeButton"]["toggleButtonRenderer"]
-                        let dislikeButton = button["segmentedLikeDislikeButtonRenderer"]["dislikeButton"]["toggleButtonRenderer"]
+                        let likeButton = button["segmentedLikeDislikeButtonRenderer", "likeButton", "toggleButtonRenderer"]
+                        let dislikeButton = button["segmentedLikeDislikeButtonRenderer", "dislikeButton", "toggleButtonRenderer"]
                         if isAccountConnected {
                             if likeButton["isToggled"].boolValue {
                                 toReturn.authenticatedInfos?.likeStatus = .liked
@@ -131,14 +131,14 @@ public struct MoreVideoInfosResponse: YouTubeResponse {
                                 toReturn.authenticatedInfos?.likeStatus = .nothing
                             }
                         }
-                        toReturn.likesCount.defaultState = button["segmentedLikeDislikeButtonRenderer"]["likeCount"].string
+                        toReturn.likesCount.defaultState = button["segmentedLikeDislikeButtonRenderer", "likeCount"].string
                         if toReturn.likesCount.defaultState == nil {
-                            toReturn.likesCount.defaultState = button["segmentedLikeDislikeButtonRenderer"]["likeButton"]["toggleButtonRenderer"]["defaultText"]["simpleText"].string
+                            toReturn.likesCount.defaultState = button["segmentedLikeDislikeButtonRenderer", "likeButton", "toggleButtonRenderer", "defaultText", "simpleText"].string
                         }
-                        toReturn.likesCount.clickedState = button["segmentedLikeDislikeButtonRenderer"]["likeButton"]["toggleButtonRenderer"]["toggledText"]["simpleText"].string
+                        toReturn.likesCount.clickedState = button["segmentedLikeDislikeButtonRenderer", "likeButton", "toggleButtonRenderer", "toggledText", "simpleText"].string
                         break
                     } else if button["segmentedLikeDislikeButtonViewModel"].exists() { // new button
-                        let likeStatus = button["segmentedLikeDislikeButtonViewModel"]["likeButtonViewModel"]["likeButtonViewModel"]["likeStatusEntity"]["likeStatus"].stringValue
+                        let likeStatus = button["segmentedLikeDislikeButtonViewModel", "likeButtonViewModel", "likeButtonViewModel", "likeStatusEntity", "likeStatus"].stringValue
                         if isAccountConnected {
                             switch likeStatus {
                             case "LIKE":
@@ -149,31 +149,31 @@ public struct MoreVideoInfosResponse: YouTubeResponse {
                                 toReturn.authenticatedInfos?.likeStatus = .nothing
                             }
                         }
-                        toReturn.likesCount.defaultState = button["segmentedLikeDislikeButtonViewModel"]["likeCountEntity"]["likeCountIfLiked"]["content"].string ?? /* usually because there is no account connected */ button["segmentedLikeDislikeButtonViewModel"]["likeButtonViewModel"]["likeButtonViewModel"]["toggleButtonViewModel"]["toggleButtonViewModel"]["defaultButtonViewModel"]["buttonViewModel"]["title"].string
-                        toReturn.likesCount.clickedState = button["segmentedLikeDislikeButtonViewModel"]["likeCountEntity"]["likeCountIfIndifferent"]["content"].string ?? /* usually because there is no account connected */ button["segmentedLikeDislikeButtonViewModel"]["likeButtonViewModel"]["likeButtonViewModel"]["toggleButtonViewModel"]["toggleButtonViewModel"]["toggledButtonViewModel"]["buttonViewModel"]["title"].string
+                        toReturn.likesCount.defaultState = button["segmentedLikeDislikeButtonViewModel", "likeCountEntity", "likeCountIfLiked", "content"].string ?? /* usually because there is no account connected */ button["segmentedLikeDislikeButtonViewModel", "likeButtonViewModel", "likeButtonViewModel", "toggleButtonViewModel", "toggleButtonViewModel", "defaultButtonViewModel", "buttonViewModel", "title"].string
+                        toReturn.likesCount.clickedState = button["segmentedLikeDislikeButtonViewModel", "likeCountEntity", "likeCountIfIndifferent", "content"].string ?? /* usually because there is no account connected */ button["segmentedLikeDislikeButtonViewModel", "likeButtonViewModel", "likeButtonViewModel", "toggleButtonViewModel", "toggleButtonViewModel", "toggledButtonViewModel", "buttonViewModel", "title"].string
                         break
                     }
                 }
             } else if contentPart["videoSecondaryInfoRenderer"].exists() {
                 let videoSecondaryInfos = contentPart["videoSecondaryInfoRenderer"]
                 if videoSecondaryInfos["owner"].exists() {
-                    let channel = videoSecondaryInfos["owner"]["videoOwnerRenderer"]
-                    if let channelId = channel["title"]["runs"].arrayValue.first?["navigationEndpoint"]["browseEndpoint"]["browseId"].string {
+                    let channel = videoSecondaryInfos["owner", "videoOwnerRenderer"]
+                    if let channelId = channel["title", "runs"].arrayValue.first?["navigationEndpoint", "browseEndpoint", "browseId"].string {
                         var videoChannel = YTChannel(channelId: channelId)
-                        videoChannel.name = channel["title"]["runs"].arrayValue.first?["text"].string
+                        videoChannel.name = channel["title", "runs"].arrayValue.first?["text"].string
                         YTThumbnail.appendThumbnails(json: channel["thumbnail"], thumbnailList: &videoChannel.thumbnails)
-                        videoChannel.subscriberCount = channel["subscriberCountText"]["simpleText"].string
+                        videoChannel.subscriberCount = channel["subscriberCountText", "simpleText"].string
                         toReturn.channel = videoChannel
                     }
                 }
                 if isAccountConnected {
-                    toReturn.authenticatedInfos?.subscriptionStatus = videoSecondaryInfos["subscribeButton"]["subscribeButtonRenderer"]["subscribed"].bool
+                    toReturn.authenticatedInfos?.subscriptionStatus = videoSecondaryInfos["subscribeButton", "subscribeButtonRenderer", "subscribed"].bool
                 }
                 if videoSecondaryInfos["attributedDescription"].exists() {
                     var videoDescription: [YouTubeDescriptionPart] = []
                     var lastDecodedPartEndTextIndex: Int = 0
-                    let descriptionText = videoSecondaryInfos["attributedDescription"]["content"].stringValue
-                    for partRole in videoSecondaryInfos["attributedDescription"]["commandRuns"].arrayValue {
+                    let descriptionText = videoSecondaryInfos["attributedDescription", "content"].stringValue
+                    for partRole in videoSecondaryInfos["attributedDescription", "commandRuns"].arrayValue {
                         var descriptionPart = YouTubeDescriptionPart()
                         if let beginning = partRole["startIndex"].int, let lenght = partRole["length"].int {
                             if beginning != lastDecodedPartEndTextIndex {
@@ -194,18 +194,18 @@ public struct MoreVideoInfosResponse: YouTubeResponse {
                                 lastDecodedPartEndTextIndex = beginning + lenght
                             }
                         }
-                        if let linkURL = partRole["onTap"]["innertubeCommand"]["urlEndpoint"]["url"].url {
+                        if let linkURL = partRole["onTap", "innertubeCommand", "urlEndpoint", "url"].url {
                             descriptionPart.role = .link(linkURL)
                             descriptionPart.style = .blue
-                        } else if let videoId = partRole["onTap"]["innertubeCommand"]["watchEndpoint"]["videoId"].string {
-                            if partRole["onTap"]["innertubeCommand"]["watchEndpoint"]["continuePlayback"].boolValue {
+                        } else if let videoId = partRole["onTap", "innertubeCommand", "watchEndpoint", "videoId"].string {
+                            if partRole["onTap", "innertubeCommand", "watchEndpoint", "continuePlayback"].boolValue {
                                 descriptionPart.role = .video(videoId)
                                 descriptionPart.style = .custom
-                            } else if let chapterTime = partRole["onTap"]["innertubeCommand"]["watchEndpoint"]["startTimeSeconds"].int {
+                            } else if let chapterTime = partRole["onTap", "innertubeCommand", "watchEndpoint", "startTimeSeconds"].int {
                                 descriptionPart.role = .chapter(chapterTime)
                                 descriptionPart.style = .blue
                             }
-                        } else if let channelOrPlaylistId = partRole["onTap"]["innertubeCommand"]["browseEndpoint"]["browseId"].string {
+                        } else if let channelOrPlaylistId = partRole["onTap", "innertubeCommand", "browseEndpoint", "browseId"].string {
                             if channelOrPlaylistId.hasPrefix("UC") {
                                 descriptionPart.role = .channel(channelOrPlaylistId)
                                 descriptionPart.style = .custom
@@ -219,15 +219,15 @@ public struct MoreVideoInfosResponse: YouTubeResponse {
                     toReturn.videoDescription = videoDescription
                 }
             } else if contentPart["itemSectionRenderer"].exists() {
-                for content in contentPart["itemSectionRenderer"]["contents"].arrayValue {
+                for content in contentPart["itemSectionRenderer", "contents"].arrayValue {
                     if content["commentsEntryPointHeaderRenderer"].exists() {
-                        toReturn.commentsCount = content["commentsEntryPointHeaderRenderer"]["commentCount"]["simpleText"].string
+                        toReturn.commentsCount = content["commentsEntryPointHeaderRenderer", "commentCount", "simpleText"].string
                         var teaserCommentAvatar: [YTThumbnail] = []
-                        YTThumbnail.appendThumbnails(json: content["commentsEntryPointHeaderRenderer"]["contentRenderer"]["commentsEntryPointTeaserRenderer"]["teaserAvatar"], thumbnailList: &teaserCommentAvatar)
+                        YTThumbnail.appendThumbnails(json: content["commentsEntryPointHeaderRenderer", "contentRenderer", "commentsEntryPointTeaserRenderer", "teaserAvatar"], thumbnailList: &teaserCommentAvatar)
                         toReturn.teaserComment.avatar = teaserCommentAvatar
-                        toReturn.teaserComment.teaserText = content["commentsEntryPointHeaderRenderer"]["contentRenderer"]["commentsEntryPointTeaserRenderer"]["teaserContent"]["simpleText"].string
-                    } else if contentPart["itemSectionRenderer"]["targetId"].string == "comments-section" {
-                        toReturn.commentsContinuationToken = content["continuationItemRenderer"]["continuationEndpoint"]["continuationCommand"]["token"].string
+                        toReturn.teaserComment.teaserText = content["commentsEntryPointHeaderRenderer", "contentRenderer", "commentsEntryPointTeaserRenderer", "teaserContent", "simpleText"].string
+                    } else if contentPart["itemSectionRenderer", "targetId"].string == "comments-section" {
+                        toReturn.commentsContinuationToken = content["continuationItemRenderer", "continuationEndpoint", "continuationCommand", "token"].string
                     }
                 }
             }
@@ -235,19 +235,19 @@ public struct MoreVideoInfosResponse: YouTubeResponse {
         
         for engagementPanel in json["engagementPanels"].arrayValue {
             /// Chapters extraction.
-            if let targetId = engagementPanel["engagementPanelSectionListRenderer"]["targetId"].string, (targetId == "engagement-panel-macro-markers-auto-chapters" || targetId == "engagement-panel-macro-markers-description-chapters") {
+            if let targetId = engagementPanel["engagementPanelSectionListRenderer", "targetId"].string, (targetId == "engagement-panel-macro-markers-auto-chapters" || targetId == "engagement-panel-macro-markers-description-chapters") {
                 var chapterstoReturn: [Chapter] = []
-                for chapterJSON in engagementPanel["engagementPanelSectionListRenderer"]["content"]["macroMarkersListRenderer"]["contents"].arrayValue {
+                for chapterJSON in engagementPanel["engagementPanelSectionListRenderer", "content", "macroMarkersListRenderer", "contents"].arrayValue {
                     var chapter = Chapter()
-                    chapter.title = chapterJSON["macroMarkersListItemRenderer"]["title"]["simpleText"].string
+                    chapter.title = chapterJSON["macroMarkersListItemRenderer", "title", "simpleText"].string
                     
-                    YTThumbnail.appendThumbnails(json: chapterJSON["macroMarkersListItemRenderer"]["thumbnail"], thumbnailList: &chapter.thumbnail)
+                    YTThumbnail.appendThumbnails(json: chapterJSON["macroMarkersListItemRenderer", "thumbnail"], thumbnailList: &chapter.thumbnail)
                     
-                    chapter.startTimeSeconds = chapterJSON["macroMarkersListItemRenderer"]["onTap"]["watchEndpoint"]["startTimeSeconds"].int
+                    chapter.startTimeSeconds = chapterJSON["macroMarkersListItemRenderer", "onTap", "watchEndpoint", "startTimeSeconds"].int
                     
-                    chapter.timeDescriptions.shortTimeDescription = chapterJSON["macroMarkersListItemRenderer"]["timeDescription"]["simpleText"].string
+                    chapter.timeDescriptions.shortTimeDescription = chapterJSON["macroMarkersListItemRenderer", "timeDescription", "simpleText"].string
                     
-                    chapter.timeDescriptions.textTimeDescription = chapterJSON["macroMarkersListItemRenderer"]["timeDescriptionA11yLabel"].string
+                    chapter.timeDescriptions.textTimeDescription = chapterJSON["macroMarkersListItemRenderer", "timeDescriptionA11yLabel"].string
                     
                     chapterstoReturn.append(chapter)
                 }
@@ -256,25 +256,25 @@ public struct MoreVideoInfosResponse: YouTubeResponse {
             }
         }
         
-        for recommendation in json["contents"]["twoColumnWatchNextResults"]["secondaryResults"]["secondaryResults"]["results"].arrayValue {
-            if recommendation["itemSectionRenderer"]["contents"].exists() {
-                for element in recommendation["itemSectionRenderer"]["contents"].arrayValue {
-                    if element["compactVideoRenderer"]["videoId"].exists(), let decodedVideo = YTVideo.decodeJSON(json: element["compactVideoRenderer"]) {
+        for recommendation in json["contents", "twoColumnWatchNextResults", "secondaryResults", "secondaryResults", "results"].arrayValue {
+            if recommendation["itemSectionRenderer", "contents"].exists() {
+                for element in recommendation["itemSectionRenderer", "contents"].arrayValue {
+                    if element["compactVideoRenderer", "videoId"].exists(), let decodedVideo = YTVideo.decodeJSON(json: element["compactVideoRenderer"]) {
                         toReturn.recommendedVideos.append(decodedVideo)
-                    } else if let continuationToken = element["continuationItemRenderer"]["continuationEndpoint"]["continuationCommand"]["token"].string {
+                    } else if let continuationToken = element["continuationItemRenderer", "continuationEndpoint", "continuationCommand", "token"].string {
                         toReturn.recommendedVideosContinuationToken = continuationToken
                     }
                 }
-            } else if recommendation["compactVideoRenderer"]["videoId"].exists(), let decodedVideo = YTVideo.decodeJSON(json: recommendation["compactVideoRenderer"]) {
+            } else if recommendation["compactVideoRenderer", "videoId"].exists(), let decodedVideo = YTVideo.decodeJSON(json: recommendation["compactVideoRenderer"]) {
                 toReturn.recommendedVideos.append(decodedVideo)
-            } else if let continuationToken = recommendation["continuationItemRenderer"]["continuationEndpoint"]["continuationCommand"]["token"].string {
+            } else if let continuationToken = recommendation["continuationItemRenderer", "continuationEndpoint", "continuationCommand", "token"].string {
                 toReturn.recommendedVideosContinuationToken = continuationToken
             }
         }
         
         if toReturn.recommendedVideosContinuationToken == nil {
-            for continuation in json["contents"]["twoColumnWatchNextResults"]["secondaryResults"]["secondaryResults"]["continuations"].arrayValue {
-                if let continuationToken = continuation["nextContinuationData"]["continuation"].string {
+            for continuation in json["contents", "twoColumnWatchNextResults", "secondaryResults", "secondaryResults", "continuations"].arrayValue {
+                if let continuationToken = continuation["nextContinuationData", "continuation"].string {
                     toReturn.recommendedVideosContinuationToken = continuationToken
                     break
                 }
@@ -379,12 +379,12 @@ public struct MoreVideoInfosResponse: YouTubeResponse {
             
             for action in json["onResponseReceivedEndpoints"].arrayValue {
                 if action["appendContinuationItemsAction"].exists() {
-                    for element in action["appendContinuationItemsAction"]["continuationItems"].arrayValue {
-                        if element["compactVideoRenderer"]["videoId"].exists(), let decodedVideo = YTVideo.decodeJSON(json: element["compactVideoRenderer"]) {
+                    for element in action["appendContinuationItemsAction", "continuationItems"].arrayValue {
+                        if element["compactVideoRenderer", "videoId"].exists(), let decodedVideo = YTVideo.decodeJSON(json: element["compactVideoRenderer"]) {
                             toReturn.results.append(decodedVideo)
-                        } else if element["lockupViewModel"]["contentType"].string == "LOCKUP_CONTENT_TYPE_VIDEO", let decodedVideo = YTVideo.decodeLockupJSON(json: element["lockupViewModel"]) {
+                        } else if element["lockupViewModel", "contentType"].string == "LOCKUP_CONTENT_TYPE_VIDEO", let decodedVideo = YTVideo.decodeLockupJSON(json: element["lockupViewModel"]) {
                             toReturn.results.append(decodedVideo)
-                        } else if let continuationToken = element["continuationItemRenderer"]["continuationEndpoint"]["continuationCommand"]["token"].string {
+                        } else if let continuationToken = element["continuationItemRenderer", "continuationEndpoint", "continuationCommand", "token"].string {
                             toReturn.continuationToken = continuationToken
                         }
                     }

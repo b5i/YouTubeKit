@@ -22,7 +22,7 @@ public struct RemoveVideoFromPlaylistResponse: SimpleActionAuthenticatedResponse
     public static func decodeJSON(json: JSON) -> RemoveVideoFromPlaylistResponse {
         var toReturn = RemoveVideoFromPlaylistResponse()
         
-        guard !(json["responseContext"]["mainAppWebResponseContext"]["loggedOut"].bool ?? true), json["status"].string == "STATUS_SUCCEEDED" else { return toReturn }
+        guard !(json["responseContext", "mainAppWebResponseContext", "loggedOut"].bool ?? true), json["status"].string == "STATUS_SUCCEEDED" else { return toReturn }
         
         toReturn.isDisconnected = false
         toReturn.success = true

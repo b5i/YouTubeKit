@@ -21,11 +21,11 @@ public struct CreateCommentResponse: SimpleActionAuthenticatedResponse {
     public static func decodeJSON(json: JSON) throws -> Self {
         var toReturn = Self()
         
-        guard !(json["responseContext"]["mainAppWebResponseContext"]["loggedOut"].bool ?? true) else { return toReturn }
+        guard !(json["responseContext", "mainAppWebResponseContext", "loggedOut"].bool ?? true) else { return toReturn }
         
         toReturn.isDisconnected = false
         
-        toReturn.success = json["actionResult"]["status"].string == "STATUS_SUCCEEDED"
+        toReturn.success = json["actionResult", "status"].string == "STATUS_SUCCEEDED"
         
         var modifiedJSONForVideoCommentsResponse = JSON()
         
@@ -33,7 +33,7 @@ public struct CreateCommentResponse: SimpleActionAuthenticatedResponse {
         
         modifiedJSONForVideoCommentsResponse["frameworkUpdates"] = json["frameworkUpdates"]
         
-        guard let createCommentOrReplyActionJSON = json["actions"].arrayValue.first(where: {$0["createCommentAction"].exists()})?["createCommentAction"]["contents"].rawString() ?? json["actions"].arrayValue.first(where: {$0["createCommentReplyAction"].exists()})?["createCommentReplyAction"]["contents"].rawString() else {
+        guard let createCommentOrReplyActionJSON = json["actions"].arrayValue.first(where: {$0["createCommentAction"].exists()})?["createCommentAction", "contents"].rawString() ?? json["actions"].arrayValue.first(where: {$0["createCommentReplyAction"].exists()})?["createCommentReplyAction", "contents"].rawString() else {
             throw ResponseExtractionError(reponseType: Self.self, stepDescription: "Couldn't extract the creation tokens.")
         }
         

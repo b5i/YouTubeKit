@@ -19,11 +19,11 @@ public struct EditCommentResponse: SimpleActionAuthenticatedResponse {
     public static func decodeJSON(json: JSON) -> Self {
         var toReturn = Self()
         
-        guard !(json["responseContext"]["mainAppWebResponseContext"]["loggedOut"].bool ?? true) else { return toReturn }
+        guard !(json["responseContext", "mainAppWebResponseContext", "loggedOut"].bool ?? true) else { return toReturn }
         
         toReturn.isDisconnected = false
         
-        toReturn.success = json["actions"].arrayValue.first(where: {$0["updateCommentAction"]["actionResult"]["status"].string == "STATUS_SUCCEEDED"}) != nil
+        toReturn.success = json["actions"].arrayValue.first(where: {$0["updateCommentAction", "actionResult", "status"].string == "STATUS_SUCCEEDED"}) != nil
         
         return toReturn
     }

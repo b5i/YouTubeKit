@@ -33,15 +33,15 @@ public struct AddVideoToPlaylistResponse: SimpleActionAuthenticatedResponse {
     public static func decodeJSON(json: JSON) -> AddVideoToPlaylistResponse {
         var toReturn = AddVideoToPlaylistResponse()
         
-        guard !(json["responseContext"]["mainAppWebResponseContext"]["loggedOut"].bool ?? true), json["status"].string == "STATUS_SUCCEEDED", let playlistModificationResults = json["playlistEditResults"].array else { return toReturn }
+        guard !(json["responseContext", "mainAppWebResponseContext", "loggedOut"].bool ?? true), json["status"].string == "STATUS_SUCCEEDED", let playlistModificationResults = json["playlistEditResults"].array else { return toReturn }
         
         toReturn.isDisconnected = false
         toReturn.success = true
         
         for playlistModificationResult in playlistModificationResults {
             if playlistModificationResult["playlistEditVideoAddedResultData"].exists() {
-                toReturn.addedVideoId = playlistModificationResult["playlistEditVideoAddedResultData"]["videoId"].string
-                toReturn.addedVideoIdInPlaylist = playlistModificationResult["playlistEditVideoAddedResultData"]["setVideoId"].string
+                toReturn.addedVideoId = playlistModificationResult["playlistEditVideoAddedResultData", "videoId"].string
+                toReturn.addedVideoIdInPlaylist = playlistModificationResult["playlistEditVideoAddedResultData", "setVideoId"].string
                 break
             }
         }

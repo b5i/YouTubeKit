@@ -12,6 +12,6 @@ public extension YTPlaylist {
     /// - Parameter json: the JSON should be the **inside** of a dictionnary called "gridShowRenderer" by YouTube's API.
     /// - Returns: a boolean indicating whether it can be decoded as a show or not.
     static func canShowBeDecoded(json: JSON) -> Bool {
-        return json["navigationEndpoint"]["browseEndpoint"]["browseId"].string != nil
+        return json["navigationEndpoint", "browseEndpoint", "browseId"].string != nil
     }
 }

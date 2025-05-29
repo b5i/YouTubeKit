@@ -9,11 +9,11 @@ import Foundation
 
 public extension ChannelContent {
     static func getContinuationFromTab(json: JSON) -> String? {
-        guard let videosArray = json["tabRenderer"]["content"]["richGridRenderer"]["contents"].array else { return nil }
+        guard let videosArray = json["tabRenderer", "content", "richGridRenderer", "contents"].array else { return nil }
         
         /// The token is generally at the end so we reverse it
         for element in videosArray.reversed() {
-            if let token = element["continuationItemRenderer"]["continuationEndpoint"]["continuationCommand"]["token"].string {
+            if let token = element["continuationItemRenderer", "continuationEndpoint", "continuationCommand", "token"].string {
                 return token
             }
         }

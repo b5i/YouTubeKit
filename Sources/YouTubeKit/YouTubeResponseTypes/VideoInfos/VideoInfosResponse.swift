@@ -119,7 +119,7 @@ public struct VideoInfosResponse: YouTubeResponse {
     /// - Parameter json: the json to be decoded.
     /// - Returns: an instance of ``VideoInfosResponse``.
     public static func decodeJSON(json: JSON) throws -> VideoInfosResponse {
-        guard json["playabilityStatus"]["status"].string != "LOGIN_REQUIRED" else {
+        guard json["playabilityStatus", "status"].string != "LOGIN_REQUIRED" else {
             throw ResponseExtractionError(reponseType: self.self, stepDescription: "Login is required to get access to the video streaming info.")
         }
         
@@ -137,15 +137,15 @@ public struct VideoInfosResponse: YouTubeResponse {
             captions: {
                 var captionsArray: [YTCaption] = []
                 
-                captionsArray.append(contentsOf: json["captions"]["playerCaptionsTracklistRenderer"]["captionTracks"].arrayValue.compactMap { captionJSON in
+                captionsArray.append(contentsOf: json["captions", "playerCaptionsTracklistRenderer", "captionTracks"].arrayValue.compactMap { captionJSON in
                     guard let url = captionJSON["baseUrl"].url else { return nil }
-                    return YTCaption(languageCode: captionJSON["languageCode"].stringValue, languageName: captionJSON["name"]["simpleText"].stringValue, url: url, isTranslated: false)
+                    return YTCaption(languageCode: captionJSON["languageCode"].stringValue, languageName: captionJSON["name", "simpleText"].stringValue, url: url, isTranslated: false)
                 })
                 
                 guard let firstCaptionURL = captionsArray.first?.url else { return captionsArray }
                 
-                captionsArray.append(contentsOf: json["captions"]["playerCaptionsTracklistRenderer"]["translationLanguages"].arrayValue.compactMap { captionJSON in
-                    return YTCaption(languageCode: captionJSON["languageCode"].stringValue, languageName: captionJSON["languageName"]["simpleText"].stringValue, url: firstCaptionURL.appending(queryItems: [.init(name: "tlang", value: captionJSON["languageCode"].stringValue)]), isTranslated: true)
+                captionsArray.append(contentsOf: json["captions", "playerCaptionsTracklistRenderer", "translationLanguages"].arrayValue.compactMap { captionJSON in
+                    return YTCaption(languageCode: captionJSON["languageCode"].stringValue, languageName: captionJSON["languageName", "simpleText"].stringValue, url: firstCaptionURL.appending(queryItems: [.init(name: "tlang", value: captionJSON["languageCode"].stringValue)]), isTranslated: true)
                 })
                 
                 return captionsArray

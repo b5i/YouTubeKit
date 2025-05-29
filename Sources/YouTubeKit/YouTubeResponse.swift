@@ -221,7 +221,7 @@ public extension YouTubeResponse {
     
     static func checkForErrors(json: JSON) throws {
         if json["error"].exists() {
-            throw NetworkError(code: json["error"]["code"].intValue, message: json["error"]["message"].stringValue)
+            throw NetworkError(code: json["error", "code"].intValue, message: json["error", "message"].stringValue)
         }
     }
 }

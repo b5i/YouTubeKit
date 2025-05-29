@@ -31,19 +31,19 @@ public struct YTChannel: YTSearchResult, YouTubeChannel {
 
         /// Inititalize a new ``YTSearchResultType/Channel-swift.struct`` instance to put the informations in it.
         var channel = YTChannel(channelId: channelId)
-        channel.name = json["title"]["simpleText"].string
-        if json["navigationEndpoint"]["browseEndpoint"]["canonicalBaseUrl"].stringValue.contains("/c/") || json["subscriberCountText"]["simpleText"].string?.hasPrefix("@") != true { // special channel json with no handle
-            channel.subscriberCount = json["subscriberCountText"]["simpleText"].string
-            channel.videoCount = json["videoCountText"]["runs"].array?.map {$0["text"].stringValue}.reduce("", +) ?? json["videoCountText"]["simpleText"].string
+        channel.name = json["title", "simpleText"].string
+        if json["navigationEndpoint", "browseEndpoint", "canonicalBaseUrl"].stringValue.contains("/c/") || json["subscriberCountText", "simpleText"].string?.hasPrefix("@") != true { // special channel json with no handle
+            channel.subscriberCount = json["subscriberCountText", "simpleText"].string
+            channel.videoCount = json["videoCountText", "runs"].array?.map {$0["text"].stringValue}.reduce("", +) ?? json["videoCountText", "simpleText"].string
         } else {
-            channel.handle = json["subscriberCountText"]["simpleText"].string
-            channel.subscriberCount = json["videoCountText"]["runs"].array?.map {$0["text"].stringValue}.reduce("", +) ?? json["videoCountText"]["simpleText"].string
+            channel.handle = json["subscriberCountText", "simpleText"].string
+            channel.subscriberCount = json["videoCountText", "runs"].array?.map {$0["text"].stringValue}.reduce("", +) ?? json["videoCountText", "simpleText"].string
         }
         YTThumbnail.appendThumbnails(json: json["thumbnail"], thumbnailList: &channel.thumbnails)
                         
         if let badgesList = json["ownerBadges"].array {
             for badge in badgesList {
-                if let badgeName = badge["metadataBadgeRenderer"]["style"].string {
+                if let badgeName = badge["metadataBadgeRenderer", "style"].string {
                     channel.badges.append(badgeName)
                 }
             }

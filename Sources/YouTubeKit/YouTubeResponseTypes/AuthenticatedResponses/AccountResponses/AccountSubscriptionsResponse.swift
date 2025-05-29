@@ -25,21 +25,21 @@ public struct AccountSubscriptionsResponse: AuthenticatedContinuableResponse {
     public static func decodeJSON(json: JSON) throws -> AccountSubscriptionsResponse {
         var toReturn = AccountSubscriptionsResponse()
         
-        guard !(json["responseContext"]["mainAppWebResponseContext"]["loggedOut"].bool ?? true) else { return toReturn }
+        guard !(json["responseContext", "mainAppWebResponseContext", "loggedOut"].bool ?? true) else { return toReturn }
         
         toReturn.isDisconnected = false
         
-        guard let tab = json["contents"]["twoColumnBrowseResultsRenderer"]["tabs"].arrayValue.first(where: {
-            return $0["tabRenderer"]["selected"].boolValue
-        }), tab["tabRenderer"]["tabIdentifier"].string == "FEchannels" else {
+        guard let tab = json["contents", "twoColumnBrowseResultsRenderer", "tabs"].arrayValue.first(where: {
+            return $0["tabRenderer", "selected"].boolValue
+        }), tab["tabRenderer", "tabIdentifier"].string == "FEchannels" else {
             throw ResponseExtractionError(reponseType: Self.self, stepDescription: "Error while trying the get the tab of the channels.")
         }
         
-        for section in tab["tabRenderer"]["content"]["sectionListRenderer"]["contents"].arrayValue {
+        for section in tab["tabRenderer", "content", "sectionListRenderer", "contents"].arrayValue {
             if section["itemSectionRenderer"].exists() {
                 toReturn.results.append(contentsOf: self.getChannelsFromItemSectionRenderer(section["itemSectionRenderer"]))
             } else if section["continuationItemRenderer"].exists() {
-                toReturn.continuationToken = section["continuationItemRenderer"]["continuationEndpoint"]["continuationCommand"]["token"].string
+                toReturn.continuationToken = section["continuationItemRenderer", "continuationEndpoint", "continuationCommand", "token"].string
             }
         }
         
@@ -63,16 +63,16 @@ public struct AccountSubscriptionsResponse: AuthenticatedContinuableResponse {
         public static func decodeJSON(json: JSON) -> AccountSubscriptionsResponse.Continuation {
             var toReturn = Continuation()
             
-            guard !(json["responseContext"]["mainAppWebResponseContext"]["loggedOut"].bool ?? true) else { return toReturn }
+            guard !(json["responseContext", "mainAppWebResponseContext", "loggedOut"].bool ?? true) else { return toReturn }
             
             toReturn.isDisconnected = false
             
             for continuationAction in json["onResponseReceivedActions"].arrayValue where continuationAction["appendContinuationItemsAction"].exists() {
-                for continuationItem in continuationAction["appendContinuationItemsAction"]["continuationItems"].arrayValue {
+                for continuationItem in continuationAction["appendContinuationItemsAction", "continuationItems"].arrayValue {
                     if continuationItem["itemSectionRenderer"].exists() {
                         toReturn.results.append(contentsOf: getChannelsFromItemSectionRenderer(continuationItem["itemSectionRenderer"]))
                     } else if continuationItem["continuationItemRenderer"].exists() {
-                        toReturn.continuationToken = continuationItem["continuationItemRenderer"]["continuationEndpoint"]["continuationCommand"]["token"].string
+                        toReturn.continuationToken = continuationItem["continuationItemRenderer", "continuationEndpoint", "continuationCommand", "token"].string
                     }
                 }
             }
@@ -84,7 +84,7 @@ public struct AccountSubscriptionsResponse: AuthenticatedContinuableResponse {
     private static func getChannelsFromItemSectionRenderer(_ json: JSON) -> [YTChannel] {
         var toReturn: [YTChannel] = []
         for itemSectionContents in json["contents"].arrayValue {
-            for channelJSON in itemSectionContents["shelfRenderer"]["content"]["expandedShelfContentsRenderer"]["items"].arrayValue {
+            for channelJSON in itemSectionContents["shelfRenderer", "content", "expandedShelfContentsRenderer", "items"].arrayValue {
                 guard let channel = YTChannel.decodeJSON(json: channelJSON["channelRenderer"]) else { continue }
                 toReturn.append(channel)
             }

@@ -24,15 +24,15 @@ public struct DeletePlaylistResponse: SimpleActionAuthenticatedResponse {
     public static func decodeJSON(json: JSON) -> DeletePlaylistResponse {
         var toReturn = DeletePlaylistResponse()
         
-        guard !(json["responseContext"]["mainAppWebResponseContext"]["loggedOut"].bool ?? true) else { return toReturn }
+        guard !(json["responseContext", "mainAppWebResponseContext", "loggedOut"].bool ?? true) else { return toReturn }
         
         toReturn.isDisconnected = false
 
-        for command in json["command"]["commandExecutorCommand"]["commands"].arrayValue {
-            if command["removeFromGuideSectionAction"]["handlerData"].string == "GUIDE_ACTION_REMOVE_FROM_PLAYLISTS" {
+        for command in json["command", "commandExecutorCommand", "commands"].arrayValue {
+            if command["removeFromGuideSectionAction", "handlerData"].string == "GUIDE_ACTION_REMOVE_FROM_PLAYLISTS" {
                 toReturn.success = true
             }
-            if let playlistId = command["removeFromGuideSectionAction"]["guideEntryId"].string {
+            if let playlistId = command["removeFromGuideSectionAction", "guideEntryId"].string {
                 toReturn.playlistId = playlistId
             }
         }

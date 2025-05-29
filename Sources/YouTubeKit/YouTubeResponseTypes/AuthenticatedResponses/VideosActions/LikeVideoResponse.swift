@@ -18,7 +18,7 @@ public struct LikeVideoResponse: AuthenticatedResponse {
     public static func decodeJSON(json: JSON) -> LikeVideoResponse {
         var toReturn = LikeVideoResponse()
         
-        guard !(json["responseContext"]["mainAppWebResponseContext"]["loggedOut"].bool ?? true) else { return toReturn }
+        guard !(json["responseContext", "mainAppWebResponseContext", "loggedOut"].bool ?? true) else { return toReturn }
         
         toReturn.isDisconnected = false
         

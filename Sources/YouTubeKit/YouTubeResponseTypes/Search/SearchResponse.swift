@@ -26,22 +26,22 @@ public struct SearchResponse: ContinuableResponse {
         var searchResponse = SearchResponse()
         
         /// Getting visitorData
-        searchResponse.visitorData = json["responseContext"]["visitorData"].stringValue
+        searchResponse.visitorData = json["responseContext", "visitorData"].stringValue
         
         ///Get the continuation token and actual search results among ads
-        if let relevantContentJSON = json["contents"]["twoColumnSearchResultsRenderer"]["primaryContents"]["sectionListRenderer"]["contents"].array {
+        if let relevantContentJSON = json["contents", "twoColumnSearchResultsRenderer", "primaryContents", "sectionListRenderer", "contents"].array {
             ///Check whether each "contents" entry is
             for potentialContinuationRenderer in relevantContentJSON {
-                if let continuationToken = potentialContinuationRenderer["continuationItemRenderer"]["continuationEndpoint"]["continuationCommand"]["token"].string {
+                if let continuationToken = potentialContinuationRenderer["continuationItemRenderer", "continuationEndpoint", "continuationCommand", "token"].string {
                     ///1. A continuationItemRenderer that contains a continuation token
                     searchResponse.continuationToken = continuationToken
                 } else if
-                    let adArray = potentialContinuationRenderer["itemSectionRenderer"]["contents"].array,
+                    let adArray = potentialContinuationRenderer["itemSectionRenderer", "contents"].array,
                         adArray.count == 1,
-                        adArray[0]["adSlotRenderer"]["enablePacfLoggingWeb"].bool != nil {
+                        adArray[0]["adSlotRenderer", "enablePacfLoggingWeb"].bool != nil {
                     ///2. An advertising entry
                     continue
-                } else if let resultsList = potentialContinuationRenderer["itemSectionRenderer"]["contents"].array {
+                } else if let resultsList = potentialContinuationRenderer["itemSectionRenderer", "contents"].array {
                     ///3. The actual list of results
                     searchResponse.results.append(contentsOf: decodedResults(results: resultsList))
                 }
@@ -60,7 +60,7 @@ public struct SearchResponse: ContinuableResponse {
         for (index, resultElement) in results.enumerated() {
             guard var castedElement = getCastedResultElement(element: resultElement) else { 
                 /// YouTube can put a block of video instead of a single video, this is why we treat this case.
-                if let otherElementsArray = resultElement["shelfRenderer"]["content"]["verticalListRenderer"]["items"].array {
+                if let otherElementsArray = resultElement["shelfRenderer", "content", "verticalListRenderer", "items"].array {
                     toReturn.append(contentsOf: decodedResults(results: otherElementsArray))
                 }
                 continue
@@ -118,22 +118,22 @@ public struct SearchResponse: ContinuableResponse {
             var searchResponse = SearchResponse.Restricted()
             
             /// Getting visitorData
-            searchResponse.visitorData = json["responseContext"]["visitorData"].stringValue
+            searchResponse.visitorData = json["responseContext", "visitorData"].stringValue
             
             ///Get the continuation token and actual search results among ads
-            if let relevantContentJSON = json["contents"]["twoColumnSearchResultsRenderer"]["primaryContents"]["sectionListRenderer"]["contents"].array {
+            if let relevantContentJSON = json["contents", "twoColumnSearchResultsRenderer", "primaryContents", "sectionListRenderer", "contents"].array {
                 ///Check whether each "contents" entry is
                 for potentialContinuationRenderer in relevantContentJSON {
-                    if let continuationToken = potentialContinuationRenderer["continuationItemRenderer"]["continuationEndpoint"]["continuationCommand"]["token"].string {
+                    if let continuationToken = potentialContinuationRenderer["continuationItemRenderer", "continuationEndpoint", "continuationCommand", "token"].string {
                         ///1. A continuationItemRenderer that contains a continuation token
                         searchResponse.continuationToken = continuationToken
                     } else if
-                        let adArray = potentialContinuationRenderer["itemSectionRenderer"]["contents"].array,
+                        let adArray = potentialContinuationRenderer["itemSectionRenderer", "contents"].array,
                             adArray.count == 1,
-                            adArray[0]["adSlotRenderer"]["enablePacfLoggingWeb"].bool != nil {
+                            adArray[0]["adSlotRenderer", "enablePacfLoggingWeb"].bool != nil {
                         ///2. An advertising entry
                         continue
-                    } else if let resultsList = potentialContinuationRenderer["itemSectionRenderer"]["contents"].array {
+                    } else if let resultsList = potentialContinuationRenderer["itemSectionRenderer", "contents"].array {
                         ///3. The actual list of results
                         searchResponse.results.append(contentsOf: decodedResults(results: resultsList))
                     }
@@ -167,19 +167,19 @@ public struct SearchResponse: ContinuableResponse {
             var continuationResponse = SearchResponse.Continuation()
             
             ///Get the continuation token and actual search results among ads
-            if let relevantContentJSON = json["onResponseReceivedCommands"][0]["appendContinuationItemsAction"]["continuationItems"].array {
+            if let relevantContentJSON = json["onResponseReceivedCommands", 0, "appendContinuationItemsAction", "continuationItems"].array {
                 ///Check whether each "contents" entry is
                 for potentialContinuationRenderer in relevantContentJSON {
-                    if let continuationToken = potentialContinuationRenderer["continuationItemRenderer"]["continuationEndpoint"]["continuationCommand"]["token"].string {
+                    if let continuationToken = potentialContinuationRenderer["continuationItemRenderer", "continuationEndpoint", "continuationCommand", "token"].string {
                         ///1. A continuationItemRenderer that contains a continuation token
                         continuationResponse.continuationToken = continuationToken
                     } else if
-                        let adArray = potentialContinuationRenderer["itemSectionRenderer"]["contents"].array,
+                        let adArray = potentialContinuationRenderer["itemSectionRenderer", "contents"].array,
                             adArray.count == 1,
-                            adArray[0]["adSlotRenderer"]["enablePacfLoggingWeb"].bool != nil {
+                            adArray[0]["adSlotRenderer", "enablePacfLoggingWeb"].bool != nil {
                         ///2. An advertising entry
                         continue
-                    } else if let resultsList = potentialContinuationRenderer["itemSectionRenderer"]["contents"].array {
+                    } else if let resultsList = potentialContinuationRenderer["itemSectionRenderer", "contents"].array {
                         ///3. The actual list of results
                         continuationResponse.results.append(contentsOf: decodedResults(results: resultsList))
                     }

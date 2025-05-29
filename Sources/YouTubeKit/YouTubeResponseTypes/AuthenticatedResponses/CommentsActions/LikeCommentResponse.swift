@@ -19,7 +19,7 @@ public struct LikeCommentResponse: SimpleActionAuthenticatedResponse {
     public static func decodeJSON(json: JSON) -> Self {
         var toReturn = Self()
         
-        guard !(json["responseContext"]["mainAppWebResponseContext"]["loggedOut"].bool ?? true) else { return toReturn }
+        guard !(json["responseContext", "mainAppWebResponseContext", "loggedOut"].bool ?? true) else { return toReturn }
         
         toReturn.isDisconnected = false
         

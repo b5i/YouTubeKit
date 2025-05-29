@@ -43,22 +43,22 @@ public struct TrendingVideosResponse: YouTubeResponse {
                 
         /// Time to get the params to be able to make channel content requests.
         
-        guard let tabsArray = json["contents"]["twoColumnBrowseResultsRenderer"]["tabs"].array else { return toReturn }
+        guard let tabsArray = json["contents", "twoColumnBrowseResultsRenderer", "tabs"].array else { return toReturn }
                         
         for tab in tabsArray {
-            guard let tabName = tab["tabRenderer"]["title"].string else { continue }
+            guard let tabName = tab["tabRenderer", "title"].string else { continue }
             
             toReturn.requestParams[tabName] = self.getParams(json: tab)
             
-            guard tab["tabRenderer"]["selected"].bool == true else { continue }
+            guard tab["tabRenderer", "selected"].bool == true else { continue }
             
             var currentVideosArray: [YTVideo] = []
             
             toReturn.currentContentIdentifier = tabName
             
-            for sectionContent in tab["tabRenderer"]["content"]["sectionListRenderer"]["contents"].arrayValue {
-                for itemSectionContents in sectionContent["itemSectionRenderer"]["contents"].arrayValue {
-                    for videoJSON in itemSectionContents["shelfRenderer"]["content"]["expandedShelfContentsRenderer"]["items"].arrayValue {
+            for sectionContent in tab["tabRenderer", "content", "sectionListRenderer", "contents"].arrayValue {
+                for itemSectionContents in sectionContent["itemSectionRenderer", "contents"].arrayValue {
+                    for videoJSON in itemSectionContents["shelfRenderer", "content", "expandedShelfContentsRenderer", "items"].arrayValue {
                         guard let video = YTVideo.decodeJSON(json: videoJSON["videoRenderer"]) else { continue }
                         
                         currentVideosArray.append(video)
@@ -109,6 +109,6 @@ public struct TrendingVideosResponse: YouTubeResponse {
     /// - Parameter json: the JSON to be decoded.
     /// - Returns: The params that would be used to make the request for the category of the tab.
     private static func getParams(json: JSON) -> String {
-        return json["tabRenderer"]["endpoint"]["browseEndpoint"]["params"].stringValue
+        return json["tabRenderer", "endpoint", "browseEndpoint", "params"].stringValue
     }
 }

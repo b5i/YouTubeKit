@@ -46,28 +46,28 @@ public struct AccountLibraryResponse: AuthenticatedResponse {
     public static func decodeJSON(json: JSON) -> AccountLibraryResponse {
         var toReturn = AccountLibraryResponse()
         
-        guard !(json["responseContext"]["mainAppWebResponseContext"]["loggedOut"].bool ?? true) else { return toReturn }
+        guard !(json["responseContext", "mainAppWebResponseContext", "loggedOut"].bool ?? true) else { return toReturn }
         
         toReturn.isDisconnected = false
         
-        if let accountStats = json["contents"]["twoColumnBrowseResultsRenderer"]["secondaryContents"]["profileColumnRenderer"]["items"].arrayValue.first(where: {$0["profileColumnStatsRenderer"].exists()})?["profileColumnStatsRenderer"] {
+        if let accountStats = json["contents", "twoColumnBrowseResultsRenderer", "secondaryContents", "profileColumnRenderer", "items"].arrayValue.first(where: {$0["profileColumnStatsRenderer"].exists()})?["profileColumnStatsRenderer"] {
             for accountStatEntry in accountStats["items"].arrayValue {
                 toReturn.accountStats.append(
                     (
-                        accountStatEntry["profileColumnStatsEntryRenderer"]["label"]["runs"].arrayValue.map({return $0["text"].stringValue}).joined(separator: " "),
-                        accountStatEntry["profileColumnStatsEntryRenderer"]["value"]["simpleText"].stringValue
+                        accountStatEntry["profileColumnStatsEntryRenderer", "label", "runs"].arrayValue.map({return $0["text"].stringValue}).joined(separator: " "),
+                        accountStatEntry["profileColumnStatsEntryRenderer", "value", "simpleText"].stringValue
                     )
                 )
             }
         }
         
-        for libraryTab in json["contents"]["twoColumnBrowseResultsRenderer"]["tabs"].arrayValue {
-            if libraryTab["tabRenderer"]["tabIdentifier"].stringValue.hasSuffix("FElibrary") {
-                for libraryContentItem in libraryTab["tabRenderer"]["content"]["sectionListRenderer"]["contents"].array ?? libraryTab["tabRenderer"]["content"]["richGridRenderer"]["contents"].arrayValue {
-                    if let libArray = libraryContentItem["itemSectionRenderer"]["contents"].array {
+        for libraryTab in json["contents", "twoColumnBrowseResultsRenderer", "tabs"].arrayValue {
+            if libraryTab["tabRenderer", "tabIdentifier"].stringValue.hasSuffix("FElibrary") {
+                for libraryContentItem in libraryTab["tabRenderer", "content", "sectionListRenderer", "contents"].array ?? libraryTab["tabRenderer", "content", "richGridRenderer", "contents"].arrayValue {
+                    if let libArray = libraryContentItem["itemSectionRenderer", "contents"].array {
                         for libraryContentItemContents in libArray {
-                            if libraryContentItem["itemSectionRenderer"]["targetId"].string ?? libraryContentItem["itemSectionRenderer"]["targetId"].string == "library-playlists-shelf" {
-                                let playlistsListRenderer = libraryContentItemContents["shelfRenderer"]["content"]["horizontalListRenderer"]["items"].array ?? libraryContentItemContents["shelfRenderer"]["content"]["gridRenderer"]["items"].arrayValue
+                            if libraryContentItem["itemSectionRenderer", "targetId"].string ?? libraryContentItem["itemSectionRenderer", "targetId"].string == "library-playlists-shelf" {
+                                let playlistsListRenderer = libraryContentItemContents["shelfRenderer", "content", "horizontalListRenderer", "items"].array ?? libraryContentItemContents["shelfRenderer", "content", "gridRenderer", "items"].arrayValue
                                 for playlist in playlistsListRenderer {
                                     if let decodedPlaylist = YTPlaylist.decodeJSON(json: playlist["gridPlaylistRenderer"]) ?? YTPlaylist.decodeLockupJSON(json: playlist["lockupViewModel"]),
                                        !["VLLL", "VLWL", "FEhistory"].contains(decodedPlaylist.playlistId) {
@@ -75,7 +75,7 @@ public struct AccountLibraryResponse: AuthenticatedResponse {
                                     }
                                 }
                             } else {
-                                if let browseId = libraryContentItemContents["shelfRenderer"]["endpoint"]["browseEndpoint"]["browseId"].string {
+                                if let browseId = libraryContentItemContents["shelfRenderer", "endpoint", "browseEndpoint", "browseId"].string {
                                     switch browseId {
                                     case "FEhistory":
                                         toReturn.history = YTPlaylist(playlistId: "FEhistory")
@@ -110,9 +110,9 @@ public struct AccountLibraryResponse: AuthenticatedResponse {
     }
     
     private static func decodeNextGenLibraryElement(result: inout AccountLibraryResponse, json: JSON) {
-        switch json["richSectionRenderer"]["content"]["richShelfRenderer"]["endpoint"]["browseEndpoint"]["browseId"].stringValue {
+        switch json["richSectionRenderer", "content", "richShelfRenderer", "endpoint", "browseEndpoint", "browseId"].stringValue {
         case "FEplaylist_aggregation":
-            for playlist in json["richSectionRenderer"]["content"]["richShelfRenderer"]["contents"].arrayValue.map({ $0["richItemRenderer"]["content"] }) {
+            for playlist in json["richSectionRenderer", "content", "richShelfRenderer", "contents"].arrayValue.map({ $0["richItemRenderer", "content"] }) {
                 if let decodedPlaylist = YTPlaylist.decodeLockupJSON(json: playlist["lockupViewModel"]),
                    !["VLLL", "VLWL", "FEhistory"].contains(decodedPlaylist.playlistId) {
                     result.playlists.append(decodedPlaylist)
@@ -120,38 +120,38 @@ public struct AccountLibraryResponse: AuthenticatedResponse {
             }
         case "FEhistory":
             result.history = YTPlaylist(playlistId: "FEhistory")
-            decodeDefaultPlaylist(playlist: &(result.history!), json: json["richSectionRenderer"]["content"]["richShelfRenderer"]["contents"])
+            decodeDefaultPlaylist(playlist: &(result.history!), json: json["richSectionRenderer", "content", "richShelfRenderer", "contents"])
             
             if result.history?.title == nil || result.history?.title == "" {
-                result.history?.title = json["richSectionRenderer"]["content"]["richShelfRenderer"]["title"]["runs"].array?.map({return $0["text"].stringValue}).joined(separator: " ")
+                result.history?.title = json["richSectionRenderer", "content", "richShelfRenderer", "title", "runs"].array?.map({return $0["text"].stringValue}).joined(separator: " ")
             }
             
             if result.history?.videoCount == nil || result.history?.videoCount == "" {
-                result.history?.videoCount = json["richSectionRenderer"]["content"]["richShelfRenderer"]["subtitle"]["runs"].array?.map({return $0["text"].stringValue}).joined(separator: " ")
+                result.history?.videoCount = json["richSectionRenderer", "content", "richShelfRenderer", "subtitle", "runs"].array?.map({return $0["text"].stringValue}).joined(separator: " ")
             }
             break
         case "VLWL":
             result.watchLater = YTPlaylist(playlistId: "VLWL")
-            decodeDefaultPlaylist(playlist: &(result.watchLater!), json: json["richSectionRenderer"]["content"]["richShelfRenderer"]["contents"])
+            decodeDefaultPlaylist(playlist: &(result.watchLater!), json: json["richSectionRenderer", "content", "richShelfRenderer", "contents"])
             
             if result.watchLater?.title == nil || result.watchLater?.title == "" {
-                result.watchLater?.title = json["richSectionRenderer"]["content"]["richShelfRenderer"]["title"]["runs"].array?.map({return $0["text"].stringValue}).joined(separator: " ")
+                result.watchLater?.title = json["richSectionRenderer", "content", "richShelfRenderer", "title", "runs"].array?.map({return $0["text"].stringValue}).joined(separator: " ")
             }
             
             if result.watchLater?.videoCount == nil || result.watchLater?.videoCount == "" {
-                result.watchLater?.videoCount = json["richSectionRenderer"]["content"]["richShelfRenderer"]["subtitle"]["runs"].array?.map({return $0["text"].stringValue}).joined(separator: " ")
+                result.watchLater?.videoCount = json["richSectionRenderer", "content", "richShelfRenderer", "subtitle", "runs"].array?.map({return $0["text"].stringValue}).joined(separator: " ")
             }
             break
         case "VLLL":
             result.likes = YTPlaylist(playlistId: "VLLL")
-            decodeDefaultPlaylist(playlist: &(result.likes!), json: json["richSectionRenderer"]["content"]["richShelfRenderer"]["contents"])
+            decodeDefaultPlaylist(playlist: &(result.likes!), json: json["richSectionRenderer", "content", "richShelfRenderer", "contents"])
             
             if result.likes?.title == nil || result.likes?.title == "" {
-                result.likes?.title = json["richSectionRenderer"]["content"]["richShelfRenderer"]["title"]["runs"].array?.map({return $0["text"].stringValue}).joined(separator: " ")
+                result.likes?.title = json["richSectionRenderer", "content", "richShelfRenderer", "title", "runs"].array?.map({return $0["text"].stringValue}).joined(separator: " ")
             }
             
             if result.likes?.videoCount == nil || result.likes?.videoCount == "" {
-                result.likes?.videoCount = json["richSectionRenderer"]["content"]["richShelfRenderer"]["subtitle"]["runs"].array?.map({return $0["text"].stringValue}).joined(separator: " ")
+                result.likes?.videoCount = json["richSectionRenderer", "content", "richShelfRenderer", "subtitle", "runs"].array?.map({return $0["text"].stringValue}).joined(separator: " ")
             }
             break
         case "FEclips": // Not supported yet
@@ -163,10 +163,10 @@ public struct AccountLibraryResponse: AuthenticatedResponse {
     
     /// Decode history, likes, etc..
     private static func decodeDefaultPlaylist(playlist: inout YTPlaylist, json: JSON) {
-        playlist.title = json["title"]["runs"].arrayValue.map({return $0["text"].stringValue}).joined(separator: " ")
-        playlist.videoCount = json["titleAnnotation"]["simpleText"].string
-        let frontVideosListRenderer = json["content"]["horizontalListRenderer"]["items"].array ?? json["content"]["gridRenderer"]["items"].array ??
-            json.arrayValue.map({ $0["richItemRenderer"]["content"] })
+        playlist.title = json["title", "runs"].arrayValue.map({return $0["text"].stringValue}).joined(separator: " ")
+        playlist.videoCount = json["titleAnnotation", "simpleText"].string
+        let frontVideosListRenderer = json["content", "horizontalListRenderer", "items"].array ?? json["content", "gridRenderer", "items"].array ??
+            json.arrayValue.map({ $0["richItemRenderer", "content"] })
         for frontVideo in frontVideosListRenderer {
             if let video = YTVideo.decodeJSON(json: frontVideo["gridVideoRenderer"]) ?? YTVideo.decodeJSON(json: frontVideo["videoRenderer"]) ?? YTVideo.decodeLockupJSON(json: frontVideo["lockupViewModel"]) {
                 playlist.frontVideos.append(video)

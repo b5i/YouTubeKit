@@ -21,7 +21,7 @@ public struct RemoveVideoFromHistroryResponse: SimpleActionAuthenticatedResponse
     public static func decodeJSON(json: JSON) -> RemoveVideoFromHistroryResponse {
         var toReturn = RemoveVideoFromHistroryResponse()
         
-        guard !(json["responseContext"]["mainAppWebResponseContext"]["loggedOut"].bool ?? true) else { return toReturn }
+        guard !(json["responseContext", "mainAppWebResponseContext", "loggedOut"].bool ?? true) else { return toReturn }
         
         toReturn.isDisconnected = false
         toReturn.success = json["feedbackResponses"].arrayValue.first?["isProcessed"].bool == true

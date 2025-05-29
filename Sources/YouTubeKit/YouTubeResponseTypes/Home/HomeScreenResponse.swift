@@ -27,19 +27,19 @@ public struct HomeScreenResponse: ContinuableResponse {
     public static func decodeJSON(json: JSON) -> HomeScreenResponse {
         var toReturn = HomeScreenResponse()
         
-        toReturn.visitorData = json["responseContext"]["visitorData"].string
+        toReturn.visitorData = json["responseContext", "visitorData"].string
         
-        guard let tabsArray = json["contents"]["twoColumnBrowseResultsRenderer"]["tabs"].array else { return toReturn }
+        guard let tabsArray = json["contents", "twoColumnBrowseResultsRenderer", "tabs"].array else { return toReturn }
         for tab in tabsArray {
-            guard tab["tabRenderer"]["selected"].bool ?? false else { continue }
+            guard tab["tabRenderer", "selected"].bool ?? false else { continue }
             
-            guard let videosArray = tab["tabRenderer"]["content"]["richGridRenderer"]["contents"].array else { continue }
+            guard let videosArray = tab["tabRenderer", "content", "richGridRenderer", "contents"].array else { continue }
             for video in videosArray {
-                if video["richItemRenderer"]["content"]["videoRenderer"]["videoId"].string != nil, let decodedVideo = YTVideo.decodeJSON(json: video["richItemRenderer"]["content"]["videoRenderer"]) {
+                if video["richItemRenderer", "content", "videoRenderer", "videoId"].string != nil, let decodedVideo = YTVideo.decodeJSON(json: video["richItemRenderer", "content", "videoRenderer"]) {
                     toReturn.results.append(decodedVideo)
-                } else if video["richItemRenderer"]["content"]["lockupViewModel"].exists(), let video = YTVideo.decodeLockupJSON(json: video["richItemRenderer"]["content"]["lockupViewModel"]) {
+                } else if video["richItemRenderer", "content", "lockupViewModel"].exists(), let video = YTVideo.decodeLockupJSON(json: video["richItemRenderer", "content", "lockupViewModel"]) {
                     toReturn.results.append(video)
-                } else if let continuationToken = video["continuationItemRenderer"]["continuationEndpoint"]["continuationCommand"]["token"].string {
+                } else if let continuationToken = video["continuationItemRenderer", "continuationEndpoint", "continuationCommand", "token"].string {
                     toReturn.continuationToken = continuationToken
                 }
             }
@@ -68,14 +68,14 @@ public struct HomeScreenResponse: ContinuableResponse {
             guard let continuationActionsArray = json["onResponseReceivedActions"].array else { return toReturn }
             
             for continuationAction in continuationActionsArray {
-                guard let continuationItemsArray = continuationAction["appendContinuationItemsAction"]["continuationItems"].array else { return toReturn }
+                guard let continuationItemsArray = continuationAction["appendContinuationItemsAction", "continuationItems"].array else { return toReturn }
                 
                 for video in continuationItemsArray {
-                    if video["richItemRenderer"]["content"]["videoRenderer"]["videoId"].string != nil, let decodedVideo = YTVideo.decodeJSON(json: video["richItemRenderer"]["content"]["videoRenderer"]) {
+                    if video["richItemRenderer", "content", "videoRenderer", "videoId"].string != nil, let decodedVideo = YTVideo.decodeJSON(json: video["richItemRenderer", "content", "videoRenderer"]) {
                         toReturn.results.append(decodedVideo)
-                    } else if video["richItemRenderer"]["content"]["lockupViewModel"].exists(), let video = YTVideo.decodeLockupJSON(json: video["richItemRenderer"]["content"]["lockupViewModel"]) {
+                    } else if video["richItemRenderer", "content", "lockupViewModel"].exists(), let video = YTVideo.decodeLockupJSON(json: video["richItemRenderer", "content", "lockupViewModel"]) {
                         toReturn.results.append(video)
-                    } else if let continuationToken = video["continuationItemRenderer"]["continuationEndpoint"]["continuationCommand"]["token"].string {
+                    } else if let continuationToken = video["continuationItemRenderer", "continuationEndpoint", "continuationCommand", "token"].string {
                         toReturn.continuationToken = continuationToken
                     }
                 }

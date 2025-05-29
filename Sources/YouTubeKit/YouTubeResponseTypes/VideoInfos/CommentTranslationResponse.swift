@@ -18,7 +18,7 @@ public struct CommentTranslationResponse: YouTubeResponse {
             throw ResponseExtractionError(reponseType: Self.self, stepDescription: "Request result is not successful.")
         }
         
-        guard let translatedText = json["frameworkUpdates"]["entityBatchUpdate"]["mutations"].arrayValue.first(where: {$0["payload"]["commentEntityPayload"]["translatedContent"]["content"].string != nil })?["payload"]["commentEntityPayload"]["translatedContent"]["content"].string else {
+        guard let translatedText = json["frameworkUpdates", "entityBatchUpdate", "mutations"].arrayValue.first(where: {$0["payload", "commentEntityPayload", "translatedContent", "content"].string != nil })?["payload", "commentEntityPayload", "translatedContent", "content"].string else {
             throw ResponseExtractionError(reponseType: Self.self, stepDescription: "Couldn't extract translted comment.")
         }
         

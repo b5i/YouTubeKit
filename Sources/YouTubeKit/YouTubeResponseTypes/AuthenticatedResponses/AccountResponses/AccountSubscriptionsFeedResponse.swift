@@ -25,17 +25,17 @@ public struct AccountSubscriptionsFeedResponse: AuthenticatedContinuableResponse
     public static func decodeJSON(json: JSON) throws -> AccountSubscriptionsFeedResponse {
         var toReturn = AccountSubscriptionsFeedResponse()
         
-        guard !(json["responseContext"]["mainAppWebResponseContext"]["loggedOut"].bool ?? true) else { return toReturn }
+        guard !(json["responseContext", "mainAppWebResponseContext", "loggedOut"].bool ?? true) else { return toReturn }
         
         toReturn.isDisconnected = false
         
-        guard let tab = json["contents"]["twoColumnBrowseResultsRenderer"]["tabs"].arrayValue.first(where: {
-            return $0["tabRenderer"]["selected"].boolValue
-        }), tab["tabRenderer"]["tabIdentifier"].string == "FEsubscriptions" else {
+        guard let tab = json["contents", "twoColumnBrowseResultsRenderer", "tabs"].arrayValue.first(where: {
+            return $0["tabRenderer", "selected"].boolValue
+        }), tab["tabRenderer", "tabIdentifier"].string == "FEsubscriptions" else {
             throw ResponseExtractionError(reponseType: Self.self, stepDescription: "Error while trying the get the tab of the subscriptions.")
         }
         
-        for section in tab["tabRenderer"]["content"]["richGridRenderer"]["contents"].arrayValue {
+        for section in tab["tabRenderer", "content", "richGridRenderer", "contents"].arrayValue {
             if section["richItemRenderer"].exists() {
                 guard let video = self.getVideoFromItemRenderer(section["richItemRenderer"]) else { continue }
                 toReturn.results.append(video)
@@ -67,12 +67,12 @@ public struct AccountSubscriptionsFeedResponse: AuthenticatedContinuableResponse
         public static func decodeJSON(json: JSON) -> AccountSubscriptionsFeedResponse.Continuation {
             var toReturn = Continuation()
             
-            guard !(json["responseContext"]["mainAppWebResponseContext"]["loggedOut"].bool ?? true) else { return toReturn }
+            guard !(json["responseContext", "mainAppWebResponseContext", "loggedOut"].bool ?? true) else { return toReturn }
             
             toReturn.isDisconnected = false
             
             for continuationAction in json["onResponseReceivedActions"].arrayValue where continuationAction["appendContinuationItemsAction"].exists() {
-                for continuationItem in continuationAction["appendContinuationItemsAction"]["continuationItems"].arrayValue {
+                for continuationItem in continuationAction["appendContinuationItemsAction", "continuationItems"].arrayValue {
                     if continuationItem["richItemRenderer"].exists() {
                         guard let video = getVideoFromItemRenderer(continuationItem["richItemRenderer"]) else { continue }
                         toReturn.results.append(video)
@@ -91,7 +91,7 @@ public struct AccountSubscriptionsFeedResponse: AuthenticatedContinuableResponse
     
     private static func getShortsFromSectionRenderer(_ json: JSON) -> [YTVideo] {
         var toReturn: [YTVideo] = []
-        for itemSectionContents in json["content"]["richShelfRenderer"]["contents"].arrayValue {
+        for itemSectionContents in json["content", "richShelfRenderer", "contents"].arrayValue {
             guard let video = getVideoFromItemRenderer(itemSectionContents["richItemRenderer"]) else { continue }
             toReturn.append(video)
         }
@@ -100,14 +100,14 @@ public struct AccountSubscriptionsFeedResponse: AuthenticatedContinuableResponse
     }
     
     private static func getVideoFromItemRenderer(_ json: JSON) -> YTVideo? {
-        if json["content"]["videoRenderer"].exists() {
-            return YTVideo.decodeJSON(json: json["content"]["videoRenderer"])
+        if json["content", "videoRenderer"].exists() {
+            return YTVideo.decodeJSON(json: json["content", "videoRenderer"])
         } else {
-            return YTVideo.decodeShortFromJSON(json: json["content"]["reelItemRenderer"]) ?? YTVideo.decodeShortFromLockupJSON(json: json["content"]["shortsLockupViewModel"])
+            return YTVideo.decodeShortFromJSON(json: json["content", "reelItemRenderer"]) ?? YTVideo.decodeShortFromLockupJSON(json: json["content", "shortsLockupViewModel"])
         }
     }
     
     private static func getContinuationToken(_ json: JSON) -> String? {
-        return json["continuationEndpoint"]["continuationCommand"]["token"].string
+        return json["continuationEndpoint", "continuationCommand", "token"].string
     }
 }

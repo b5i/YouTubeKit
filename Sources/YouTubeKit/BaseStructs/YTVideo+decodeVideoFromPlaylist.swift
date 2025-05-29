@@ -18,22 +18,22 @@ public extension YTVideo {
         /// Inititalize a new ``YTSearchResultType/Video-swift.struct`` instance to put the informations in it.
         var video = YTVideo(videoId: videoId)
                     
-        if json["title"]["simpleText"].string != nil {
-            video.title = json["title"]["simpleText"].string
-        } else if let titleArray = json["title"]["runs"].array {
+        if json["title", "simpleText"].string != nil {
+            video.title = json["title", "simpleText"].string
+        } else if let titleArray = json["title", "runs"].array {
             video.title = titleArray.map({$0["text"].stringValue}).joined()
         }
         
-        if let channelId = json["shortBylineText"]["runs"][0]["navigationEndpoint"]["browseEndpoint"]["browseId"].string {
+        if let channelId = json["shortBylineText", "runs", 0, "navigationEndpoint", "browseEndpoint", "browseId"].string {
             
-            video.channel = YTLittleChannelInfos(channelId: channelId, name: json["shortBylineText"]["runs"][0]["text"].string)
+            video.channel = YTLittleChannelInfos(channelId: channelId, name: json["shortBylineText", "runs", 0, "text"].string)
         }
         
-        video.viewCount = json["videoInfo"]["runs"][0]["text"].string
+        video.viewCount = json["videoInfo", "runs", 0, "text"].string
         
-        video.timePosted = json["videoInfo"]["runs"][2]["text"].string
+        video.timePosted = json["videoInfo", "runs", 2, "text"].string
                 
-        if let timeLength = json["lengthText"]["simpleText"].string {
+        if let timeLength = json["lengthText", "simpleText"].string {
             video.timeLength = timeLength
         } else {
             video.timeLength = "live"

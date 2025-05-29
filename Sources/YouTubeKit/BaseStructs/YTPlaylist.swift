@@ -35,25 +35,25 @@ public struct YTPlaylist: YTSearchResult, Sendable {
         /// Inititalize a new ``YTSearchResultType/Playlist-swift.struct`` instance to put the informations in it.
         var playlist = YTPlaylist(playlistId: playlistId.hasPrefix("VL") ? playlistId : "VL" + playlistId)
                     
-        if let playlistTitle = json["title"]["simpleText"].string {
+        if let playlistTitle = json["title", "simpleText"].string {
             playlist.title = playlistTitle
         } else {
-            let playlistTitle = json["title"]["runs"].arrayValue.map({$0["text"].stringValue}).joined()
+            let playlistTitle = json["title", "runs"].arrayValue.map({$0["text"].stringValue}).joined()
             playlist.title = playlistTitle
         }
         
-        YTThumbnail.appendThumbnails(json: json["thumbnailRenderer"]["playlistVideoThumbnailRenderer"]["thumbnail"], thumbnailList: &playlist.thumbnails)
+        YTThumbnail.appendThumbnails(json: json["thumbnailRenderer", "playlistVideoThumbnailRenderer", "thumbnail"], thumbnailList: &playlist.thumbnails)
                     
-        playlist.videoCount = json["videoCountText"]["runs"].arrayValue.map({$0["text"].stringValue}).joined()
+        playlist.videoCount = json["videoCountText", "runs"].arrayValue.map({$0["text"].stringValue}).joined()
         
-        if let channelId = json["longBylineText"]["runs"][0]["navigationEndpoint"]["browseEndpoint"]["browseId"].string {
-            playlist.channel = YTLittleChannelInfos(channelId: channelId, name: json["longBylineText"]["runs"].arrayValue.map({$0["text"].stringValue}).joined())
+        if let channelId = json["longBylineText", "runs", 0, "navigationEndpoint", "browseEndpoint", "browseId"].string {
+            playlist.channel = YTLittleChannelInfos(channelId: channelId, name: json["longBylineText", "runs"].arrayValue.map({$0["text"].stringValue}).joined())
         }
         
-        playlist.timePosted = json["publishedTimeText"]["simpleText"].string
+        playlist.timePosted = json["publishedTimeText", "simpleText"].string
         
         for frontVideoIndex in 0..<(json["videos"].array?.count ?? 0) {
-            let video = json["videos"][frontVideoIndex]["childVideoRenderer"]
+            let video = json["videos", frontVideoIndex, "childVideoRenderer"]
             guard YTVideo.canBeDecoded(json: video), let castedVideo = YTVideo.decodeJSON(json: video) else { continue }
             playlist.frontVideos.append(castedVideo)
         }
@@ -66,9 +66,9 @@ public struct YTPlaylist: YTSearchResult, Sendable {
         
         var playlist = YTPlaylist(playlistId: playlistId.hasPrefix("VL") ? playlistId : "VL" + playlistId)
         
-        playlist.title = json["metadata"]["lockupMetadataViewModel"]["title"]["content"].string
+        playlist.title = json["metadata", "lockupMetadataViewModel", "title", "content"].string
         
-        let channelElement1 = json["metadata"]["lockupMetadataViewModel"]["metadata"]["contentMetadataViewModel"]["metadataRows"]
+        let channelElement1 = json["metadata", "lockupMetadataViewModel", "metadata", "contentMetadataViewModel", "metadataRows"]
             .arrayValue.compactMap { metadataPart in
                 metadataPart["metadataParts"].array
             }
@@ -76,31 +76,31 @@ public struct YTPlaylist: YTSearchResult, Sendable {
         let channelElement2 = channelElement1
             .first(where: { metadataPart in
                 metadataPart.first(where: {
-                    $0["text"]["commandRuns"]
+                    $0["text", "commandRuns"]
                         .arrayValue
-                        .first?["onTap"]["innertubeCommand"]["commandMetadata"]["webCommandMetadata"]["webPageType"]
+                        .first?["onTap", "innertubeCommand", "commandMetadata", "webCommandMetadata", "webPageType"]
                         .string == "WEB_PAGE_TYPE_CHANNEL"
                 }) != nil
             })
             
         if let channelElement = channelElement2?.first(where: {
-                $0["text"]["commandRuns"]
+                $0["text", "commandRuns"]
                     .arrayValue
-                    .first?["onTap"]["innertubeCommand"]["commandMetadata"]["webCommandMetadata"]["webPageType"]
+                    .first?["onTap", "innertubeCommand", "commandMetadata", "webCommandMetadata", "webPageType"]
                     .string == "WEB_PAGE_TYPE_CHANNEL"
             })?["text"],
             let channelId = channelElement["commandRuns"]
             .array?
-            .first?["onTap"]["innertubeCommand"]["browseEndpoint"]["browseId"].string
+            .first?["onTap", "innertubeCommand", "browseEndpoint", "browseId"].string
         {
             playlist.channel = YTLittleChannelInfos(channelId: channelId, name: channelElement["content"].string)
         }
             
-        YTThumbnail.appendThumbnails(json: json["contentImage"]["collectionThumbnailViewModel"]["primaryThumbnail"]["thumbnailViewModel"], thumbnailList: &playlist.thumbnails)
+        YTThumbnail.appendThumbnails(json: json["contentImage", "collectionThumbnailViewModel", "primaryThumbnail", "thumbnailViewModel"], thumbnailList: &playlist.thumbnails)
         
-        mainLoop: for thumbnailOverlay in json["contentImage"]["collectionThumbnailViewModel"]["primaryThumbnail"]["thumbnailViewModel"]["overlays"].arrayValue {
-            for thumbnailBadge in thumbnailOverlay["thumbnailOverlayBadgeViewModel"]["thumbnailBadges"].arrayValue {
-                if thumbnailBadge["thumbnailBadgeViewModel"]["icon"]["sources"].arrayValue.first?["clientResource"]["imageName"].string == "PLAYLISTS", let text = thumbnailBadge["thumbnailBadgeViewModel"]["text"].string {
+        mainLoop: for thumbnailOverlay in json["contentImage", "collectionThumbnailViewModel", "primaryThumbnail", "thumbnailViewModel", "overlays"].arrayValue {
+            for thumbnailBadge in thumbnailOverlay["thumbnailOverlayBadgeViewModel", "thumbnailBadges"].arrayValue {
+                if thumbnailBadge["thumbnailBadgeViewModel", "icon", "sources"].arrayValue.first?["clientResource", "imageName"].string == "PLAYLISTS", let text = thumbnailBadge["thumbnailBadgeViewModel", "text"].string {
                     playlist.videoCount = text
                     break mainLoop
                 }
