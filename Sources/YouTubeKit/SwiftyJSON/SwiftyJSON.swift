@@ -97,7 +97,7 @@ public struct JSON {
      */
     public init(data: Data, options opt: JSONSerialization.ReadingOptions = []) throws {
         let object: Any = try JSONSerialization.jsonObject(with: data, options: opt)
-        self.init(jsonObject: object)
+        self.init(jsonObject: unwrap(object)) // we need to cast the Foundation objects into Swift ones
     }
 
     /**
@@ -116,8 +116,8 @@ public struct JSON {
             } catch {
                 self.init(jsonObject: NSNull())
             }
-        default:
-            self.init(jsonObject: object)
+        default: // can contain JSON structs so we need to unwrap
+            self.init(jsonObject: unwrap(object))
         }
     }
 
@@ -132,19 +132,19 @@ public struct JSON {
         if let data = jsonString.data(using: .utf8) {
             self.init(data)
         } else {
-            self.init(NSNull())
+            self.init(jsonObject: NSNull())
         }
     }
 
     /**
      Creates a JSON using the object.
     
-     - parameter jsonObject:  The object must have the following properties: All objects are NSString/String, NSNumber/Int/Float/Double/Bool, NSArray/Array, NSDictionary/Dictionary, or NSNull; All dictionary keys are NSStrings/String; NSNumbers are not NaN or infinity.
+     - parameter jsonObject:  The object must have the following properties: All objects are NSString/String, NSNumber/Int/Float/Double/Bool, NSArray/Array, NSDictionary/Dictionary, or NSNull; All dictionary keys are NSStrings/String; NSNumbers are not NaN or infinity. It must NOT contain ``JSON`` structures.
     
      - returns: The created JSON
      */
     fileprivate init(jsonObject: Any) {
-        object = jsonObject
+        _object = jsonObject
     }
 
     /**
@@ -187,7 +187,7 @@ public struct JSON {
                     try self[key].merge(with: other[key], typecheck: false)
                 }
             case .array:
-                self = JSON(arrayValue + other.arrayValue)
+                self = JSON(jsonObject: rawArray + other.rawArray)
             default:
                 self = other
             }
@@ -214,8 +214,14 @@ public struct JSON {
     /// Error in JSON, fileprivate setter
     public fileprivate(set) var error: SwiftyJSONError?
 
-    /// Object in JSON
+    /// Object in JSON, can be set with values containing ``JSON`` structures inside
     public var object: Any {
+        get { return _object }
+        set { _object = unwrap(newValue) }
+    }
+    
+    /// Raw JSON object, contains only native JSON types, not ``JSON``
+    private var _object: Any {
         get {
             switch type {
             case .array:      return rawArray
@@ -228,7 +234,7 @@ public struct JSON {
         }
         set {
             error = nil
-            switch unwrap(newValue) {
+            switch newValue {
             case let number as NSNumber:
                 if number.isBool {
                     type = .bool
@@ -260,10 +266,10 @@ public struct JSON {
     /// The static null JSON
     @available(*, unavailable, renamed:"null")
     public static var nullJSON: JSON { return null }
-    public static var null: JSON { return JSON(NSNull()) }
+    public static var null: JSON { return JSON(jsonObject: NSNull()) }
 }
 
-/// Private method to unwarp an object recursively
+/// Private method to unwarp an object recursively (transfrom every ``JSON`` child into its json content) and cast Foundation types into Swift ones
 private func unwrap(_ object: Any) -> Any {
     switch object {
     case let json as JSON:
@@ -333,8 +339,8 @@ extension JSON: Swift.Collection {
 
     public subscript (position: Index) -> (String, JSON) {
         switch position {
-        case .array(let idx):      return (String(idx), JSON(rawArray[idx]))
-        case .dictionary(let idx): return (rawDictionary[idx].key, JSON(rawDictionary[idx].value))
+        case .array(let idx):      return (String(idx), JSON(jsonObject: rawArray[idx]))
+        case .dictionary(let idx): return (rawDictionary[idx].key, JSON(jsonObject: rawDictionary[idx].value))
         default:                   return ("", JSON.null)
         }
     }
@@ -391,7 +397,7 @@ extension JSON {
      */
     public subscript(path: [JSONSubscriptType]) -> JSON {
         get {
-            var currentObject: Any = self.object
+            var currentObject: Any = self._object
             
             for pathElement in path {
                 switch pathElement.jsonKey {
@@ -418,7 +424,7 @@ extension JSON {
                 }
             }
             
-            return JSON(currentObject)
+            return JSON(jsonObject: currentObject)
         }
         set {
             guard let head = path.first else { return }
@@ -426,12 +432,12 @@ extension JSON {
             switch head.jsonKey {
                 case .index(_):
                 if type == .array && newValue.error == nil {
-                    try? self.rawArray.set(newValue.object, at: path)
+                    try? self.rawArray.set(newValue._object, at: path)
                 }
                 
                 case .key(_):
                 if type == .dictionary && newValue.error == nil {
-                    try? self.rawDictionary.set(newValue.object, at: path)
+                    try? self.rawDictionary.set(newValue._object, at: path)
                 }
             }
         }
@@ -657,7 +663,7 @@ extension JSON: Swift.RawRepresentable {
                         return "\"\(key)\": null"
                     }
 
-                    let nestedValue = JSON(unwrappedValue)
+                    let nestedValue = JSON(jsonObject: unwrappedValue)
                     guard let nestedString = try nestedValue._rawString(encoding, options: options, maxObjectDepth: maxObjectDepth - 1) else {
                         throw SwiftyJSONError.elementTooDeep
                     }
@@ -688,7 +694,7 @@ extension JSON: Swift.RawRepresentable {
                         return "null"
                     }
 
-                    let nestedValue = JSON(unwrappedValue)
+                    let nestedValue = JSON(jsonObject: unwrappedValue)
                     guard let nestedString = try nestedValue._rawString(encoding, options: options, maxObjectDepth: maxObjectDepth - 1) else {
                         throw SwiftyJSONError.invalidJSON
                     }
@@ -731,7 +737,7 @@ extension JSON {
 
     //Optional [JSON]
     public var array: [JSON]? {
-        return type == .array ? rawArray.map(JSON.init(_:)) : nil
+        return type == .array ? rawArray.map(JSON.init(jsonObject:)) : nil
     }
 
     //Non-optional [JSON]
@@ -760,7 +766,7 @@ extension JSON {
     //Optional [String : JSON]
     public var dictionary: [String: JSON]? {
         if type == .dictionary {
-            return rawDictionary.mapValues(JSON.init(_:))
+            return rawDictionary.mapValues(JSON.init(jsonObject:))
         } else {
             return nil
         }
@@ -799,7 +805,7 @@ extension JSON { // : Swift.Bool
             }
         }
         set {
-            object = newValue ?? NSNull()
+            _object = newValue ?? NSNull()
         }
     }
 
@@ -814,7 +820,7 @@ extension JSON { // : Swift.Bool
             }
         }
         set {
-            object = newValue
+            _object = newValue
         }
     }
 }
@@ -832,7 +838,7 @@ extension JSON {
             }
         }
         set {
-            object = newValue ?? NSNull()
+            _object = newValue ?? NSNull()
         }
     }
 
@@ -847,7 +853,7 @@ extension JSON {
             }
         }
         set {
-            object = newValue
+            _object = newValue
         }
     }
 }
@@ -866,7 +872,7 @@ extension JSON {
             }
         }
         set {
-            object = newValue ?? NSNull()
+            _object = newValue ?? NSNull()
         }
     }
 
@@ -875,15 +881,15 @@ extension JSON {
         get {
             switch type {
             case .string:
-                let decimal = NSDecimalNumber(string: object as? String)
+                let decimal = NSDecimalNumber(string: _object as? String)
                 return decimal == .notANumber ? .zero : decimal
-            case .number: return object as? NSNumber ?? NSNumber(value: 0)
+            case .number: return _object as? NSNumber ?? NSNumber(value: 0)
             case .bool: return NSNumber(value: rawBool ? 1 : 0)
             default: return NSNumber(value: 0.0)
             }
         }
         set {
-            object = newValue
+            _object = newValue
         }
     }
 }
@@ -894,7 +900,7 @@ extension JSON {
 
     public var null: NSNull? {
         set {
-            object = NSNull()
+            _object = NSNull()
         }
         get {
             switch type {
@@ -934,7 +940,7 @@ extension JSON {
             }
         }
         set {
-            object = newValue?.absoluteString ?? NSNull()
+            _object = newValue?.absoluteString ?? NSNull()
         }
     }
 }
@@ -949,9 +955,9 @@ extension JSON {
         }
         set {
             if let newValue = newValue {
-                object = NSNumber(value: newValue)
+                _object = NSNumber(value: newValue)
             } else {
-                object = NSNull()
+                _object = NSNull()
             }
         }
     }
@@ -961,7 +967,7 @@ extension JSON {
             return numberValue.doubleValue
         }
         set {
-            object = NSNumber(value: newValue)
+            _object = NSNumber(value: newValue)
         }
     }
 
@@ -971,9 +977,9 @@ extension JSON {
         }
         set {
             if let newValue = newValue {
-                object = NSNumber(value: newValue)
+                _object = NSNumber(value: newValue)
             } else {
-                object = NSNull()
+                _object = NSNull()
             }
         }
     }
@@ -983,7 +989,7 @@ extension JSON {
             return numberValue.floatValue
         }
         set {
-            object = NSNumber(value: newValue)
+            _object = NSNumber(value: newValue)
         }
     }
 
@@ -993,9 +999,9 @@ extension JSON {
         }
         set {
             if let newValue = newValue {
-                object = NSNumber(value: newValue)
+                _object = NSNumber(value: newValue)
             } else {
-                object = NSNull()
+                _object = NSNull()
             }
         }
     }
@@ -1005,7 +1011,7 @@ extension JSON {
             return numberValue.intValue
         }
         set {
-            object = NSNumber(value: newValue)
+            _object = NSNumber(value: newValue)
         }
     }
 
@@ -1015,9 +1021,9 @@ extension JSON {
         }
         set {
             if let newValue = newValue {
-                object = NSNumber(value: newValue)
+                _object = NSNumber(value: newValue)
             } else {
-                object = NSNull()
+                _object = NSNull()
             }
         }
     }
@@ -1027,7 +1033,7 @@ extension JSON {
             return numberValue.uintValue
         }
         set {
-            object = NSNumber(value: newValue)
+            _object = NSNumber(value: newValue)
         }
     }
 
@@ -1037,9 +1043,9 @@ extension JSON {
         }
         set {
             if let newValue = newValue {
-                object = NSNumber(value: Int(newValue))
+                _object = NSNumber(value: Int(newValue))
             } else {
-                object =  NSNull()
+                _object =  NSNull()
             }
         }
     }
@@ -1049,7 +1055,7 @@ extension JSON {
             return numberValue.int8Value
         }
         set {
-            object = NSNumber(value: Int(newValue))
+            _object = NSNumber(value: Int(newValue))
         }
     }
 
@@ -1059,9 +1065,9 @@ extension JSON {
         }
         set {
             if let newValue = newValue {
-                object = NSNumber(value: newValue)
+                _object = NSNumber(value: newValue)
             } else {
-                object =  NSNull()
+                _object =  NSNull()
             }
         }
     }
@@ -1071,7 +1077,7 @@ extension JSON {
             return numberValue.uint8Value
         }
         set {
-            object = NSNumber(value: newValue)
+            _object = NSNumber(value: newValue)
         }
     }
 
@@ -1081,9 +1087,9 @@ extension JSON {
         }
         set {
             if let newValue = newValue {
-                object = NSNumber(value: newValue)
+                _object = NSNumber(value: newValue)
             } else {
-                object =  NSNull()
+                _object =  NSNull()
             }
         }
     }
@@ -1093,7 +1099,7 @@ extension JSON {
             return numberValue.int16Value
         }
         set {
-            object = NSNumber(value: newValue)
+            _object = NSNumber(value: newValue)
         }
     }
 
@@ -1103,9 +1109,9 @@ extension JSON {
         }
         set {
             if let newValue = newValue {
-                object = NSNumber(value: newValue)
+                _object = NSNumber(value: newValue)
             } else {
-                object =  NSNull()
+                _object =  NSNull()
             }
         }
     }
@@ -1115,7 +1121,7 @@ extension JSON {
             return numberValue.uint16Value
         }
         set {
-            object = NSNumber(value: newValue)
+            _object = NSNumber(value: newValue)
         }
     }
 
@@ -1125,9 +1131,9 @@ extension JSON {
         }
         set {
             if let newValue = newValue {
-                object = NSNumber(value: newValue)
+                _object = NSNumber(value: newValue)
             } else {
-                object =  NSNull()
+                _object =  NSNull()
             }
         }
     }
@@ -1137,7 +1143,7 @@ extension JSON {
             return numberValue.int32Value
         }
         set {
-            object = NSNumber(value: newValue)
+            _object = NSNumber(value: newValue)
         }
     }
 
@@ -1147,9 +1153,9 @@ extension JSON {
         }
         set {
             if let newValue = newValue {
-                object = NSNumber(value: newValue)
+                _object = NSNumber(value: newValue)
             } else {
-                object =  NSNull()
+                _object =  NSNull()
             }
         }
     }
@@ -1159,7 +1165,7 @@ extension JSON {
             return numberValue.uint32Value
         }
         set {
-            object = NSNumber(value: newValue)
+            _object = NSNumber(value: newValue)
         }
     }
 
@@ -1169,9 +1175,9 @@ extension JSON {
         }
         set {
             if let newValue = newValue {
-                object = NSNumber(value: newValue)
+                _object = NSNumber(value: newValue)
             } else {
-                object =  NSNull()
+                _object =  NSNull()
             }
         }
     }
@@ -1181,7 +1187,7 @@ extension JSON {
             return numberValue.int64Value
         }
         set {
-            object = NSNumber(value: newValue)
+            _object = NSNumber(value: newValue)
         }
     }
 
@@ -1191,9 +1197,9 @@ extension JSON {
         }
         set {
             if let newValue = newValue {
-                object = NSNumber(value: newValue)
+                _object = NSNumber(value: newValue)
             } else {
-                object =  NSNull()
+                _object =  NSNull()
             }
         }
     }
@@ -1203,7 +1209,7 @@ extension JSON {
             return numberValue.uint64Value
         }
         set {
-            object = NSNumber(value: newValue)
+            _object = NSNumber(value: newValue)
         }
     }
 }
