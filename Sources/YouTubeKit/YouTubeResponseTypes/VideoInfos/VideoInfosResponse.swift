@@ -40,6 +40,9 @@ public struct VideoInfosResponse: YouTubeResponse {
     ///     }
     /// }
     /// ```
+    ///
+    /// - Note: when putting this URL in an `AVURLAsset` to play it on macOS, you need to remove any potential VP9-format video from it, for example using a custom `AVAssetResourceLoaderDelegate`.
+    /// - Note: to see whether the stream is 360°, you can check if the `YT-EXT-PROJECTION-TYPE="equirectangular"` parameter is set in the .m3u8 playlist.
     public var streamingURL: URL?
     
     /// Array of thumbnails.

@@ -689,6 +689,12 @@ final class YouTubeKitTests: XCTestCase {
         """,
             TEST_NAME + "Checking if testCaptionsResponse.getFormattedString(withFormat: .srt) is good."
         ) // srt integrity checked with https://taoning2014.github.io/srt-validator-website/index.html
+        
+        XCTAssertTrue(requestResult.downloadFormats.compactMap({$0 as? VideoInfosWithDownloadFormatsResponse.VideoDownloadFormat}).allSatisfy({$0.is360 == false}), TEST_NAME + "Checking if the is360 property is correctly set -> has to be false")
+        
+        // test 360 video
+        let video360result = try await YTVideo(videoId: "yVLfEHXQk08").fetchStreamingInfosThrowing(youtubeModel: YTM)
+        XCTAssertTrue(video360result.downloadFormats.compactMap({$0 as? VideoInfosWithDownloadFormatsResponse.VideoDownloadFormat}).allSatisfy({$0.is360 == true}), TEST_NAME + "Checking if the is360 property is correctly set -> has to be true")
     }
     
     func testVideoInfosWithDownloadFormatsResponse() async throws {

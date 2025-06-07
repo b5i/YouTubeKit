@@ -407,10 +407,11 @@ public struct VideoInfosWithDownloadFormatsResponse: YouTubeResponse {
     
     /// Struct representing a download format that contains the video and audio.
     public struct VideoDownloadFormat: DownloadFormat {
-        public init(averageBitrate: Int? = nil, contentDuration: Int? = nil, contentLength: Int? = nil, isCopyrightedMedia: Bool? = nil, mimeType: String? = nil, codec: String? = nil, url: URL? = nil, width: Int? = nil, height: Int? = nil, quality: String? = nil, fps: Int? = nil) {
+        public init(averageBitrate: Int? = nil, contentDuration: Int? = nil, contentLength: Int? = nil, is360: Bool? = nil, isCopyrightedMedia: Bool? = nil, mimeType: String? = nil, codec: String? = nil, url: URL? = nil, width: Int? = nil, height: Int? = nil, quality: String? = nil, fps: Int? = nil) {
             self.averageBitrate = averageBitrate
             self.contentDuration = contentDuration
             self.contentLength = contentLength
+            self.is360 = is360
             self.isCopyrightedMedia = isCopyrightedMedia
             self.mimeType = mimeType
             self.codec = codec
@@ -429,6 +430,8 @@ public struct VideoInfosWithDownloadFormatsResponse: YouTubeResponse {
         public var contentDuration: Int?
         
         public var contentLength: Int?
+        
+        public var is360: Bool?
         
         public var isCopyrightedMedia: Bool?
         
@@ -545,6 +548,7 @@ public struct VideoInfosWithDownloadFormatsResponse: YouTubeResponse {
                         return nil
                     }
                 }(),
+                is360: json["projectionType"].string == "MESH",
                 isCopyrightedMedia: json["signatureCipher"].string != nil,
                 mimeType: json["mimeType"].string?.ytkFirstGroupMatch(for: "([^;]*)"),
                 codec: json["mimeType"].string?.ytkFirstGroupMatch(for: #"codecs="([^\.]+)"#),
