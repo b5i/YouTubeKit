@@ -454,14 +454,14 @@ public class YouTubeModel {
                       "context": {
                         "client": {
                           "clientName": "IOS",
-                          "clientVersion": "20.10.4",
+                          "clientVersion": "20.25.4",
                           "deviceMake": "Apple",
                           "deviceModel": "iPhone16,2",
                           "hl": "\#(self.selectedLocaleLanguageCode)",
                           "osName": "iPhone",
-                          "osVersion": "18.3.2.22D82",
+                          "osVersion": "18.5.0.22F76",
                           "timeZone": "UTC",
-                          "userAgent": "com.google.ios.youtube/20.10.4 (iPhone16,2; U; CPU iOS 18_3_2 like Mac OS X;)",
+                          "userAgent": "com.google.ios.youtube/20.25.4 (iPhone16,2; U; CPU iOS 18_5_0 like Mac OS X;)",
                           "utcOffsetMinutes": 0
                         }
                       },
