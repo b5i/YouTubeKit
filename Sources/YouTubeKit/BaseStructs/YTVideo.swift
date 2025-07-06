@@ -93,7 +93,10 @@ public struct YTVideo: YTSearchResult, YouTubeVideo, Codable, Sendable {
             YTThumbnail.appendThumbnails(json: json["metadata", "lockupMetadataViewModel", "image", "decoratedAvatarViewModel", "avatar", "avatarViewModel"], thumbnailList: &video.channel!.thumbnails)
         }
             
-        let viewCountAndDateJSON = metadataRows.array?.filter({ $0["metadataParts"].array?.first?["text", "commandRuns"].array?.first?["onTap", "innertubeCommand", "commandMetadata", "webCommandMetadata", "webPageType"].string != "WEB_PAGE_TYPE_CHANNEL" || $0["badges"].exists() }).last
+        let viewCountAndDateJSON = metadataRows.array?
+            .filter { $0["metadataParts"].array?.first?["text", "commandRuns"].array?.first?["onTap", "innertubeCommand", "commandMetadata", "webCommandMetadata", "webPageType"].string != "WEB_PAGE_TYPE_CHANNEL" || $0["badges"].exists() }
+            .filter { !$0["badges"].exists() }
+            .last
         
         video.viewCount = viewCountAndDateJSON?["metadataParts"].array?.first?["text", "content"].string
         video.timePosted = viewCountAndDateJSON?["metadataParts"].array?.last?["text", "content"].string
