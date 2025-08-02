@@ -281,7 +281,7 @@ public struct ChannelInfosResponse: YouTubeResponse {
         
         // TODO: implement badges extraction via dynamicTextViewModel -> text -> attachmentRuns
         
-        self.subscriberCount = !metadataRows.arrayValue.isEmpty ? metadataRows.arrayValue.last!["metadataParts", 0 "text", "content"].string : nil
+        self.subscriberCount = !metadataRows.arrayValue.isEmpty ? metadataRows.arrayValue.last!["metadataParts", 0, "text", "content"].string : nil
         
         self.videoCount = !metadataRows.arrayValue.isEmpty ? metadataRows.arrayValue.last!["metadataParts"].arrayValue.count > 1 ? metadataRows.arrayValue.last!["metadataParts"].arrayValue[1]["text", "content"].string : nil : nil
         
