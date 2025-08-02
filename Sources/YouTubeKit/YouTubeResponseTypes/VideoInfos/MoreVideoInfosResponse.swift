@@ -158,12 +158,20 @@ public struct MoreVideoInfosResponse: YouTubeResponse {
                 let videoSecondaryInfos = contentPart["videoSecondaryInfoRenderer"]
                 if videoSecondaryInfos["owner"].exists() {
                     let channel = videoSecondaryInfos["owner", "videoOwnerRenderer"]
-                    if let channelId = channel["title", "runs"].arrayValue.first?["navigationEndpoint", "browseEndpoint", "browseId"].string {
+                    if let channelId = channel["title", "runs", 0, "navigationEndpoint", "browseEndpoint", "browseId"].string {
                         var videoChannel = YTChannel(channelId: channelId)
-                        videoChannel.name = channel["title", "runs"].arrayValue.first?["text"].string
+                        videoChannel.name = channel["title", "runs", 0, "text"].string
                         YTThumbnail.appendThumbnails(json: channel["thumbnail"], thumbnailList: &videoChannel.thumbnails)
                         videoChannel.subscriberCount = channel["subscriberCountText", "simpleText"].string
                         toReturn.channel = videoChannel
+                    } else if let channelId = videoSecondaryInfos["owner", "videoOwnerRenderer", "title", "runs", 0, "navigationEndpoint", "showDialogCommand", "panelLoadingStrategy", "inlineContent", "dialogViewModel", "customContent", "listViewModel", "listItems", 0, "listItemViewModel", "title", "commandRuns", 0, "onTap", "innertubeCommand", "browseEndpoint", "browseId"].string {
+                        // case where there's mutliple collaborators on a video
+                        // TODO: support mutliple channels
+                        let channelContent = videoSecondaryInfos["owner", "videoOwnerRenderer", "title", "runs", 0, "navigationEndpoint", "showDialogCommand", "panelLoadingStrategy", "inlineContent", "dialogViewModel", "customContent", "listViewModel", "listItems", 0, "listItemViewModel"]
+                        var channel = YTChannel(name: channelContent["title", "content"].string, channelId: channelId)
+                        YTThumbnail.appendThumbnails(json: channelContent["leadingAccessory", "avatarViewModel"], thumbnailList: &channel.thumbnails)
+                        
+                        toReturn.channel = channel
                     }
                 }
                 if isAccountConnected {

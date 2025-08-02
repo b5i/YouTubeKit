@@ -100,7 +100,7 @@ public struct YTPlaylist: YTSearchResult, Sendable {
         
         mainLoop: for thumbnailOverlay in json["contentImage", "collectionThumbnailViewModel", "primaryThumbnail", "thumbnailViewModel", "overlays"].arrayValue {
             for thumbnailBadge in thumbnailOverlay["thumbnailOverlayBadgeViewModel", "thumbnailBadges"].arrayValue {
-                if thumbnailBadge["thumbnailBadgeViewModel", "icon", "sources"].arrayValue.first?["clientResource", "imageName"].string == "PLAYLISTS", let text = thumbnailBadge["thumbnailBadgeViewModel", "text"].string {
+                if thumbnailBadge["thumbnailBadgeViewModel", "icon", "sources", 0, "clientResource", "imageName"].string == "PLAYLISTS", let text = thumbnailBadge["thumbnailBadgeViewModel", "text"].string {
                     playlist.videoCount = text
                     break mainLoop
                 }

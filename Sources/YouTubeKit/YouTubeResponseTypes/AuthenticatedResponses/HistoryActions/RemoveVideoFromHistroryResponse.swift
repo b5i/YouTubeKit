@@ -24,7 +24,7 @@ public struct RemoveVideoFromHistroryResponse: SimpleActionAuthenticatedResponse
         guard !(json["responseContext", "mainAppWebResponseContext", "loggedOut"].bool ?? true) else { return toReturn }
         
         toReturn.isDisconnected = false
-        toReturn.success = json["feedbackResponses"].arrayValue.first?["isProcessed"].bool == true
+        toReturn.success = json["feedbackResponses", 0, "isProcessed"].bool == true
         
         return toReturn
     }
