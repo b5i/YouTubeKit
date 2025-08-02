@@ -43,6 +43,17 @@ public struct VideoInfosResponse: YouTubeResponse {
     ///
     /// - Note: when putting this URL in an `AVURLAsset` to play it on macOS, you need to remove any potential VP9-format video from it, for example using a custom `AVAssetResourceLoaderDelegate`.
     /// - Note: to see whether the stream is 360°, you can check if the `YT-EXT-PROJECTION-TYPE="equirectangular"` parameter is set in the .m3u8 playlist.
+    /// - Note: in some cases, you might have an HLS file with multiple video streams, each having a different audio language, making it not compliant to the HLS standard (video and audio should be separated to allow easy language selection without having a new video flux).
+    /// This causes Apple's `AVPlayer` to play the first video flux in the file which has probably not the language you want to play the video in.
+    /// In this case, you can use a custom `AVAssetResourceLoaderDelegate` to filter the video streams you don't want to be played. Note that the default language of the video can be obtained using
+    /// ```swift
+    /// self.downloadFormats
+    ///     .compactMap {
+    ///         $0 as? AudioOnlyFormat
+    ///     }
+    ///     .first(where: { $0.formatLocaleInfos?.isDefaultAudioFormat == true })?
+    ///     .formatLocaleInfos?.localeId
+    /// ```
     public var streamingURL: URL?
     
     /// Array of thumbnails.

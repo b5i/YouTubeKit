@@ -20,6 +20,12 @@ import JavaScriptCore
 
 /// Struct representing the VideoInfosWithDownloadFormatsResponse.
 public struct VideoInfosWithDownloadFormatsResponse: YouTubeResponse {
+    @available(*, deprecated, message: "Please use the global VideoDownloadFormat instead of VideoInfosWithDownloadFormatsResponse.VideoDownloadFormat")
+    public typealias VideoDownloadFormat = YouTubeKit.VideoDownloadFormat
+    
+    @available(*, deprecated, message: "Please use the global AudioOnlyFormat instead of VideoInfosWithDownloadFormatsResponse.AudioOnlyFormat")
+    public typealias AudioOnlyFormat = YouTubeKit.AudioOnlyFormat
+    
     public static let headersType: HeaderTypes = .videoInfosWithDownloadFormats
     
     public static let parametersValidationList: ValidationList = [.query: .videoIdValidator]
@@ -405,134 +411,13 @@ public struct VideoInfosWithDownloadFormatsResponse: YouTubeResponse {
         }
     }
     
-    /// Struct representing a download format that contains the video and audio.
-    public struct VideoDownloadFormat: DownloadFormat {
-        public init(averageBitrate: Int? = nil, contentDuration: Int? = nil, contentLength: Int? = nil, is360: Bool? = nil, isCopyrightedMedia: Bool? = nil, mimeType: String? = nil, codec: String? = nil, url: URL? = nil, width: Int? = nil, height: Int? = nil, quality: String? = nil, fps: Int? = nil) {
-            self.averageBitrate = averageBitrate
-            self.contentDuration = contentDuration
-            self.contentLength = contentLength
-            self.is360 = is360
-            self.isCopyrightedMedia = isCopyrightedMedia
-            self.mimeType = mimeType
-            self.codec = codec
-            self.url = url
-            self.width = width
-            self.height = height
-            self.quality = quality
-            self.fps = fps
-        }
-        
-        /// Protocol properties
-        public static let type: MediaType = .video
-        
-        public var averageBitrate: Int?
-        
-        public var contentDuration: Int?
-        
-        public var contentLength: Int?
-        
-        public var is360: Bool?
-        
-        public var isCopyrightedMedia: Bool?
-        
-        public var mimeType: String?
-        
-        public var codec: String?
-        
-        public var url: URL?
-        
-        /// Video-specific infos
-        
-        /// Width in pixels of the media.
-        public var width: Int?
-        
-        /// Height in pixels of the media.
-        public var height: Int?
-        
-        /// Quality label of the media
-        ///
-        /// For example:
-        /// - **720p**
-        /// - **480p**
-        /// - **360p**
-        public var quality: String?
-        
-        /// Frames per second of the media.
-        public var fps: Int?
-    }
-    
-    public struct AudioOnlyFormat: DownloadFormat {
-        public init(averageBitrate: Int? = nil, contentLength: Int? = nil, contentDuration: Int? = nil, isCopyrightedMedia: Bool? = nil, url: URL? = nil, mimeType: String? = nil, codec: String? = nil, audioSampleRate: Int? = nil, loudness: Double? = nil, formatLocaleInfos: FormatLocaleInfos? = nil) {
-            self.averageBitrate = averageBitrate
-            self.contentLength = contentLength
-            self.contentDuration = contentDuration
-            self.isCopyrightedMedia = isCopyrightedMedia
-            self.url = url
-            self.mimeType = mimeType
-            self.codec = codec
-            self.audioSampleRate = audioSampleRate
-            self.loudness = loudness
-            self.formatLocaleInfos = formatLocaleInfos
-        }
-        
-        /// Protocol properties
-        public static let type: MediaType = .audio
-        
-        public var averageBitrate: Int?
-        
-        public var contentLength: Int?
-        
-        public var contentDuration: Int?
-        
-        public var isCopyrightedMedia: Bool?
-        
-        public var url: URL?
-        
-        public var mimeType: String?
-        
-        public var codec: String?
-        
-        /// Audio only medias specific infos
-        
-        /// Sample rate of the audio in hertz.
-        public var audioSampleRate: Int?
-        
-        /// Audio loudness in decibels.
-        public var loudness: Double?
-        
-        /// Infos about the audio track language.
-        ///
-        /// - Note: it will be present only if the audio is not the original audio of the video.
-        public var formatLocaleInfos: FormatLocaleInfos?
-        
-        /// Struct representing some informations about the audio track language.
-        public struct FormatLocaleInfos: Sendable {
-            public init(displayName: String? = nil, localeId: String? = nil, isDefaultAudioFormat: Bool? = nil) {
-                self.displayName = displayName
-                self.localeId = localeId
-                self.isDefaultAudioFormat = isDefaultAudioFormat
-            }
-            
-            /// Name of the language, e.g. "French".
-            ///
-            /// - Note: the name of the language depends on the ``YouTubeModel``'s locale and the cookie's (if provided) account's default language. E.g. you would get "French" if your cookies point to an english account and "Français" if they pointed to a french one.
-            public var displayName: String?
-            
-            /// Id of the language, generally is the language code that has ".3" has suffix. E.g. "fr.3" or "en.3".
-            public var localeId: String?
-            
-            /// Boolean indicating whether the format is considered as the default one by YouTube (depends on the ``YouTubeModel``'s locale and the cookie's (if provided) account's default language).
-            public var isDefaultAudioFormat: Bool?
-        }
-    }
-    
     /// Decode a ``DownloadFormat`` base informations from a JSON instance.
     /// - Parameter json: the JSON to be decoded.
     /// - Returns: A ``DownloadFormat``.
     static func decodeFormatFromJSON(json: JSON) -> DownloadFormat {
         if json["fps"].int != nil {
             /// Will return an instance of ``VideoInfosWithDownloadFormatsResponse/VideoDownloadFormat``
-            return VideoInfosWithDownloadFormatsResponse.VideoDownloadFormat(
+            return YouTubeKit.VideoDownloadFormat(
                 averageBitrate: json["averageBitrate"].int,
                 contentDuration: {
                     if let approxDurationMs = json["approxDurationMs"].string {
@@ -560,7 +445,7 @@ public struct VideoInfosWithDownloadFormatsResponse: YouTubeResponse {
             )
         } else {
             /// Will return an instance of ``VideoInfosWithDownloadFormatsResponse/AudioOnlyFormat``
-            return VideoInfosWithDownloadFormatsResponse.AudioOnlyFormat(
+            return YouTubeKit.AudioOnlyFormat(
                 averageBitrate: json["averageBitrate"].int,
                 contentLength: {
                     if let contentLength = json["contentLength"].string {
