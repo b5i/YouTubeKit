@@ -2,7 +2,7 @@
 //  SearchResponse.swift
 //
 //  Created by Antoine Bollengier (github.com/b5i) on 03.06.23.
-//  Copyright © 2023 - 2024 Antoine Bollengier. All rights reserved.
+//  Copyright © 2023 - 2025 Antoine Bollengier. All rights reserved.
 //  
 
 import Foundation

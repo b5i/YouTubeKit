@@ -3,7 +3,7 @@
 //  
 //
 //  Created by Antoine Bollengier on 02.07.2024.
-//  Copyright © 2024 Antoine Bollengier (github.com/b5i). All rights reserved.
+//  Copyright © 2024 - 2025 Antoine Bollengier (github.com/b5i). All rights reserved.
 //  
 
 import Foundation
