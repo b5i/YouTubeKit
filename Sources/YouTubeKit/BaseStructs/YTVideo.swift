@@ -56,6 +56,14 @@ public struct YTVideo: YTSearchResult, YouTubeVideo, Codable, Sendable {
             YTThumbnail.appendThumbnails(json: json["channelThumbnailSupportedRenderers", "channelThumbnailWithLinkRenderer", "thumbnail"], thumbnailList: &channel.thumbnails)
             
             video.channel = channel
+        } else if let channelId = json["ownerText", "runs", 0, "navigationEndpoint", "showDialogCommand", "panelLoadingStrategy", "inlineContent", "dialogViewModel", "customContent", "listViewModel", "listItems", 0, "listItemViewModel", "rendererContext", "commandContext", "onTap", "innertubeCommand", "browseEndpoint", "browseId"].string {
+            // case where there's mutliple collaborators on a video
+            // TODO: support mutliple channels for a video
+            let channelContent = json["ownerText", "runs", 0, "navigationEndpoint", "showDialogCommand", "panelLoadingStrategy", "inlineContent", "dialogViewModel", "customContent", "listViewModel", "listItems", 0, "listItemViewModel"]
+            var channel = YTLittleChannelInfos(channelId: channelId, name: channelContent["title", "content"].string)
+            YTThumbnail.appendThumbnails(json: channelContent["leadingAccessory", "avatarViewModel"], thumbnailList: &channel.thumbnails)
+            
+            video.channel = channel
         }
         
         if let viewCount = json["shortViewCountText", "simpleText"].string {

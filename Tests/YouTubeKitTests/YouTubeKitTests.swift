@@ -552,7 +552,7 @@ final class YouTubeKitTests: XCTestCase {
             XCTAssertNotEqual(firstChannel.thumbnails.count, 0)
         }
         
-        searchResult = try await SearchResponse.sendThrowingRequest(youtubeModel: YTM, data: [.query: "fred again"])
+        searchResult = try await SearchResponse.sendThrowingRequest(youtubeModel: YTM, data: [.query: "mrbeast"])
         
         if let firstChannel = searchResult.results.first(where: {$0 as? YTChannel != nil}) as? YTChannel {
             XCTAssertNotNil(firstChannel.name)
@@ -568,6 +568,8 @@ final class YouTubeKitTests: XCTestCase {
             XCTAssertNotNil(firstVideo.timeLength)
             XCTAssertNotNil(firstVideo.viewCount)
             XCTAssertNotNil(firstVideo.timePosted)
+            XCTAssertNotNil(firstVideo.channel?.name)
+            XCTAssertNotEqual(firstVideo.channel?.thumbnails.count, 0)
         }
         
         if let firstPlaylist = searchResult.results.first(where: {$0 as? YTPlaylist != nil}) as? YTPlaylist {
