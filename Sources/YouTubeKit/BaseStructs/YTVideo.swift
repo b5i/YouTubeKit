@@ -94,11 +94,16 @@ public struct YTVideo: YTSearchResult, YouTubeVideo, Codable, Sendable {
         video.title = json["metadata", "lockupMetadataViewModel", "title", "content"].string
                    
         let metadataRows = json["metadata", "lockupMetadataViewModel", "metadata", "contentMetadataViewModel", "metadataRows"]
-        
-        if let channelJSON = metadataRows.array?.first(where: { $0["metadataParts"].array?.first?["text", "commandRuns"].array?.first?["onTap", "innertubeCommand", "commandMetadata", "webCommandMetadata", "webPageType"].string == "WEB_PAGE_TYPE_CHANNEL" }) ?? metadataRows.array?.first {
-            let channelId = channelJSON["metadataParts"].array?.first?["text", "commandRuns"].array?.first?["onTap", "innertubeCommand", "browseEndpoint", "browseId"].string ?? ""
-            video.channel = YTLittleChannelInfos(channelId: channelId, name: channelJSON["metadataParts"].array?.first?["text", "content"].string)
+
+        if let channelJSON = metadataRows.array?.first(where: { $0["metadataParts", 0, "text", "commandRuns", 0, "onTap", "innertubeCommand", "commandMetadata", "webCommandMetadata", "webPageType"].string == "WEB_PAGE_TYPE_CHANNEL" }) {
+            let channelId = channelJSON["metadataParts", 0, "text", "commandRuns", 0, "onTap", "innertubeCommand", "browseEndpoint", "browseId"].string ?? ""
+            video.channel = YTLittleChannelInfos(channelId: channelId, name: channelJSON["metadataParts", 0, "text", "content"].string)
             YTThumbnail.appendThumbnails(json: json["metadata", "lockupMetadataViewModel", "image", "decoratedAvatarViewModel", "avatar", "avatarViewModel"], thumbnailList: &video.channel!.thumbnails)
+        } else if let channelJSON = metadataRows.array?.first(where: { $0["metadataParts", 0, "text", "commandRuns", 0, "onTap", "innertubeCommand", "showDialogCommand", "panelLoadingStrategy", "inlineContent", "dialogViewModel", "customContent", "listViewModel", "listItems", 0, "listItemViewModel", "rendererContext", "commandContext", "onTap", "innertubeCommand", "browseEndpoint", "browseId"].string != nil }) {
+            let channelJSON = channelJSON["metadataParts", 0, "text", "commandRuns", 0, "onTap", "innertubeCommand", "showDialogCommand", "panelLoadingStrategy", "inlineContent", "dialogViewModel", "customContent", "listViewModel", "listItems", 0, "listItemViewModel"]
+            let channelId = channelJSON["rendererContext", "commandContext", "onTap", "innertubeCommand", "browseEndpoint", "browseId"].string ?? ""
+            video.channel = YTLittleChannelInfos(channelId: channelId, name: channelJSON["title", "content"].string)
+            YTThumbnail.appendThumbnails(json: channelJSON["leadingAccessory", "avatarViewModel"], thumbnailList: &video.channel!.thumbnails)
         }
             
         let viewCountAndDateJSON = metadataRows.array?
