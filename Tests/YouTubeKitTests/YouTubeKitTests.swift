@@ -1065,6 +1065,7 @@ final class YouTubeKitTests: XCTestCase {
         XCTAssertNotNil(moreVideoInfosResponse.channel, TEST_NAME + "Checking if the channel has been extracted.")
         XCTAssertNotNil(moreVideoInfosResponse.commentsCount, TEST_NAME + "Checking if the commentsCount has been extracted.")
         XCTAssertNotNil(moreVideoInfosResponse.likesCount.defaultState, TEST_NAME + "Checking if the likesCount has been extracted.")
+        XCTAssertNotEqual(moreVideoInfosResponse.recommendedVideos.count, 0, TEST_NAME + "Checking if some recommended videos are present.")
         XCTAssertNotNil(moreVideoInfosResponse.recommendedVideosContinuationToken, TEST_NAME + "Checking if the recommendedVideosContinuationToken has been extracted.")
         XCTAssertNotNil(moreVideoInfosResponse.timePosted.postedDate, TEST_NAME + "Checking if the timePosted.postedDate has been extracted.")
         XCTAssertNotNil(moreVideoInfosResponse.timePosted.relativePostedDate, TEST_NAME + "Checking if the timePosted.relativePostedDate has been extracted.")

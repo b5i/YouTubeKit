@@ -265,10 +265,20 @@ public struct MoreVideoInfosResponse: YouTubeResponse {
         }
         
         for recommendation in json["contents", "twoColumnWatchNextResults", "secondaryResults", "secondaryResults", "results"].arrayValue {
-            if recommendation["itemSectionRenderer", "contents"].exists() {
+            if recommendation["lockupViewModel"].exists() {
+                if let decodedVideo = YTVideo.decodeLockupJSON(json: recommendation["lockupViewModel"]) {
+                    toReturn.recommendedVideos.append(decodedVideo)
+                }
+            } else if recommendation["itemSectionRenderer", "contents"].exists() {
                 for element in recommendation["itemSectionRenderer", "contents"].arrayValue {
-                    if element["compactVideoRenderer", "videoId"].exists(), let decodedVideo = YTVideo.decodeJSON(json: element["compactVideoRenderer"]) {
-                        toReturn.recommendedVideos.append(decodedVideo)
+                    if element["lockupViewModel"].exists() {
+                        if let decodedVideo = YTVideo.decodeLockupJSON(json: element["lockupViewModel"]) {
+                            toReturn.recommendedVideos.append(decodedVideo)
+                        }
+                    } else if element["compactVideoRenderer", "videoId"].exists() {
+                        if let decodedVideo = YTVideo.decodeJSON(json: element["compactVideoRenderer"]) {
+                            toReturn.recommendedVideos.append(decodedVideo)
+                        }
                     } else if let continuationToken = element["continuationItemRenderer", "continuationEndpoint", "continuationCommand", "token"].string {
                         toReturn.recommendedVideosContinuationToken = continuationToken
                     }
