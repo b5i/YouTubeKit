@@ -136,6 +136,9 @@ public struct VideoInfosResponse: YouTubeResponse {
         guard json["playabilityStatus", "status"].string != "LOGIN_REQUIRED" else {
             throw ResponseExtractionError(reponseType: self.self, stepDescription: "Login is required to get access to the video streaming info.")
         }
+        guard json["playabilityStatus", "status"].string != "UNPLAYABLE" else {
+            throw ResponseExtractionError(reponseType: self.self, stepDescription: json["playabilityStatus", "reason"].string ?? "Unkown error")
+        }
         
         /// Extract the dictionnaries that contains the video details and streaming data.
         let videoDetailsJSON = json["videoDetails"]

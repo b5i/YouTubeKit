@@ -728,6 +728,26 @@ final class YouTubeKitTests: XCTestCase {
         XCTAssertNotEqual(requestResult.autoCompletionEntries.count, 0, TEST_NAME + "Checking if requestResult.autoCompletionEntries is empty")
     }
     
+    func testMemberOnlyVideo() async throws {
+        if YTM.visitorData == "" {
+            guard let visitorData = try await SearchResponse.sendThrowingRequest(youtubeModel: YTM, data: [.query: "home"]).visitorData else { XCTFail("VisitorData is not present in SearchResponse."); return }
+            YTM.visitorData = visitorData
+        }
+        
+        self.YTM.alwaysUseCookies = false
+        let testMemberOnlyVideoChannel = YTChannel(channelId: "UCXuqSBlHAE6Xw-yeJA0Tunw")
+        
+        let memberOnlyTestChannel = try await testMemberOnlyVideoChannel.fetchInfosThrowing(youtubeModel: YTM)
+        let memberOnlyVideos = try await memberOnlyTestChannel.getChannelContentThrowing(forType: .videos, youtubeModel: YTM)
+        let memberOnlyVideo = (memberOnlyVideos.currentContent as? ChannelInfosResponse.Videos)?.items.first(where: {($0 as? YTVideo)?.memberOnly == true}) as? YTVideo
+        guard let memberOnlyVideo = memberOnlyVideo else { return }
+        do {
+            _ = try await VideoInfosResponse.sendThrowingRequest(youtubeModel: YTM, data: [.query: memberOnlyVideo.videoId])
+            XCTFail("Video should not be able to be played")
+        } catch {}
+        self.YTM.alwaysUseCookies = true
+    }
+    
     func testChannelInfosResponse() async throws {
         let TEST_NAME = "Test: testChannelInfosResponse() -> "
             
