@@ -9,7 +9,7 @@ import Foundation
 
 /// Struct representing a video.
 public struct YTVideo: YTSearchResult, YouTubeVideo, Codable, Sendable {
-    public init(id: Int? = nil, videoId: String, title: String? = nil, channel: YTLittleChannelInfos? = nil, viewCount: String? = nil, timePosted: String? = nil, timeLength: String? = nil, thumbnails: [YTThumbnail] = []) {
+    public init(id: Int? = nil, videoId: String, title: String? = nil, channel: YTLittleChannelInfos? = nil, viewCount: String? = nil, timePosted: String? = nil, timeLength: String? = nil, thumbnails: [YTThumbnail] = [], memberOnly: Bool? = nil) {
         self.id = id
         self.videoId = videoId
         self.title = title
@@ -18,10 +18,11 @@ public struct YTVideo: YTSearchResult, YouTubeVideo, Codable, Sendable {
         self.timePosted = timePosted
         self.timeLength = timeLength
         self.thumbnails = thumbnails
+        self.memberOnly = memberOnly
     }
     
     public static func == (lhs: YTVideo, rhs: YTVideo) -> Bool {
-        return lhs.channel?.channelId == rhs.channel?.channelId && lhs.channel?.name == rhs.channel?.name && lhs.thumbnails == rhs.thumbnails && lhs.timeLength == rhs.timeLength && lhs.timePosted == rhs.timePosted && lhs.title == rhs.title && lhs.videoId == rhs.videoId && lhs.viewCount == rhs.viewCount
+        return lhs.channel?.channelId == rhs.channel?.channelId && lhs.channel?.name == rhs.channel?.name && lhs.thumbnails == rhs.thumbnails && lhs.timeLength == rhs.timeLength && lhs.timePosted == rhs.timePosted && lhs.title == rhs.title && lhs.videoId == rhs.videoId && lhs.viewCount == rhs.viewCount && lhs.memberOnly == rhs.memberOnly
     }
     
     public static func canBeDecoded(json: JSON) -> Bool {
@@ -64,6 +65,10 @@ public struct YTVideo: YTSearchResult, YouTubeVideo, Codable, Sendable {
             YTThumbnail.appendThumbnails(json: channelContent["leadingAccessory", "avatarViewModel"], thumbnailList: &channel.thumbnails)
             
             video.channel = channel
+        }
+        
+        if let badges = json["badges"].array {
+            video.memberOnly = badges.contains(where: { $0["metadataBadgeRenderer", "style"].string == "BADGE_STYLE_TYPE_MEMBERS_ONLY" })
         }
         
         if let viewCount = json["shortViewCountText", "simpleText"].string {
@@ -137,6 +142,9 @@ public struct YTVideo: YTSearchResult, YouTubeVideo, Codable, Sendable {
     ///
     /// Possibly not defined when reading in ``YTPlaylist/frontVideos`` properties.
     public var channel: YTLittleChannelInfos?
+    
+    /// A boolean inidicating whether the video is a member-only one. If it's true, you won't be able to request the streaming info of the video except if you provide the cookies of an account that's a member of the channel.
+    public var memberOnly: Bool?
     
     /// Count of views of the video, in a shortened string.
     ///
