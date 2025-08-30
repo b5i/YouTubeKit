@@ -53,7 +53,7 @@ public struct AudioOnlyFormat: DownloadFormat {
     public var formatLocaleInfos: FormatLocaleInfos?
     
     /// Struct representing some informations about the audio track language.
-    public struct FormatLocaleInfos: Sendable {
+    public struct FormatLocaleInfos: Sendable, Hashable {
         public init(displayName: String? = nil, localeId: String? = nil, isDefaultAudioFormat: Bool? = nil, isAutoDubbed: Bool? = nil) {
             self.displayName = displayName
             self.localeId = localeId
