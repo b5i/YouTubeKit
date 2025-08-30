@@ -54,10 +54,11 @@ public struct AudioOnlyFormat: DownloadFormat {
     
     /// Struct representing some informations about the audio track language.
     public struct FormatLocaleInfos: Sendable {
-        public init(displayName: String? = nil, localeId: String? = nil, isDefaultAudioFormat: Bool? = nil) {
+        public init(displayName: String? = nil, localeId: String? = nil, isDefaultAudioFormat: Bool? = nil, isAutoDubbed: Bool? = nil) {
             self.displayName = displayName
             self.localeId = localeId
             self.isDefaultAudioFormat = isDefaultAudioFormat
+            self.isAutoDubbed = isAutoDubbed
         }
         
         /// Name of the language, e.g. "French".
@@ -68,7 +69,10 @@ public struct AudioOnlyFormat: DownloadFormat {
         /// Id of the language, generally is the language code that has ".n" has suffix. E.g. "fr.3" or "en.4".
         public var localeId: String?
         
-        /// Boolean indicating whether the format is considered as the default one by YouTube (depends on the ``YouTubeModel``'s locale and the cookie's (if provided) account's default language).
+        /// A boolean indicating whether the audio was auto-dubbed by YouTube.
+        public var isAutoDubbed: Bool?
+        
+        /// A boolean indicating whether the format is considered as the default one by YouTube (depends on the ``YouTubeModel``'s locale and the cookie's (if provided) account's default language).
         public var isDefaultAudioFormat: Bool?
     }
 }

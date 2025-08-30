@@ -473,7 +473,7 @@ public struct VideoInfosWithDownloadFormatsResponse: YouTubeResponse {
                     }
                 }(),
                 loudness: json["loudnessDb"].double,
-                formatLocaleInfos: json["audioTrack", "id"].string != nil ? .init(displayName: json["audioTrack", "displayName"].string, localeId: json["audioTrack", "id"].string, isDefaultAudioFormat: json["audioTrack", "audioIsDefault"].bool) : nil
+                formatLocaleInfos: json["audioTrack", "id"].string != nil ? .init(displayName: json["audioTrack", "displayName"].string, localeId: json["audioTrack", "id"].string, isDefaultAudioFormat: json["audioTrack", "audioIsDefault"].bool, isAutoDubbed: json["audioTrack", "isAutoDubbed"].bool) : nil
             )
         }
     }
