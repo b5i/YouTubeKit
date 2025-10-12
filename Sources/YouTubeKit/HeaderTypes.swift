@@ -90,7 +90,7 @@ public enum HeaderTypes: Codable, Sendable {
     /// Create a playlist containing a video.
     /// - Parameter query: The playlist's name.
     /// - Parameter params: The playlist's privacy (PRIVATE, UNLISTED, PUBLIC): ``YTPrivacy``.
-    /// - Parameter movingVideoId: The video's id, should be taken from ``YTVideo/videoId``.
+    /// - Parameter movingVideoId: The video's id, should be taken from ``YTVideo/videoId`` (optional to create an empty playlist).
     case createPlaylistHeaders
     
     /// Move video in playlist.

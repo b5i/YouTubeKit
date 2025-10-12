@@ -185,18 +185,11 @@ public extension YouTubeResponse {
         var errors: [ParameterValidator.TypedValidationError] = []
         
         for (contentType, validator) in self.parametersValidationList {
-            if validator.needExistence && data[contentType] == nil {
-                errors.append(
-                    .init(dataType: contentType, reason: "DataType \(contentType.rawValue) parameter was not provided but is required.", validatorFailedNameDescriptor: "NeedExistence default validator.")
-                )
-                continue
-            }
-            
-            switch validator.handler(data[contentType]) {
-            case .success(let newParameter):
+            do {
+                let newParameter = try validator.validate(parameter: data[contentType], contentType: contentType)
                 data[contentType] = newParameter
-            case .failure(let error):
-                errors.append(.init(dataType: contentType, reason: error.reason, validatorFailedNameDescriptor: error.validatorFailedNameDescriptor))
+            } catch let error as ParameterValidator.TypedValidationError {
+                errors.append(error)
             }
         }
         

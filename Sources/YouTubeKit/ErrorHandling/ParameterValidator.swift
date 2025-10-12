@@ -34,6 +34,23 @@ public struct ParameterValidator: Sendable {
             }
         })
     }
+    
+    public func validate(parameter: String?, contentType: HeadersList.AddQueryInfo.ContentTypes) throws -> String? {
+        if parameter == nil {
+            if self.needExistence {
+                throw
+                TypedValidationError(dataType: contentType, reason: "DataType \(contentType.rawValue) parameter was not provided but is required.", validatorFailedNameDescriptor: "NeedExistence default validator.")
+            }
+            return nil
+        }
+        
+        switch self.handler(parameter) {
+        case .success(let newParameter):
+            return newParameter
+        case .failure(let error):
+            throw TypedValidationError(dataType: contentType, reason: error.reason, validatorFailedNameDescriptor: error.validatorFailedNameDescriptor)
+        }
+    }
 
     /// A struct representing an error returned by a validator's handler.
     public struct ValidationError: Error {

@@ -11,7 +11,7 @@ import Foundation
 public struct CreatePlaylistResponse: AuthenticatedResponse {
     public static let headersType: HeaderTypes = .createPlaylistHeaders
     
-    public static let parametersValidationList: ValidationList = [.query: .existenceValidator, .params: .privacyValidator, .movingVideoId: .videoIdValidator]
+    public static let parametersValidationList: ValidationList = [.query: .existenceValidator, .params: .privacyValidator, .movingVideoId: .optionalVideoIdValidator]
     
     public var isDisconnected: Bool = true
     

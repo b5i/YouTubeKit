@@ -21,6 +21,8 @@ public extension ParameterValidator {
         return .success(videoId)
     })
     
+    static let optionalVideoIdValidator = ParameterValidator(needExistence: false, validator: Self.videoIdValidator.handler)
+    
     static let existenceValidator = ParameterValidator(validator: { parameter in
         if parameter == nil {
             return .failure(.init(reason: "Parameter is nil.", validatorFailedNameDescriptor: "ExistenceValidator."))

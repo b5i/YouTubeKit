@@ -888,13 +888,13 @@ public class YouTubeModel {
                 addQueryAfterParts: [
                     .init(index: 0, encode: false, content: .query),
                     .init(index: 1, encode: false, content: .params),
-                    .init(index: 2, encode: false, content: .movingVideoId)
+                    .init(index: 2, encode: false, content: .movingVideoId, optional: true, addQuotes: true)
                 ],
                 httpBody: [
                     "{\"context\":{\"client\":{\"hl\":\"\(self.selectedLocaleLanguageCode)\",\"gl\":\"\(self.selectedLocaleCountryCode.uppercased())\",\"deviceMake\":\"Apple\",\"userAgent\":\"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.2 Safari/605.1.15,gzip(gfe)\",\"clientName\":\"WEB\",\"clientVersion\":\"2.20250717.02.00\",\"osName\":\"Macintosh\",\"osVersion\":\"10_15_7\",\"platform\":\"DESKTOP\",\"clientFormFactor\":\"UNKNOWN_FORM_FACTOR\",\"userInterfaceTheme\":\"USER_INTERFACE_THEME_DARK\",\"timeZone\":\"Europe/Zurich\",\"browserName\":\"Safari\",\"browserVersion\":\"16.2\",\"acceptHeader\":\"text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8\",\"utcOffsetMinutes\":60,\"mainAppWebInfo\":{\"webDisplayMode\":\"WEB_DISPLAY_MODE_BROWSER\",\"isWebNativeShareAvailable\":true}},\"user\":{\"lockedSafetyMode\":false},\"request\":{\"useSsl\":true,\"internalExperimentFlags\":[],\"consistencyTokenJars\":[]}},\"title\":\"",
                     "\",\"privacyStatus\":\"",
-                    "\",\"videoIds\":[\"",
-                    "\"]}"
+                    "\",\"videoIds\":[",
+                    "]}"
                 ],
                 parameters: [
                     .init(name: "prettyPrint", content: "false")

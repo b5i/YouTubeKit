@@ -133,10 +133,12 @@ public struct HeadersList: Codable {
     /// would unify the body to `"youtube"`
     public struct AddQueryInfo: Codable {
         
-        public init(index: Int, encode: Bool, content: ContentTypes? = nil) {
+        public init(index: Int, encode: Bool, content: ContentTypes? = nil, optional: Bool = false, addQuotes: Bool = false) {
             self.index = index
             self.encode = encode
             self.content = content
+            self.optional = optional
+            self.addQuotes = addQuotes
         }
         
         /// Index of the part body that will be before the content of the ``AddQueryInfo``.
@@ -147,6 +149,12 @@ public struct HeadersList: Codable {
         
         /// Content of the part to be added after the `index-th` of the body.
         public var content: ContentTypes?
+        
+        /// A boolean indicating whether the parts around the content should not be added if the content (like the query) if nil, for example if ``addQuotes`` is true and ``optional`` too, an empty string will be added to the request instead of "".
+        public var optional: Bool
+        
+        /// A boolean indicating whether YouTubeKit should add double-quotes around the content that will be added.
+        public var addQuotes: Bool
         
         /// All content of the posibilities are defined in their parameter of the function ``setHeadersAgentFor(content:data:)``
         ///
@@ -223,16 +231,24 @@ public struct HeadersList: Codable {
             var body = ""
             for (index, partToBreak) in content.httpBody!.enumerated() {
                 if content.addQueryAfterParts!.count > index {
-                    /// Bool indicating if the data should be URLencoded or not
-                    let encodeData = content.addQueryAfterParts![index].encode
+                    let contentConfiguration = content.addQueryAfterParts![index]
                     
-                    /// Get the type of the data that will be added to 
-                    let dataTypeToAdd: AddQueryInfo.ContentTypes = content.addQueryAfterParts![index].content ?? .query
+                    /// Get the type of the data that will be added to
+                    let dataTypeToAdd: AddQueryInfo.ContentTypes = contentConfiguration.content ?? .query
+                    if data[dataTypeToAdd] == nil && contentConfiguration.optional {
+                        body = "\(body)\(partToBreak)" // the content is nil and it's optional to add it
+                        continue
+                    }
                     var dataToAdd: String = data[dataTypeToAdd] ?? ""
                     
-                    if encodeData {
+                    if contentConfiguration.encode {
                         dataToAdd = dataToAdd.addingPercentEncoding(withAllowedCharacters: .urlHostAllowed)!
                     }
+                    
+                    if contentConfiguration.addQuotes {
+                        dataToAdd = #""\#(dataToAdd)""#
+                    }
+                    
                     body = "\(body)\(partToBreak)\(dataToAdd)"
                 } else {
                     body = "\(body)\(partToBreak)"
