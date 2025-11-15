@@ -4,12 +4,12 @@
 import PackageDescription
 
 let package = Package(
-    name: "YouTubeKit",
+    name: "YouTubeKitParser",
     products: [
-        // Products define the executables and libraries a package produces, and make them visible to other packages.
         .library(
-            name: "YouTubeKit",
-            targets: ["YouTubeKit"]),
+            name: "YouTubeKitParser",  // Новое имя
+            targets: ["YouTubeKit"]
+        ),
     ],
     dependencies: [
         // Dependencies declare other packages that this package depends on.
