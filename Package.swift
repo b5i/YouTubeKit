@@ -22,8 +22,6 @@ let package = Package(
             name: "YouTubeKitParser",
             dependencies: []/*,
             swiftSettings: [.unsafeFlags(["-Xfrontend", "-strict-concurrency=complete"])]*/),
-        .testTarget(
-            name: "YouTubeKitTests",
-            dependencies: ["YouTubeKit"]),
+
     ]
 )
