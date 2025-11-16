@@ -21,10 +21,10 @@ import JavaScriptCore
 /// Struct representing the VideoInfosWithDownloadFormatsResponse.
 public struct VideoInfosWithDownloadFormatsResponse: YouTubeResponse {
     @available(*, deprecated, message: "Please use the global VideoDownloadFormat instead of VideoInfosWithDownloadFormatsResponse.VideoDownloadFormat")
-    public typealias VideoDownloadFormat = YouTubeKit.VideoDownloadFormat
+    public typealias VideoDownloadFormat = YouTubeKitParser.VideoDownloadFormat
     
     @available(*, deprecated, message: "Please use the global AudioOnlyFormat instead of VideoInfosWithDownloadFormatsResponse.AudioOnlyFormat")
-    public typealias AudioOnlyFormat = YouTubeKit.AudioOnlyFormat
+    public typealias AudioOnlyFormat = YouTubeKitParser.AudioOnlyFormat
     
     public static let headersType: HeaderTypes = .videoInfosWithDownloadFormats
     
@@ -417,7 +417,7 @@ public struct VideoInfosWithDownloadFormatsResponse: YouTubeResponse {
     static func decodeFormatFromJSON(json: JSON) -> DownloadFormat {
         if json["fps"].int != nil {
             /// Will return an instance of ``VideoInfosWithDownloadFormatsResponse/VideoDownloadFormat``
-            return YouTubeKit.VideoDownloadFormat(
+            return YouTubeKitParser.VideoDownloadFormat(
                 averageBitrate: json["averageBitrate"].int,
                 contentDuration: {
                     if let approxDurationMs = json["approxDurationMs"].string {
@@ -445,7 +445,7 @@ public struct VideoInfosWithDownloadFormatsResponse: YouTubeResponse {
             )
         } else {
             /// Will return an instance of ``VideoInfosWithDownloadFormatsResponse/AudioOnlyFormat``
-            return YouTubeKit.AudioOnlyFormat(
+            return YouTubeKitParser.AudioOnlyFormat(
                 averageBitrate: json["averageBitrate"].int,
                 contentLength: {
                     if let contentLength = json["contentLength"].string {
