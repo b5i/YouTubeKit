@@ -1258,6 +1258,7 @@ final class YouTubeKitTests: XCTestCase {
         }
     }
     
+    @available(*, deprecated, message: "Trending tabs were removed by YouTube")
     func testTrendingTab() async throws {
         let TEST_NAME = "Test: testTrendingTab() -> "
         

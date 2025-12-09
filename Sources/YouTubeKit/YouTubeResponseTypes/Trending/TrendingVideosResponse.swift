@@ -8,6 +8,7 @@
 
 import Foundation
 
+@available(*, deprecated, message: "YouTube removed the Trending tab and it is no longer accessible. This struct will be removed in a future version.")
 public struct TrendingVideosResponse: YouTubeResponse {
     public static let headersType: HeaderTypes = .trendingVideosHeaders
     

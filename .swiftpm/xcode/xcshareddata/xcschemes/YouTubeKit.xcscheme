@@ -52,6 +52,11 @@
                BlueprintName = "YouTubeKitTests"
                ReferencedContainer = "container:">
             </BuildableReference>
+            <SkippedTests>
+               <Test
+                  Identifier = "YouTubeKitTests/testTrendingTab()">
+               </Test>
+            </SkippedTests>
          </TestableReference>
       </Testables>
    </TestAction>
