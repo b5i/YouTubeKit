@@ -56,6 +56,9 @@
                <Test
                   Identifier = "YouTubeKitTests/testTrendingTab()">
                </Test>
+               <Test
+                  Identifier = "YouTubeKitTests/testVideoInfosWithDownloadFormatsResponse()">
+               </Test>
             </SkippedTests>
          </TestableReference>
       </Testables>
