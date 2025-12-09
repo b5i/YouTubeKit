@@ -261,6 +261,8 @@ public struct MoreVideoInfosResponse: YouTubeResponse {
                 }
                 toReturn.chapters = chapterstoReturn
                 break
+            } else if toReturn.commentsCount == nil && engagementPanel["engagementPanelSectionListRenderer", "targetId"].string == "engagement-panel-comments-section" {
+                toReturn.commentsCount = engagementPanel["engagementPanelSectionListRenderer", "header", "engagementPanelTitleHeaderRenderer", "contextualInfo", "runs", 0, "text"].string
             }
         }
         
