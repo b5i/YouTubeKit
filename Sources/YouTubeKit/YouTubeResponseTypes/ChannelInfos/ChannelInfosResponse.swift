@@ -782,6 +782,8 @@ public struct ChannelInfosResponse: YouTubeResponse {
                 } else if let decodedPlaylist = YTPlaylist.decodeJSON(json: continuationItem["gridPlaylistRenderer"]) {
                     /// Decoding normal playlist
                     result.items.append(decodedPlaylist)
+                } else if let decodedPlaylist = YTPlaylist.decodeLockupJSON(json: continuationItem["lockupViewModel"]) {
+                    result.items.append(decodedPlaylist)
                 } else if let continuationToken = continuationItem["continuationItemRenderer", "continuationEndpoint", "continuationCommand", "token"].string {
                     toReturn.newContinuationToken = continuationToken
                 }
@@ -798,14 +800,17 @@ public struct ChannelInfosResponse: YouTubeResponse {
             for playlistGroup in playlistGroupsArray {
                 guard let secondPlaylistGroupArray = playlistGroup["itemSectionRenderer", "contents"].array else { continue }
                 for secondPlaylistGroup in secondPlaylistGroupArray {
-                    guard let playlistArray = secondPlaylistGroup["gridRenderer", "items"].array else { continue }
-                    for playlist in playlistArray {
-                        if var decodedPlaylist = YTPlaylist.decodeJSON(json: playlist["gridPlaylistRenderer"]) ?? YTPlaylist.decodeLockupJSON(json: playlist["lockupViewModel"]) {
-                            if let channelInfos = channelInfos {
-                                decodedPlaylist.channel = channelInfos
+                    if let playlistArray = secondPlaylistGroup["gridRenderer", "items"].array {
+                        for playlist in playlistArray {
+                            if var decodedPlaylist = YTPlaylist.decodeJSON(json: playlist["gridPlaylistRenderer"]) ?? YTPlaylist.decodeLockupJSON(json: playlist["lockupViewModel"]) {
+                                if let channelInfos = channelInfos {
+                                    decodedPlaylist.channel = channelInfos
+                                }
+                                toReturn.items.append(decodedPlaylist)
                             }
-                            toReturn.items.append(decodedPlaylist)
                         }
+                    } else if let musicChannelContinuationToken = secondPlaylistGroup["shelfRenderer", "menu", "menuRenderer", "topLevelButtons", 0, "buttonRenderer", "navigationEndpoint", "showEngagementPanelEndpoint", "engagementPanel", "engagementPanelSectionListRenderer", "content", "sectionListRenderer", "contents", 0, "itemSectionRenderer", "contents", 0, "continuationItemRenderer", "continuationEndpoint", "continuationCommand", "token"].string {
+                        return toReturn // empty so that it fetches the continuation token
                     }
                 }
             }
@@ -817,12 +822,15 @@ public struct ChannelInfosResponse: YouTubeResponse {
             for playlistGroup in playlistGroupsArray {
                 guard let secondPlaylistGroupArray = playlistGroup["itemSectionRenderer", "contents"].array else { continue }
                 for secondPlaylistGroup in secondPlaylistGroupArray {
-                    guard let playlistArray = secondPlaylistGroup["gridRenderer", "items"].array else { continue }
-                    for potentialContinuation in playlistArray.reversed() {
-                        if let token = potentialContinuation["continuationItemRenderer", "continuationEndpoint", "continuationCommand", "token"].string {
-                            return token
+                    if let playlistArray = secondPlaylistGroup["gridRenderer", "items"].array {
+                        for potentialContinuation in playlistArray.reversed() {
+                            if let token = potentialContinuation["continuationItemRenderer", "continuationEndpoint", "continuationCommand", "token"].string {
+                                return token
+                            }
                         }
-                    }
+                    } else if let musicChannelContinuationToken = secondPlaylistGroup["shelfRenderer", "menu", "menuRenderer", "topLevelButtons", 0, "buttonRenderer", "navigationEndpoint", "showEngagementPanelEndpoint", "engagementPanel", "engagementPanelSectionListRenderer", "content", "sectionListRenderer", "contents", 0, "itemSectionRenderer", "contents", 0, "continuationItemRenderer", "continuationEndpoint", "continuationCommand", "token"].string {
+                       return musicChannelContinuationToken
+                   }
                 }
             }
             return nil
