@@ -277,7 +277,7 @@ public struct ChannelInfosResponse: YouTubeResponse {
             .first(where: {$0["metadataParts"].arrayValue.contains(where: {$0["text", "content"].stringValue.starts(with: "@")})})?["metadataParts"].arrayValue // selects the metadataParts
             .first(where: {$0["text", "content"].stringValue.starts(with: "@")})?["text", "content"].string
                 
-        //self.subscribeStatus = channelInfos["subscribeButton", "subscribeButtonRenderer", "subscribed"].bool TODO: broken at the moment
+        self.subscribeStatus = json["frameworkUpdates", "entityBatchUpdate", "mutations"].arrayValue.compactMap({$0["payload", "subscriptionStateEntity", "subscribed"].bool}).first
         
         // TODO: implement badges extraction via dynamicTextViewModel -> text -> attachmentRuns
         
