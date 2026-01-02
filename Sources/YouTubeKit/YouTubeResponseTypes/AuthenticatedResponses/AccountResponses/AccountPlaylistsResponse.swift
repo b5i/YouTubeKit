@@ -3,7 +3,7 @@
 //  YouTubeKit
 //
 //  Created by Antoine Bollengier on 27.11.2024.
-//  Copyright © 2024 - 2025 Antoine Bollengier (github.com/b5i). All rights reserved.
+//  Copyright © 2024 - 2026 Antoine Bollengier (github.com/b5i). All rights reserved.
 //
 
 import Foundation

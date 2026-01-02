@@ -3,7 +3,7 @@
 //  
 //
 //  Created by Antoine Bollengier on 02.07.2024.
-//  Copyright © 2024 - 2025 Antoine Bollengier (github.com/b5i). All rights reserved.
+//  Copyright © 2024 - 2026 Antoine Bollengier (github.com/b5i). All rights reserved.
 //  
 
 /// Enum representing the different "appreciation" status of an account for an item (e.g. a video or a comment).
