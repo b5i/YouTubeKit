@@ -74,8 +74,8 @@ public struct HistoryResponse: AuthenticatedContinuableResponse {
         let title = historyBlockJSON["header", "itemSectionHeaderRenderer", "title", "runs"].array?.map({$0["text"].stringValue}).joined() ?? historyBlockJSON["header", "itemSectionHeaderRenderer", "title", "simpleText"].stringValue
         var toAppend: HistoryBlock = .init(groupTitle: title, contentsArray: [])
         for videoJSON in historyBlockJSON["contents"].arrayValue {
-            if let video = YTVideo.decodeJSON(json: videoJSON["videoRenderer"]) {
-                let block = HistoryBlock.VideoWithToken(video: video, suppressToken: videoJSON["videoRenderer", "menu", "menuRenderer", "topLevelButtons"].array?.first?["buttonRenderer", "serviceEndpoint", "feedbackEndpoint", "feedbackToken"].string)
+            if let video = YTVideo.decodeJSON(json: videoJSON["videoRenderer"]) ?? YTVideo.decodeLockupJSON(json: videoJSON["lockupViewModel"]) {
+                let block = HistoryBlock.VideoWithToken(video: video, suppressToken: videoJSON["lockupViewModel", "metadata", "lockupMetadataViewModel", "menuButton", "buttonViewModel", "onTap", "innertubeCommand", "showSheetCommand", "panelLoadingStrategy", "inlineContent", "sheetViewModel", "content", "listViewModel", "listItems"].array?.last?["listItemViewModel", "rendererContext", "commandContext", "onTap", "innertubeCommand", "feedbackEndpoint", "feedbackToken"].string ?? videoJSON["videoRenderer", "menu", "menuRenderer", "items"].array?.last?["menuServiceItemRenderer", "serviceEndpoint", "feedbackEndpoint", "feedbackToken"].string)
                 toAppend.contentsArray.append(block)
             } else if videoJSON["reelShelfRenderer"].exists() {
                 var block = HistoryBlock.ShortsBlock(shorts: [], suppressTokens: [])
