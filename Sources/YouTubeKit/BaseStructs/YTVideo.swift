@@ -9,7 +9,7 @@ import Foundation
 
 /// Struct representing a video.
 public struct YTVideo: YTSearchResult, YouTubeVideo, Codable, Sendable {
-    public init(id: Int? = nil, videoId: String, title: String? = nil, channel: YTLittleChannelInfos? = nil, viewCount: String? = nil, timePosted: String? = nil, timeLength: String? = nil, thumbnails: [YTThumbnail] = [], memberOnly: Bool? = nil) {
+    public init(id: Int? = nil, videoId: String, title: String? = nil, channel: YTLittleChannelInfos? = nil, viewCount: String? = nil, timePosted: String? = nil, timeLength: String? = nil, thumbnails: [YTThumbnail] = [], memberOnly: Bool? = nil, startTime: Int? = nil) {
         self.id = id
         self.videoId = videoId
         self.title = title
@@ -19,10 +19,11 @@ public struct YTVideo: YTSearchResult, YouTubeVideo, Codable, Sendable {
         self.timeLength = timeLength
         self.thumbnails = thumbnails
         self.memberOnly = memberOnly
+        self.startTime = startTime
     }
     
     public static func == (lhs: YTVideo, rhs: YTVideo) -> Bool {
-        return lhs.channel?.channelId == rhs.channel?.channelId && lhs.channel?.name == rhs.channel?.name && lhs.thumbnails == rhs.thumbnails && lhs.timeLength == rhs.timeLength && lhs.timePosted == rhs.timePosted && lhs.title == rhs.title && lhs.videoId == rhs.videoId && lhs.viewCount == rhs.viewCount && lhs.memberOnly == rhs.memberOnly
+        return lhs.channel?.channelId == rhs.channel?.channelId && lhs.channel?.name == rhs.channel?.name && lhs.thumbnails == rhs.thumbnails && lhs.timeLength == rhs.timeLength && lhs.timePosted == rhs.timePosted && lhs.title == rhs.title && lhs.videoId == rhs.videoId && lhs.viewCount == rhs.viewCount && lhs.memberOnly == rhs.memberOnly && lhs.startTime == rhs.startTime
     }
     
     public static func canBeDecoded(json: JSON) -> Bool {
@@ -87,6 +88,8 @@ public struct YTVideo: YTSearchResult, YouTubeVideo, Codable, Sendable {
         
         YTThumbnail.appendThumbnails(json: json["thumbnail"], thumbnailList: &video.thumbnails)
         
+        video.startTime = min(Int(json["thumbnailOverlays", 0, "thumbnailOverlayResumePlaybackRenderer", "percentDurationWatched"].doubleValue * 0.01 * Double(video.timeLengthSeconds ?? 0).rounded(.down)), video.timeLengthSeconds ?? .max)
+        
         return video
     }
     
@@ -123,7 +126,9 @@ public struct YTVideo: YTSearchResult, YouTubeVideo, Codable, Sendable {
         
         YTThumbnail.appendThumbnails(json: json["contentImage", "thumbnailViewModel"], thumbnailList: &video.thumbnails)
         
-        video.timeLength = json["contentImage", "thumbnailViewModel", "overlays"].array?.first?["thumbnailOverlayBadgeViewModel", "thumbnailBadges"].array?.first?["thumbnailBadgeViewModel", "text"].string
+        video.timeLength = json["contentImage", "thumbnailViewModel", "overlays", 0, "thumbnailOverlayBadgeViewModel", "thumbnailBadges", 0, "thumbnailBadgeViewModel", "text"].string ?? json["contentImage", "thumbnailViewModel", "overlays", 0, "thumbnailBottomOverlayViewModel", "badges", 0, "thumbnailBadgeViewModel", "text"].string
+        
+        video.startTime = json["rendererContext", "commandContext", "onTap", "innertubeCommand", "watchEndpoint", "startTimeSeconds"].int ?? min(Int(json["contentImage", "thumbnailViewModel", "overlays", 0, "thumbnailBottomOverlayViewModel", "progressBar", "thumbnailOverlayProgressBarViewModel", "startPercent"].doubleValue * 0.01 * Double(video.timeLengthSeconds ?? 0).rounded(.down)), video.timeLengthSeconds ?? .max)
         
         return video
     }
@@ -146,6 +151,9 @@ public struct YTVideo: YTSearchResult, YouTubeVideo, Codable, Sendable {
     /// A boolean inidicating whether the video is a member-only one. If it's true, you won't be able to request the streaming info of the video except if you provide the cookies of an account that's a member of the channel.
     public var memberOnly: Bool?
     
+    /// The start time of the video in seconds, represents the time that was already partially watched.
+    public var startTime: Int?
+    
     /// Count of views of the video, in a shortened string.
     ///
     /// Possibly not defined when reading in ``YTPlaylist/frontVideos`` properties.
@@ -162,6 +170,14 @@ public struct YTVideo: YTSearchResult, YouTubeVideo, Codable, Sendable {
     ///
     /// Can be `live` instead of `ab:cd` if the video is a livestream.
     public var timeLength: String?
+    
+    /// Length in seconds of the video, extracted from ``timeLength``.
+    public var timeLengthSeconds: Int? {
+        if let timeLength {
+            return Self.timeStringToSeconds(timeLength)
+        }
+        return nil
+    }
     
     /// Array of thumbnails.
     ///

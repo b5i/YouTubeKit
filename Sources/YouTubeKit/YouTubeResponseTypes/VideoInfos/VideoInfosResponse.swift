@@ -89,6 +89,11 @@ public struct VideoInfosResponse: YouTubeResponse {
     /// The aspect ratio of the video (width/height).
     public var aspectRatio: Double?
     
+    /// The start time of the video in seconds, represents the time that was already partially watched or that the "t" parameter is set in the video URL. Currently disabled because we can't make VideoInfosResponse requests with cookies.
+    ///
+    /// - Note: This property is also available on ``YTVideo/startTime``, please use this value.
+    //public var startTime: Int? = nil
+    
     /// Array of formats used to download the video, they usually contain both audio and video data and the download speed is higher than the ``VideoInfosResponse/downloadFormats``.
     //@available(*, deprecated, message: "This property is unstable for the moment.")
     public var defaultFormats: [any DownloadFormat]
@@ -110,6 +115,7 @@ public struct VideoInfosResponse: YouTubeResponse {
         videoURLsExpireAt: Date? = nil,
         viewCount: String? = nil,
         aspectRatio: Double? = nil,
+        //startTime: Int? = nil,
         defaultFormats: [any DownloadFormat] = [],
         downloadFormats: [any DownloadFormat] = []
     ) {
@@ -125,6 +131,7 @@ public struct VideoInfosResponse: YouTubeResponse {
         self.videoURLsExpireAt = videoURLsExpireAt
         self.viewCount = viewCount
         self.aspectRatio = aspectRatio
+        //self.startTime = startTime
         self.defaultFormats = defaultFormats
         self.downloadFormats = downloadFormats
     }
@@ -188,6 +195,7 @@ public struct VideoInfosResponse: YouTubeResponse {
             }(),
             viewCount: videoDetailsJSON["viewCount"].string,
             aspectRatio: streamingJSON["aspectRatio"].double,
+            //startTime: json["playerConfig", "playbackStartConfig", "startSeconds"].int,
             defaultFormats: streamingJSON["formats"].arrayValue.compactMap { VideoInfosWithDownloadFormatsResponse.decodeFormatFromJSON(json: $0) },
             downloadFormats: streamingJSON["adaptiveFormats"].arrayValue.compactMap { VideoInfosWithDownloadFormatsResponse.decodeFormatFromJSON(json: $0) }
         )
