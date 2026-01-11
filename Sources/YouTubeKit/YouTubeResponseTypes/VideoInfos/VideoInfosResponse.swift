@@ -86,6 +86,9 @@ public struct VideoInfosResponse: YouTubeResponse {
     /// Count of view of the video, usually an integer in the string.
     public var viewCount: String?
     
+    /// Endscreen of the video.
+    public var endScreen: EndScreen? = nil
+    
     /// The aspect ratio of the video (width/height).
     public var aspectRatio: Double?
     
@@ -115,6 +118,7 @@ public struct VideoInfosResponse: YouTubeResponse {
         videoURLsExpireAt: Date? = nil,
         viewCount: String? = nil,
         aspectRatio: Double? = nil,
+        endScreen: EndScreen? = nil,
         //startTime: Int? = nil,
         defaultFormats: [any DownloadFormat] = [],
         downloadFormats: [any DownloadFormat] = []
@@ -131,6 +135,7 @@ public struct VideoInfosResponse: YouTubeResponse {
         self.videoURLsExpireAt = videoURLsExpireAt
         self.viewCount = viewCount
         self.aspectRatio = aspectRatio
+        self.endScreen = endScreen
         //self.startTime = startTime
         self.defaultFormats = defaultFormats
         self.downloadFormats = downloadFormats
@@ -156,6 +161,8 @@ public struct VideoInfosResponse: YouTubeResponse {
         if let channelId = videoDetailsJSON["channelId"].string {
             channel = YTLittleChannelInfos(channelId: channelId, name: videoDetailsJSON["author"].string)
         }
+        
+        let endScreenRenderer = json["endscreen", "endscreenRenderer"]
         
         return VideoInfosResponse(
             captions: {
@@ -195,6 +202,11 @@ public struct VideoInfosResponse: YouTubeResponse {
             }(),
             viewCount: videoDetailsJSON["viewCount"].string,
             aspectRatio: streamingJSON["aspectRatio"].double,
+            endScreen: EndScreen(
+                startTime: Int(endScreenRenderer["startMs"].stringValue),
+                elements: endScreenRenderer["elements"].arrayValue.compactMap {
+                    $0["endscreenElementRenderer"].exists() ? EndScreenElement(fromEndscreenElementRenderer: $0["endscreenElementRenderer"]) : nil
+            }),
             //startTime: json["playerConfig", "playbackStartConfig", "startSeconds"].int,
             defaultFormats: streamingJSON["formats"].arrayValue.compactMap { VideoInfosWithDownloadFormatsResponse.decodeFormatFromJSON(json: $0) },
             downloadFormats: streamingJSON["adaptiveFormats"].arrayValue.compactMap { VideoInfosWithDownloadFormatsResponse.decodeFormatFromJSON(json: $0) }

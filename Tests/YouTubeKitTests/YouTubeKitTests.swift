@@ -561,6 +561,7 @@ final class YouTubeKitTests: XCTestCase {
         XCTAssertNotNil(requestResult.videoURLsExpireAt, TEST_NAME + "Checking if requestResult.videoURLsExpireAt is not nil.")
         XCTAssertNotNil(requestResult.viewCount, TEST_NAME + "Checking if requestResult.viewCount is not nil.")
         XCTAssertNotNil(requestResult.aspectRatio, TEST_NAME + "Checking if requestResult.aspectRatio is not nil.")
+        XCTAssertNotEqual(requestResult.endScreen?.elements.count ?? 0, 0, TEST_NAME + "Checking if there's endscreen elements")
         //XCTAssertNotEqual(requestResult.downloadFormats.count, 0, TEST_NAME + "Checking if requestResult.downloadFormats is empty")
         //XCTAssertNotEqual(requestResult.defaultFormats.count, 0, TEST_NAME + "Checking if requestResult.defaultFormats is empty")
         

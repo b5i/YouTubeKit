@@ -809,7 +809,7 @@ public struct ChannelInfosResponse: YouTubeResponse {
                                 toReturn.items.append(decodedPlaylist)
                             }
                         }
-                    } else if let musicChannelContinuationToken = secondPlaylistGroup["shelfRenderer", "menu", "menuRenderer", "topLevelButtons", 0, "buttonRenderer", "navigationEndpoint", "showEngagementPanelEndpoint", "engagementPanel", "engagementPanelSectionListRenderer", "content", "sectionListRenderer", "contents", 0, "itemSectionRenderer", "contents", 0, "continuationItemRenderer", "continuationEndpoint", "continuationCommand", "token"].string {
+                    } else if secondPlaylistGroup["shelfRenderer", "menu", "menuRenderer", "topLevelButtons", 0, "buttonRenderer", "navigationEndpoint", "showEngagementPanelEndpoint", "engagementPanel", "engagementPanelSectionListRenderer", "content", "sectionListRenderer", "contents", 0, "itemSectionRenderer", "contents", 0, "continuationItemRenderer", "continuationEndpoint", "continuationCommand", "token"].string != nil {
                         return toReturn // empty so that it fetches the continuation token
                     }
                 }
