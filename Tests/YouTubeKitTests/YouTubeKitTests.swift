@@ -1256,6 +1256,7 @@ final class YouTubeKitTests: XCTestCase {
         XCTAssertNil(accountSubscriptionsFeedResponse.visitorData, TEST_NAME + "visitorData is not nil (but should never be extracted).")
                 
         XCTAssertNotEqual(accountSubscriptionsFeedResponse.results.count, 0, TEST_NAME + "Checking if accountSubscriptionsFeedResponse.results is not empty.")
+        XCTAssertNotNil(accountSubscriptionsFeedResponse.results.first(where: {$0.channel != nil}), TEST_NAME + "Checking if at least one item has a channel.") // can fail if the user is not subscribed to channel with videos
         
         if accountSubscriptionsFeedResponse.continuationToken != nil {
             let continuationResponse = try await accountSubscriptionsFeedResponse.fetchContinuation(youtubeModel: YTM)

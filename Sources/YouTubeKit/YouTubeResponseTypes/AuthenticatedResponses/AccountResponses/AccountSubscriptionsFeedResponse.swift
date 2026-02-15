@@ -102,6 +102,8 @@ public struct AccountSubscriptionsFeedResponse: AuthenticatedContinuableResponse
     private static func getVideoFromItemRenderer(_ json: JSON) -> YTVideo? {
         if json["content", "videoRenderer"].exists() {
             return YTVideo.decodeJSON(json: json["content", "videoRenderer"])
+        } else if json["content", "lockupViewModel"].exists() {
+            return YTVideo.decodeLockupJSON(json: json["content", "lockupViewModel"])
         } else {
             return YTVideo.decodeShortFromJSON(json: json["content", "reelItemRenderer"]) ?? YTVideo.decodeShortFromLockupJSON(json: json["content", "shortsLockupViewModel"])
         }
