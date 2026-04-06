@@ -432,14 +432,14 @@ public class YouTubeModel {
                     .init(name: "Accept", content: "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8"),
                     .init(name: "Accept-Encoding", content: "gzip, deflate, br"),
                     .init(name: "Host", content: "www.youtube.com"),
-                    .init(name: "User-Agent", content: "com.google.ios.youtube/21.02.3 (iPhone16,2; U; CPU iOS 26_2_1 like Mac OS X;)"),
+                    .init(name: "User-Agent", content: "com.google.ios.youtube/21.13.6 (iPhone16,2; U; CPU iOS 26_4 like Mac OS X;)"),
                     .init(name: "Accept-Language", content: "\(self.selectedLocale);q=0.9"),
                     .init(name: "Origin", content: "https://www.youtube.com/"),
                     .init(name: "Referer", content: "https://www.youtube.com/"),
                     .init(name: "Content-Type", content: "application/json"),
                     .init(name: "X-Origin", content: "https://www.youtube.com"),
                     .init(name: "X-Youtube-Client-Name", content: "5"),
-                    .init(name: "X-Youtube-Client-Version", content: "21.02.3"),
+                    .init(name: "X-Youtube-Client-Version", content: "21.13.6"),
                 ],
                 customHeaders: [
                     "X-Goog-Visitor-Id": .visitorData
@@ -454,14 +454,14 @@ public class YouTubeModel {
                       "context": {
                         "client": {
                           "clientName": "IOS",
-                          "clientVersion": "21.02.3",
+                          "clientVersion": "21.13.6",
                           "deviceMake": "Apple",
                           "deviceModel": "iPhone16,2",
                           "hl": "\#(self.selectedLocaleLanguageCode)",
                           "osName": "iPhone",
-                          "osVersion": "26.2.1.23C71",
+                          "osVersion": "26.4.23E246",
                           "timeZone": "UTC",
-                          "userAgent": "com.google.ios.youtube/21.02.3 (iPhone16,2; U; CPU iOS 26_2_1 like Mac OS X;)",
+                          "userAgent": "com.google.ios.youtube/21.13.6 (iPhone16,2; U; CPU iOS 26_4 like Mac OS X;)",
                           "utcOffsetMinutes": 0
                         }
                       },
@@ -583,7 +583,7 @@ public class YouTubeModel {
                     .init(name: "Accept", content: "*/*"),
                     .init(name: "Accept-Encoding", content: "gzip, deflate, br"),
                     .init(name: "Host", content: "www.youtube.com"),
-                    .init(name: "User-Agent", content: "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.2 Safari/605.1.15"),
+                    .init(name: "User-Agent", content: "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/26.3.1 Safari/605.1.15"),
                     .init(name: "Accept-Language", content: "\(self.selectedLocale);q=0.9"),
                     .init(name: "Origin", content: "https://www.youtube.com/"),
                     .init(name: "Referer", content: "https://www.youtube.com/"),
@@ -594,7 +594,7 @@ public class YouTubeModel {
                     .init(index: 0, encode: false, content: .browseId)
                 ],
                 httpBody: [
-                    "{\"context\":{\"client\":{\"hl\":\"\(self.selectedLocaleLanguageCode)\",\"gl\":\"\(self.selectedLocaleCountryCode.uppercased())\",\"userAgent\":\"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.2 Safari/605.1.15,gzip(gfe)\",\"clientName\":\"WEB\",\"clientVersion\":\"2.20250312.04.00\",\"acceptHeader\":\"text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8\",\"mainAppWebInfo\":{\"webDisplayMode\":\"WEB_DISPLAY_MODE_BROWSER\",\"isWebNativeShareAvailable\":true}},\"user\":{\"lockedSafetyMode\":false},\"request\":{\"useSsl\":true,\"internalExperimentFlags\":[],\"consistencyTokenJars\":[]}},\"browseId\":\"",
+                    "{\"context\":{\"client\":{\"hl\":\"\(self.selectedLocaleLanguageCode)\",\"gl\":\"\(self.selectedLocaleCountryCode.uppercased())\",\"userAgent\":\"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/26.3.1 Safari/605.1.15,gzip(gfe)\",\"clientName\":\"WEB\",\"clientVersion\":\"2.20260403.01.00\",\"acceptHeader\":\"text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8\",\"mainAppWebInfo\":{\"webDisplayMode\":\"WEB_DISPLAY_MODE_BROWSER\",\"isWebNativeShareAvailable\":true}},\"user\":{\"lockedSafetyMode\":false},\"request\":{\"useSsl\":true,\"internalExperimentFlags\":[],\"consistencyTokenJars\":[]}},\"browseId\":\"",
                     "\"}"
                 ],
                 parameters: [

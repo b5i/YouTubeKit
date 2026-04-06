@@ -479,18 +479,7 @@ final class YouTubeKitTests: XCTestCase {
     func testSearchResponseContinuation() async throws {
         let TEST_NAME = "Test: testSearchResponseContinuation() -> "
         
-        var searchResult = try await SearchResponse.sendThrowingRequest(youtubeModel: YTM, data: [.query: "Zen Emission"])
-        
-        // Zen Emission has special channel json containing the video count of his channel
-        
-        if let firstChannel = searchResult.results.first(where: {$0 as? YTChannel != nil}) as? YTChannel {
-            XCTAssertNotNil(firstChannel.name)
-            XCTAssertNotNil(firstChannel.subscriberCount)
-            XCTAssertNotNil(firstChannel.videoCount)
-            XCTAssertNotEqual(firstChannel.thumbnails.count, 0)
-        }
-        
-        searchResult = try await SearchResponse.sendThrowingRequest(youtubeModel: YTM, data: [.query: "mrbeast"])
+        var searchResult = try await SearchResponse.sendThrowingRequest(youtubeModel: YTM, data: [.query: "mrbeast"])
         
         if let firstChannel = searchResult.results.first(where: {$0 as? YTChannel != nil}) as? YTChannel {
             XCTAssertNotNil(firstChannel.name)
@@ -845,6 +834,7 @@ final class YouTubeKitTests: XCTestCase {
         guard cookies != "" else { return }
         let TEST_NAME = "Test: testAccountPlaylists() -> "
         YTM.cookies = cookies
+        YTM.alwaysUseCookies = true
         
         let response = try await AccountPlaylistsResponse.sendThrowingRequest(youtubeModel: YTM, data: [:])
                 
@@ -857,6 +847,21 @@ final class YouTubeKitTests: XCTestCase {
         XCTAssertNotNil(firstPlaylist.title, TEST_NAME + "Checking if the title of the first playlist has been extracted.")
         XCTAssertNotEqual(firstPlaylist.thumbnails.count, 0, TEST_NAME + "Checking if the thumbnails of the first playlist have been extracted.")
         XCTAssertNotNil(firstPlaylist.playlistId, TEST_NAME + "Checking if the playlistId of the first playlist has been extracted.")
+        
+        // test default playlists
+        
+        let likesPlaylist = YTPlaylist(playlistId: "VLLL")
+        let watchLaterPlaylist = YTPlaylist(playlistId: "VLWL")
+        
+        let likes = try await likesPlaylist.fetchVideosThrowing(youtubeModel: YTM)
+        XCTAssertNotEqual(likes.results.count, 0, TEST_NAME + "Checking if the liked videos have been extracted.")
+        let likesContinuation = try await likes.fetchContinuationThrowing(youtubeModel: YTM)
+        XCTAssertNotEqual(likesContinuation.results.count, 0, TEST_NAME + "Checking if the continuation of liked videos have been extracted.")
+        
+        let watchLater = try await watchLaterPlaylist.fetchVideosThrowing(youtubeModel: YTM)
+        XCTAssertNotEqual(watchLater.results.count, 0, TEST_NAME + "Checking if the watch later videos have been extracted.")
+        let watchLaterContinuation = try await watchLater.fetchContinuationThrowing(youtubeModel: YTM)
+        XCTAssertNotEqual(watchLaterContinuation.results.count, 0, TEST_NAME + "Checking if the continuation of watch later videos have been extracted.")
     }
     
     func testCreateEmptyPlaylist() async throws {

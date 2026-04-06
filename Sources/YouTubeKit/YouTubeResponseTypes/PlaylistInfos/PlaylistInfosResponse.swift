@@ -78,35 +78,49 @@ public struct PlaylistInfosResponse: ContinuableResponse {
                 guard let thirdVideoArray = secondVideoArrayPart["itemSectionRenderer", "contents"].array else { continue }
                 
                 for thirdVideoArrayPart in thirdVideoArray {
-                    guard let finalVideoArray = thirdVideoArrayPart["playlistVideoListRenderer", "contents"].array else { continue }
-                    let secondHeader = thirdVideoArrayPart["playlistVideoListRenderer"]
-
-                    toReturn.userInteractions.isEditable = json["header", "playlistHeaderRenderer", "isEditable"].bool ?? secondHeader["isEditable"].bool
-
-                    toReturn.userInteractions.canReorder = json["header", "playlistHeaderRenderer", "canReorder"].bool ?? secondHeader["canReorder"].bool
-
-                    if toReturn.userInteractions.isEditable ?? false {
-                        toReturn.videoIdsInPlaylist = []
-                    }
-                    
-                    for videoJSON in finalVideoArray {
-                        if let video = YTVideo.decodeVideoFromPlaylist(json: videoJSON["playlistVideoRenderer"]) {
-                            
-                            toReturn.videoIdsInPlaylist?.append(videoJSON["playlistVideoRenderer", "setVideoId"].string)
-                            
-                            toReturn.results.append(video)
-                        } else if let video = YTVideo.decodeVideoFromPlaylist(json: videoJSON["playlistVideoListRenderer"]) {
-                            
-                            toReturn.videoIdsInPlaylist?.append(videoJSON["playlistVideoListRenderer", "setVideoId"].string)
-                            
-                            toReturn.results.append(video)
-                        } else if videoJSON["continuationItemRenderer", "continuationEndpoint"].exists() {
-                            if let token = videoJSON["continuationItemRenderer", "continuationEndpoint", "continuationCommand", "token"].string {
-                                toReturn.continuationToken = token
-                            } else if let commandsArray = videoJSON["continuationItemRenderer", "continuationEndpoint", "commandExecutorCommand", "commands"].array, let token = commandsArray.first(where: {$0["continuationCommand", "token"].string != nil })?["continuationCommand", "token"].string {
-                                toReturn.continuationToken = token
+                    if let finalVideoArray = thirdVideoArrayPart["playlistVideoListRenderer", "contents"].array {
+                        let secondHeader = thirdVideoArrayPart["playlistVideoListRenderer"]
+                        
+                        toReturn.userInteractions.isEditable = json["header", "playlistHeaderRenderer", "isEditable"].bool ?? secondHeader["isEditable"].bool
+                        
+                        toReturn.userInteractions.canReorder = json["header", "playlistHeaderRenderer", "canReorder"].bool ?? secondHeader["canReorder"].bool
+                        
+                        if toReturn.userInteractions.isEditable ?? false {
+                            toReturn.videoIdsInPlaylist = []
+                        }
+                        
+                        for videoJSON in finalVideoArray {
+                            if let video = YTVideo.decodeVideoFromPlaylist(json: videoJSON["playlistVideoRenderer"]) {
+                                
+                                toReturn.videoIdsInPlaylist?.append(videoJSON["playlistVideoRenderer", "setVideoId"].string)
+                                
+                                toReturn.results.append(video)
+                            } else if let video = YTVideo.decodeVideoFromPlaylist(json: videoJSON["playlistVideoListRenderer"]) {
+                                
+                                toReturn.videoIdsInPlaylist?.append(videoJSON["playlistVideoListRenderer", "setVideoId"].string)
+                                
+                                toReturn.results.append(video)
+                            } else if videoJSON["continuationItemRenderer", "continuationEndpoint"].exists() {
+                                if let token = videoJSON["continuationItemRenderer", "continuationEndpoint", "continuationCommand", "token"].string {
+                                    toReturn.continuationToken = token
+                                } else if let commandsArray = videoJSON["continuationItemRenderer", "continuationEndpoint", "commandExecutorCommand", "commands"].array, let token = commandsArray.first(where: {$0["continuationCommand", "token"].string != nil })?["continuationCommand", "token"].string {
+                                    toReturn.continuationToken = token
+                                }
                             }
                         }
+                    } else if let video = YTVideo.decodeLockupJSON(json: thirdVideoArrayPart["lockupViewModel"]) {
+                        
+                        // no setVideoId as of now :(
+                        
+                        toReturn.results.append(video)
+                    } else if thirdVideoArrayPart["continuationItemRenderer", "continuationEndpoint"].exists() {
+                        if let token = thirdVideoArrayPart["continuationItemRenderer", "continuationEndpoint", "continuationCommand", "token"].string {
+                            toReturn.continuationToken = token
+                        } else if let commandsArray = thirdVideoArrayPart["continuationItemRenderer", "continuationEndpoint", "commandExecutorCommand", "commands"].array, let token = commandsArray.first(where: {$0["continuationCommand", "token"].string != nil })?["continuationCommand", "token"].string {
+                            toReturn.continuationToken = token
+                        }
+                    } else if thirdVideoArrayPart["continuationItemViewModel"].exists() {
+                        toReturn.continuationToken = thirdVideoArrayPart["continuationItemViewModel", "continuationCommand", "innertubeCommand", "continuationCommand", "token"].string
                     }
                 }
             }
@@ -154,8 +168,15 @@ public struct PlaylistInfosResponse: ContinuableResponse {
                         toReturn.videoIdsInPlaylist.append(videoJSON["playlistVideoListRenderer", "setVideoId"].string)
                         
                         toReturn.results.append(video)
+                    } else if let video = YTVideo.decodeLockupJSON(json: videoJSON["lockupViewModel"]) {
+                        
+                        // no setVideoId as of now :(
+                        
+                        toReturn.results.append(video)
                     } else if let continuationToken = videoJSON["continuationItemRenderer", "continuationEndpoint", "continuationCommand", "token"].string {
                         toReturn.continuationToken = continuationToken
+                    } else if videoJSON["continuationItemViewModel"].exists() {
+                        toReturn.continuationToken = videoJSON["continuationItemViewModel", "continuationCommand", "innertubeCommand", "continuationCommand", "token"].string
                     }
                 }
             }
