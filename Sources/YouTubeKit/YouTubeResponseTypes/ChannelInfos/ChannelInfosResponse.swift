@@ -600,8 +600,8 @@ public struct ChannelInfosResponse: YouTubeResponse {
             guard let videosArray = tab["tabRenderer", "content", "richGridRenderer", "contents"].array else { return nil }
             var toReturn = Videos()
             for video in videosArray {
-                let videoJSON = video["richItemRenderer", "content", "videoRenderer"]
-                if var decodedVideo = YTVideo.decodeJSON(json: videoJSON) {
+                let videoJSON = video["richItemRenderer", "content", "lockupViewModel"]
+                if var decodedVideo = YTVideo.decodeLockupJSON(json: videoJSON) {
                     if let channelInfos = channelInfos {
                         decodedVideo.channel = channelInfos
                     }

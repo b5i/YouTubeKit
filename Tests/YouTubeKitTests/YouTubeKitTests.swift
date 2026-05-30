@@ -684,8 +684,9 @@ final class YouTubeKitTests: XCTestCase {
             YTM.visitorData = visitorData
         }
         
-        let videoResult = try await VideoInfosResponse.sendThrowingRequest(youtubeModel: YTM, data: [.query: "bvUNXch3rdI"]) /// T-Series' video because they have continuation in every category
-                
+        var videoResult = try await VideoInfosResponse.sendThrowingRequest(youtubeModel: YTM, data: [.query: "bvUNXch3rdI"]) /// T-Series' video because they have continuation in every category
+        
+        videoResult.channel = YTLittleChannelInfos(channelId: "UCq-Fj5jknLsUf-MWSy4_brA", name: "T-Series") // temp
         guard let channel = videoResult.channel, channel.channelId != "" else { XCTFail(TEST_NAME + "The channel in the retrieved video is not defined (structure nil or channelId empty)."); return }
         
         let mainRequestResult = try await channel.fetchInfosThrowing(youtubeModel: YTM)
