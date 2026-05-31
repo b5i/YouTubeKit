@@ -622,8 +622,8 @@ public struct ChannelInfosResponse: YouTubeResponse {
             var result = Videos()
             
             for continuationItem in itemsArray {
-                let videoJSON = continuationItem["richItemRenderer", "content", "videoRenderer"]
-                if let decodedVideo = YTVideo.decodeJSON(json: videoJSON) {
+                let videoJSON = continuationItem["richItemRenderer", "content", "lockupViewModel"]
+                if let decodedVideo = YTVideo.decodeLockupJSON(json: videoJSON) {
                     result.items.append(decodedVideo)
                 } else if let continuationToken = continuationItem["continuationItemRenderer", "continuationEndpoint", "continuationCommand", "token"].string {
                     toReturn.newContinuationToken = continuationToken
