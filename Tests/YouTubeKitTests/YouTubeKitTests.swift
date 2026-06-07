@@ -528,6 +528,7 @@ final class YouTubeKitTests: XCTestCase {
     
     func testVideoInfosResponse() async throws {
         let TEST_NAME = "Test: testVideoInfosResponse() -> "
+        try VideoInfosWithDownloadFormatsResponse.removePlayersCache()
         let video = YTVideo(videoId: "90RLzVUuXe4")
                 
         if YTM.visitorData == "" {
@@ -630,7 +631,7 @@ final class YouTubeKitTests: XCTestCase {
     func testVideoInfosWithDownloadFormatsResponse() async throws {
         let TEST_NAME = "Test: testVideoInfosWithDownloadFormatsResponse() -> "
                 
-        try VideoInfosWithDownloadFormatsResponse.removePlayerFilesFromDisk()
+        try VideoInfosWithDownloadFormatsResponse.removePlayersCache()
         
         for video in [YTVideo(videoId: "dSDbwfXX5_I"), YTVideo(videoId: "3ryID_SwU5E")] as [YTVideo] {
             

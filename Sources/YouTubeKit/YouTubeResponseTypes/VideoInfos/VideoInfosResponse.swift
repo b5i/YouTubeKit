@@ -9,9 +9,9 @@ import Foundation
 
 /// Struct representing the streaming info of a video.
 public struct VideoInfosResponse: YouTubeResponse {
-    public static let headersType: HeaderTypes = .videoInfos
+    public static let headersType: HeaderTypes = .videoInfosWithDownloadFormats // we need to use the videoInfosWithDownloadFormats headers because of new measures taken by YouTube
     
-    public static let parametersValidationList: ValidationList = [.query: .videoIdValidator, .visitorData: .existenceValidator]
+    public static let parametersValidationList: ValidationList = [.query: .videoIdValidator]
     
     /// An array of `Caption` representing the variety of captions that the video supports
     public var captions: [YTCaption]
@@ -139,6 +139,11 @@ public struct VideoInfosResponse: YouTubeResponse {
         //self.startTime = startTime
         self.defaultFormats = defaultFormats
         self.downloadFormats = downloadFormats
+    }
+    
+    // Overwrite the data processing
+    public static func decodeData(data: Data) throws -> VideoInfosResponse {
+        return try VideoInfosWithDownloadFormatsResponse.decodeData(data: data).videoInfos
     }
     
     /// Decode json to give an instance of ``VideoInfosResponse``.
