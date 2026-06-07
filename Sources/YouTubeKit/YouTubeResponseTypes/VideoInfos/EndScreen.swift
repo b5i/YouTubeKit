@@ -6,7 +6,7 @@
 //  Copyright © 2026 Antoine Bollengier (github.com/b5i). All rights reserved.
 //  
 
-public struct EndScreen {
+public struct EndScreen: Sendable {
     /// The start time in milliseconds of the end screen.
     public var startTime: Int?
     

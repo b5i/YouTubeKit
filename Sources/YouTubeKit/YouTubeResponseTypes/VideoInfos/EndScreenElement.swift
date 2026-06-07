@@ -8,7 +8,7 @@
 
 import Foundation
 
-public struct EndScreenElement {
+public struct EndScreenElement: Sendable {
     public var type: ElementType
 
     /// Start time in milliseconds where the element appears.
@@ -22,7 +22,7 @@ public struct EndScreenElement {
     /// For example,  an origin.x of 0.3 means the element starts at 30% of the video width from the left.
     public var position: CGRect
     
-    public enum ElementType {
+    public enum ElementType: Sendable {
         case video(video: YTVideo)
         case playlist(playlist: YTPlaylist)
         
@@ -30,7 +30,7 @@ public struct EndScreenElement {
         case channel(channel: YTChannel, subscribeButton: Bool, description: String?)
         case link(link: Link)
         
-        public struct Link {
+        public struct Link: Sendable {
             public var url: URL
             public var title: String?
             public var thumbnail: [YTThumbnail]
