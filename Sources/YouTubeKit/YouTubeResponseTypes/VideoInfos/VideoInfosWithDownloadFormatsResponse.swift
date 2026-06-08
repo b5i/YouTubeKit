@@ -571,7 +571,7 @@ public struct VideoInfosWithDownloadFormatsResponse: YouTubeResponse {
         private static let bundleSource: String? = {
             
             guard
-                let url = Bundle.module.url(forResource: "jsc_bundle", withExtension: "js", subdirectory: "Resources"),
+                let url = Bundle.module.url(forResource: "jsc_bundle", withExtension: "js", subdirectory: "JavaScript"),
                 let src = try? String(contentsOf: url, encoding: .utf8)
             else {
                 assertionFailure("jsc_bundle.js not found in module bundle")

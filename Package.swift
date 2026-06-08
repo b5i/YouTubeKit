@@ -21,7 +21,7 @@ let package = Package(
         .target(
             name: "YouTubeKit",
             resources: [
-                .copy("Resources/.")
+                .copy("JavaScript/.")
             ]
         ),
 
