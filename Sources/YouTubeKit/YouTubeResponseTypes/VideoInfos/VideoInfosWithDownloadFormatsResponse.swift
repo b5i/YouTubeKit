@@ -291,6 +291,9 @@ public struct VideoInfosWithDownloadFormatsResponse: YouTubeResponse {
                     instructionsArray.append(knownPlayerCipherDecodeInstructions[currentFunctionName] ?? .unknown)
                 }
             }
+
+            break
+        }
             let documentDirectoryPath: String
             
             if #available(macOS 13, iOS 16.0, watchOS 9.0, tvOS 16.0, *) {
@@ -298,7 +301,7 @@ public struct VideoInfosWithDownloadFormatsResponse: YouTubeResponse {
             } else {
                 documentDirectoryPath = try getDocumentDirectory().path
             }
-            do {
+                do {
                 FileManager.default.createFile(
                     atPath: documentDirectoryPath + "YouTubeKitPlayers-\(playerName).ab",
                     contents: try JSONEncoder().encode(instructionsArray)
@@ -311,8 +314,6 @@ public struct VideoInfosWithDownloadFormatsResponse: YouTubeResponse {
                     contents: playerData
                 )
             } catch {}
-            break
-        }
         return (instructionsArray, dataString, playerName)
     }
     
