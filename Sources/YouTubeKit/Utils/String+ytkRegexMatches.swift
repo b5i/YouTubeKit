@@ -42,4 +42,14 @@ public extension String {
         guard let regex = try? NSRegularExpression(pattern: stringRegex) else { return nil }
         return self.ytkFirstGroupMatch(for: regex)
     }
+    
+    /// Gets the first substring that is between a prefix and a suffix (**excluding them**)
+    func ytkFirstSubstringBetween(prefix: String, suffix: String) -> String? {
+        guard let prefixRange = self.range(of: prefix) else { return nil }
+        let afterPrefix = prefixRange.upperBound
+
+        guard let suffixRange = self[afterPrefix...].range(of: suffix) else { return nil }
+
+        return String(self[afterPrefix..<suffixRange.lowerBound])
+    }
 }

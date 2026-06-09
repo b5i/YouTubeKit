@@ -54,7 +54,7 @@ public struct VideoInfosWithDownloadFormatsResponse: YouTubeResponse {
                 
         let (instructionArray, playerJs, playerName) = try processPlayerScrapping(playerPath: playerPath)
                 
-        guard let stringJSONData = dataToString.ytkFirstGroupMatch(for: "var ytInitialPlayerResponse = ([\\S\\s]*\\}\\}\\}\\})[\\S\\s]*;</script><div id=\"player\"") else {
+        guard let stringJSONData = dataToString.ytkFirstSubstringBetween(prefix: "var ytInitialPlayerResponse = ", suffix: ";</script><div id=\"player\"") else {
             throw ResponseError(step: .decodeData, reason: "Couldn't get player's JSON data.")
         }
         
