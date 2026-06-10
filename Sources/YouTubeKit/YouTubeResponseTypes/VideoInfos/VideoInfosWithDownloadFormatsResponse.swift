@@ -48,10 +48,12 @@ public struct VideoInfosWithDownloadFormatsResponse: YouTubeResponse {
         let dataToString = String(decoding: data, as: UTF8.self)
         
         /// We have something like this **/s/player/playerId/player_ias.vflset/en_US/base.js**
-        guard let playerPath = dataToString.ytkFirstGroupMatch(for: "<link rel=\"preload\" href=\"https:\\/\\/i.ytimg.com\\/generate_204\" as=\"fetch\"><link as=\"script\" rel=\"preload\" href=\"([\\S]+)\"") else {
+        guard var playerPath = dataToString.ytkFirstSubstringBetween(prefix: "<link as=\"script\" rel=\"preload\" href=\"/s/player", suffix: "\"") else {
             throw ResponseError(step: .decodeData, reason: "Couldn't get player path.")
         }
-                
+        
+        playerPath = "/s/player" + playerPath
+
         let (instructionArray, playerJs, playerName) = try processPlayerScrapping(playerPath: playerPath)
                 
         guard let stringJSONData = dataToString.ytkFirstSubstringBetween(prefix: "var ytInitialPlayerResponse = ", suffix: ";</script><div id=\"player\"") else {
