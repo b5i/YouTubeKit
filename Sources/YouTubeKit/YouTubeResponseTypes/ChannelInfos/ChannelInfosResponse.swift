@@ -389,6 +389,40 @@ public struct ChannelInfosResponse: YouTubeResponse {
         })
     }
     
+    /// Get a content from a channel, reusing the content that was already decoded during the initial channel request instead of making a new network request when it is available.
+    ///
+    /// This method looks into ``ChannelInfosResponse/channelContentStore`` first: if `type`'s content has already been decoded **it returns the current instance unchanged**, no network request is made, so the already-decoded items are neither re-fetched nor duplicated. It only falls back to ``ChannelInfosResponse/getChannelContent(forType:youtubeModel:useCookies:result:)`` when the content has not been decoded yet.
+    /// - Parameters:
+    ///   - type: Type of content requested, (the tab of the wanted content).
+    ///   - youtubeModel: the ``YouTubeModel`` that will be used to get the request headers.
+    ///   - useCookies: boolean that precises if the request should include the model's ``YouTubeModel/cookies``, if set to nil, the value will be taken from ``YouTubeModel/alwaysUseCookies``. The cookies will be added to the `Cookie` HTTP header if one is already present or a new one will be created if not.
+    ///   - result: A ``ChannelInfosResponse`` whose ``ChannelInfosResponse/channelContentStore`` holds `type`'s content, or/and an Error indicating why it failed.
+    public func getChannelContentReusingCache(forType type: RequestTypes, youtubeModel: YouTubeModel, useCookies: Bool? = nil, result: @escaping @Sendable (Result<ChannelInfosResponse, Error>) -> ()) {
+        if channelContentStore[type] != nil {
+            /// The content was already decoded during the initial channel request (e.g. a landing-tab channel), so reuse it as-is rather than re-requesting it.
+            result(.success(self))
+            return
+        }
+        getChannelContent(forType: type, youtubeModel: youtubeModel, useCookies: useCookies, result: result)
+    }
+
+    /// Get a content from a channel, reusing the content that was already decoded during the initial channel request instead of making a new network request when it is available.
+    ///
+    /// See ``ChannelInfosResponse/getChannelContentReusingCache(forType:youtubeModel:useCookies:result:)`` for more info.
+    /// - Parameters:
+    ///   - type: Type of content requested, (the tab of the wanted content).
+    ///   - youtubeModel: the ``YouTubeModel`` that will be used to get the request headers.
+    ///   - useCookies: boolean that precises if the request should include the model's ``YouTubeModel/cookies``, if set to nil, the value will be taken from ``YouTubeModel/alwaysUseCookies``. The cookies will be added to the `Cookie` HTTP header if one is already present or a new one will be created if not.
+    /// - Returns: A ``ChannelInfosResponse`` whose ``ChannelInfosResponse/channelContentStore`` holds `type`'s content.
+    @available(macOS 10.15, iOS 13.0, watchOS 6.0, tvOS 13.0, *)
+    public func getChannelContentReusingCacheThrowing(forType type: RequestTypes, youtubeModel: YouTubeModel, useCookies: Bool? = nil) async throws -> ChannelInfosResponse {
+        return try await withCheckedThrowingContinuation({ (continuation: CheckedContinuation<ChannelInfosResponse, Error>) in
+            self.getChannelContentReusingCache(forType: type, youtubeModel: youtubeModel, useCookies: useCookies, result: { channelContent in
+                continuation.resume(with: channelContent)
+            })
+        })
+    }
+    
     /// Get the continuation results for a certain ChannelContent.
     /// - Parameters:
     ///   - youtubeModel: the ``YouTubeModel`` that will be used to get the request headers.
