@@ -10,7 +10,7 @@ import Foundation
 
 /// Struct representing a download format that contains the video and audio.
 public struct VideoDownloadFormat: DownloadFormat {
-    public init(averageBitrate: Int? = nil, contentDuration: Int? = nil, contentLength: Int? = nil, is360: Bool? = nil, isCopyrightedMedia: Bool? = nil, mimeType: String? = nil, codec: String? = nil, url: URL? = nil, width: Int? = nil, height: Int? = nil, quality: String? = nil, fps: Int? = nil) {
+    public init(averageBitrate: Int? = nil, contentDuration: Int? = nil, contentLength: Int? = nil, is360: Bool? = nil, isCopyrightedMedia: Bool? = nil, mimeType: String? = nil, codec: String? = nil, url: URL? = nil, signatureCipher: String? = nil, width: Int? = nil, height: Int? = nil, quality: String? = nil, fps: Int? = nil) {
         self.averageBitrate = averageBitrate
         self.contentDuration = contentDuration
         self.contentLength = contentLength
@@ -19,6 +19,7 @@ public struct VideoDownloadFormat: DownloadFormat {
         self.mimeType = mimeType
         self.codec = codec
         self.url = url
+        self.signatureCipher = signatureCipher
         self.width = width
         self.height = height
         self.quality = quality
@@ -43,6 +44,8 @@ public struct VideoDownloadFormat: DownloadFormat {
     public var codec: String?
     
     public var url: URL?
+    
+    public var signatureCipher: String?
     
     /// Video-specific infos
     

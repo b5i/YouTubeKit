@@ -9,9 +9,11 @@ import Foundation
 
 /// Struct representing the streaming info of a video.
 public struct VideoInfosResponse: YouTubeResponse {
-    public static let headersType: HeaderTypes = .videoInfosWithDownloadFormats // we need to use the videoInfosWithDownloadFormats headers because of new measures taken by YouTube
+    public static let headersType: HeaderTypes = .videoInfos
     
     public static let parametersValidationList: ValidationList = [.query: .videoIdValidator]
+    
+    public typealias ResponseError = PlayerProcessing.Player.ResponseError
     
     /// An array of `Caption` representing the variety of captions that the video supports
     public var captions: [YTCaption]
@@ -98,12 +100,16 @@ public struct VideoInfosResponse: YouTubeResponse {
     //public var startTime: Int? = nil
     
     /// Array of formats used to download the video, they usually contain both audio and video data and the download speed is higher than the ``VideoInfosResponse/downloadFormats``.
+    ///
+    /// - Note: Those formats usually don't contain a valid URL, but only their metadata. Use a ``VideoInfosWithDownloadFormatsResponse`` and call ``VideoInfosWithDownloadFormatsResponse/deciphersURLs(player:)`` with the ``PlayerProcessing/Player`` instance of this `VideoInfosResponse` to get the download URLs of those formats.
     //@available(*, deprecated, message: "This property is unstable for the moment.")
     public var defaultFormats: [any DownloadFormat]
     
     /// Array of formats used to download the video, usually sorted from highest video quality to lowest followed by audio formats.
     //@available(*, deprecated, message: "This property is unstable for the moment.")
     public var downloadFormats: [any DownloadFormat]
+    
+    public var player: PlayerProcessing.Player?
 
     public init(
         captions: [YTCaption] = [],
@@ -121,7 +127,8 @@ public struct VideoInfosResponse: YouTubeResponse {
         endScreen: EndScreen? = nil,
         //startTime: Int? = nil,
         defaultFormats: [any DownloadFormat] = [],
-        downloadFormats: [any DownloadFormat] = []
+        downloadFormats: [any DownloadFormat] = [],
+        player: PlayerProcessing.Player? = nil
     ) {
         self.captions = captions
         self.channel = channel
@@ -139,11 +146,45 @@ public struct VideoInfosResponse: YouTubeResponse {
         //self.startTime = startTime
         self.defaultFormats = defaultFormats
         self.downloadFormats = downloadFormats
+        self.player = player
     }
     
     // Overwrite the data processing
     public static func decodeData(data: Data) throws -> VideoInfosResponse {
-        return try VideoInfosWithDownloadFormatsResponse.decodeData(data: data).videoInfos
+        /// Special processing for VideoInfosWithDownloadFormatsResponse
+        
+        /// The received data is not some JSON, it is an HTML file containing the JSON and other relevant informations that are necessary to process the ``DownloadFormat``.
+        /// It begins by getting the player version (the player is a JS script used to manage the player on their webpage and it decodes the n-parameter).
+        
+        let dataToString = String(decoding: data, as: UTF8.self)
+        
+        /// We have something like this ** /s/player/playerId/player_ias.vflset/en_US/base.js **
+        guard var playerPath = dataToString.ytkFirstSubstringBetween(prefix: "<link as=\"script\" rel=\"preload\" href=\"/s/player", suffix: "\"") else {
+            throw ResponseError(step: .decodeData, reason: "Couldn't get player path.")
+        }
+        
+        playerPath = "/s/player" + playerPath
+        
+        let player = try PlayerProcessing.Player.getPlayer(forPath: playerPath)
+                        
+        guard let stringJSONData = dataToString.ytkFirstSubstringBetween(prefix: "var ytInitialPlayerResponse = ", suffix: ";</script><div id=\"player\"") else {
+            throw ResponseError(step: .decodeData, reason: "Couldn't get player's JSON data.")
+        }
+        
+        let json = JSON(parseJSON: stringJSONData)
+        
+        var toReturn = try self.decodeJSON(json: json)
+        
+        toReturn.player = player
+        
+        // The n-parameter in HLS manifest URLs is embedded as a path segment "/n/VALUE/" rather than as a query parameter, so it needs its own handling.
+        if let hlsManifestURLString = toReturn.streamingURL?.absoluteString {
+            toReturn.streamingURL = player.decodeNParameterInHLSManifestURL(
+                hlsManifestURLString
+            )
+        }
+        
+        return toReturn
     }
     
     /// Decode json to give an instance of ``VideoInfosResponse``.

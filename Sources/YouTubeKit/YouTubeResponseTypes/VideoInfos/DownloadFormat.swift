@@ -27,8 +27,11 @@ public protocol DownloadFormat: Sendable {
     /// This property doesn't tell you if the media is copyright-free!
     var isCopyrightedMedia: Bool? { get }
     
-    /// Download URL of the format.
+    /// Download URL of the format, may need ``PlayerProcessing/Player/processDownloadFormatURL(item:)`` in order to work.
     var url: URL? { get set }
+    
+    /// A cipher containing the ciphered URL of the format, need to be deciphered using ``PlayerProcessing/Player/processDownloadFormatURL(item:)``.
+    var signatureCipher: String? { get set }
     
     /// The mimeType of the format.
     ///

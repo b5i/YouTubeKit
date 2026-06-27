@@ -426,6 +426,35 @@ public class YouTubeModel {
             return headers
         } else {
             return HeadersList(
+                url: URL(string: "https://www.youtube.com/watch")!,
+                method: .GET,
+                headers: [
+                    .init(name: "Accept", content: "*/*"),
+                    .init(name: "Accept-Encoding", content: "gzip, deflate, br"),
+                    .init(name: "Host", content: "www.youtube.com"),
+                    .init(name: "User-Agent", content: "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.2 Safari/605.1.15"),
+                    .init(name: "Accept-Language", content: "\(self.selectedLocale);q=0.9"),
+                    .init(name: "Origin", content: "https://www.youtube.com/"),
+                    .init(name: "Referer", content: "https://www.youtube.com/"),
+                    .init(name: "Content-Type", content: "application/json"),
+                    .init(name: "X-Origin", content: "https://www.youtube.com")
+                ],
+                parameters: [
+                    .init(name: "v", content: "", specialContent: .query),
+                    .init(name: "bpctr", content: "9999999999"),
+                    .init(name: "has_verified", content: "1")
+                ]
+            )
+        }
+    }
+    
+    /// Get headers to get the video's download and stream formats, this version consumes more bandwidth but includes custom formats (more options).
+    /// - Returns: The headers for this request.
+    func getFormatAdaptatives() -> HeadersList {
+        if let headers = self.customHeaders[.videoInfosWithDownloadFormats] {
+            return headers
+        } else {
+            return HeadersList(
                 url: URL(string: "https://www.youtube.com/youtubei/v1/player")!,
                 method: .POST,
                 headers: [
@@ -477,35 +506,6 @@ public class YouTubeModel {
                 ],
                 parameters: [
                     .init(name: "prettyPrint", content: "false")
-                ]
-            )
-        }
-    }
-    
-    /// Get headers to get the video's download and stream formats, this version consumes more bandwidth but includes custom formats (more options).
-    /// - Returns: The headers for this request.
-    func getFormatAdaptatives() -> HeadersList {
-        if let headers = self.customHeaders[.videoInfosWithDownloadFormats] {
-            return headers
-        } else {
-            return HeadersList(
-                url: URL(string: "https://www.youtube.com/watch")!,
-                method: .GET,
-                headers: [
-                    .init(name: "Accept", content: "*/*"),
-                    .init(name: "Accept-Encoding", content: "gzip, deflate, br"),
-                    .init(name: "Host", content: "www.youtube.com"),
-                    .init(name: "User-Agent", content: "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.2 Safari/605.1.15"),
-                    .init(name: "Accept-Language", content: "\(self.selectedLocale);q=0.9"),
-                    .init(name: "Origin", content: "https://www.youtube.com/"),
-                    .init(name: "Referer", content: "https://www.youtube.com/"),
-                    .init(name: "Content-Type", content: "application/json"),
-                    .init(name: "X-Origin", content: "https://www.youtube.com")
-                ],
-                parameters: [
-                    .init(name: "v", content: "", specialContent: .query),
-                    .init(name: "bpctr", content: "9999999999"),
-                    .init(name: "has_verified", content: "1")
                 ]
             )
         }

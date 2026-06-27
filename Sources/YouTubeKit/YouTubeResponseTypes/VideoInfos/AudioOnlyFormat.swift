@@ -9,12 +9,13 @@
 import Foundation
 
 public struct AudioOnlyFormat: DownloadFormat {
-    public init(averageBitrate: Int? = nil, contentLength: Int? = nil, contentDuration: Int? = nil, isCopyrightedMedia: Bool? = nil, url: URL? = nil, mimeType: String? = nil, codec: String? = nil, audioSampleRate: Int? = nil, loudness: Double? = nil, formatLocaleInfos: FormatLocaleInfos? = nil) {
+    public init(averageBitrate: Int? = nil, contentLength: Int? = nil, contentDuration: Int? = nil, isCopyrightedMedia: Bool? = nil, url: URL? = nil, signatureCipher: String? = nil, mimeType: String? = nil, codec: String? = nil, audioSampleRate: Int? = nil, loudness: Double? = nil, formatLocaleInfos: FormatLocaleInfos? = nil) {
         self.averageBitrate = averageBitrate
         self.contentLength = contentLength
         self.contentDuration = contentDuration
         self.isCopyrightedMedia = isCopyrightedMedia
         self.url = url
+        self.signatureCipher = signatureCipher
         self.mimeType = mimeType
         self.codec = codec
         self.audioSampleRate = audioSampleRate
@@ -34,6 +35,8 @@ public struct AudioOnlyFormat: DownloadFormat {
     public var isCopyrightedMedia: Bool?
     
     public var url: URL?
+    
+    public var signatureCipher: String?
     
     public var mimeType: String?
     

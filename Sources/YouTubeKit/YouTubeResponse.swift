@@ -47,7 +47,7 @@ public protocol YouTubeResponse: Sendable {
     
     /// A function that decode the data to give an instance of this response and throws an error if an error was returned by YouTube's API.
     ///
-    /// - Note: this function should only be overriden if you have to do special processing before getting the JSON from the data, for example this is the case with ``AutoCompletionResponse``. Make sure that you call the error handling method TODO: put it here if your version does not already process them.
+    /// - Note: this function should only be overriden if you have to do special processing before getting the JSON from the data, for example this is the case with ``AutoCompletionResponse``. Make sure that you call the error handling method ``checkForErrors(json:)-8wfvw`` if your version does not already process them.
     static func decodeData(data: Data) throws -> Self
     
     /// A function to extract the response from some JSON.
