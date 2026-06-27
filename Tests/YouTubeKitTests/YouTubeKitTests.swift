@@ -528,8 +528,8 @@ final class YouTubeKitTests: XCTestCase {
     
     func testVideoInfosResponse() async throws {
         let TEST_NAME = "Test: testVideoInfosResponse() -> "
-        try VideoInfosWithDownloadFormatsResponse.removePlayersCache()
-        let video = YTVideo(videoId: "90RLzVUuXe4")
+        try PlayerProcessing.PlayersCache.clearCache()
+        let video = YTVideo(videoId: "__fmDj0ZJ1Q")
                 
         if YTM.visitorData == "" {
             guard let visitorData = try await SearchResponse.sendThrowingRequest(youtubeModel: YTM, data: [.query: "home"]).visitorData else { XCTFail("VisitorData is not present in SearchResponse."); return }
@@ -631,12 +631,19 @@ final class YouTubeKitTests: XCTestCase {
     func testVideoInfosWithDownloadFormatsResponse() async throws {
         let TEST_NAME = "Test: testVideoInfosWithDownloadFormatsResponse() -> "
                 
-        try VideoInfosWithDownloadFormatsResponse.removePlayersCache()
+        try PlayerProcessing.PlayersCache.clearCache()
         
         for video in [YTVideo(videoId: "dSDbwfXX5_I"), YTVideo(videoId: "3ryID_SwU5E")] as [YTVideo] {
             
-            let requestResult = try await video.fetchStreamingInfosWithDownloadFormatsThrowing(youtubeModel: YTM)
-                        
+            let preRequestResult = try await video.fetchStreamingInfosThrowing(youtubeModel: YTM)
+
+            guard let player = preRequestResult.player else { XCTFail("Player is not present in VideoInfosResponse for video \(video.videoId)"); return }
+            
+            var requestResult = try await video.fetchStreamingInfosWithDownloadFormatsThrowing(youtubeModel: YTM)
+            
+            try requestResult.deciphersURLs(player: player)
+
+            
             XCTAssertNotEqual(requestResult.downloadFormats.count, 0, TEST_NAME + "Checking if requestResult.downloadFormats is empty")
             XCTAssertNotEqual(requestResult.defaultFormats.count, 0, TEST_NAME + "Checking if requestResult.defaultFormats is empty")
             XCTAssertNotEqual(requestResult.videoInfos.streamingURL, nil, TEST_NAME + "Checking if requestResult.videoInfos.streamingURL is empty")
