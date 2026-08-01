@@ -75,13 +75,13 @@ public enum PlayerProcessing {
         /// - Returns: The decoded instruction list and full player JS if both files are present; otherwise `nil`.
         static func loadFromDisk(playerName: String) -> (instructions: [Player.CipherDecodeInstruction], playerJs: String)? {
             guard
-                let documentDirectoryPath = try? getDocumentDirectory(),
+                let cacheDirectory = try? getCacheDirectory(),
                 let instructionsData = FileManager.default.contents(
-                    atPath: documentDirectoryPath + "YouTubeKitPlayers-\(playerName).ab"),
+                    atPath: cacheDirectory.appendingPathComponent("YouTubeKitPlayers-\(playerName).ab").path),
                 let instructions = try? JSONDecoder().decode(
                     [Player.CipherDecodeInstruction].self, from: instructionsData),
                 let playerJsData = FileManager.default.contents(
-                    atPath: documentDirectoryPath + "YouTubeKitPlayers-\(playerName).abn")
+                    atPath: cacheDirectory.appendingPathComponent("YouTubeKitPlayers-\(playerName).abn").path)
             else { return nil }
 
             return (instructions, String(decoding: playerJsData, as: UTF8.self))
@@ -93,14 +93,14 @@ public enum PlayerProcessing {
         ///   - instructions: Cipher decode instructions extracted from the player.
         ///   - playerData: Raw contents of base.js for this player.
         static func saveToDisk(playerName: String, instructions: [Player.CipherDecodeInstruction], playerData: Data) {
-            guard let documentDirectoryPath = try? getDocumentDirectory() else { return }
+            guard let cacheDirectory = try? getCacheDirectory() else { return }
             do {
                 FileManager.default.createFile(
-                    atPath: documentDirectoryPath + "YouTubeKitPlayers-\(playerName).ab",
+                    atPath: cacheDirectory.appendingPathComponent("YouTubeKitPlayers-\(playerName).ab").path,
                     contents: try JSONEncoder().encode(instructions)
                 )
                 FileManager.default.createFile(
-                    atPath: documentDirectoryPath + "YouTubeKitPlayers-\(playerName).abn",
+                    atPath: cacheDirectory.appendingPathComponent("YouTubeKitPlayers-\(playerName).abn").path,
                     contents: playerData
                 )
             } catch {}
@@ -109,38 +109,56 @@ public enum PlayerProcessing {
         /// Remove cached files on disk for a specific player version.
         /// Deletes both `.ab` and `.abn` files associated with `playerName`.
         static func removePlayerFilesFromDisk(playerName: String) throws {
-            let playersDirectory = try getDocumentDirectory()
-            let url = URL(fileURLWithPath: playersDirectory)
-            guard let enumerator = FileManager.default.enumerator(at: url, includingPropertiesForKeys: nil) else { return }
-            for case let file as URL in enumerator {
-                if file.absoluteString.hasSuffix("YouTubeKitPlayers-\(playerName).ab") || file.absoluteString.hasSuffix("YouTubeKitPlayers-\(playerName).abn") {
-                    try FileManager.default.removeItem(at: file)
+            for directory in try getPlayerDirectories() {
+                guard let enumerator = FileManager.default.enumerator(
+                    at: directory,
+                    includingPropertiesForKeys: nil
+                ) else { continue }
+                for case let file as URL in enumerator {
+                    if file.absoluteString.hasSuffix("YouTubeKitPlayers-\(playerName).ab")
+                        || file.absoluteString.hasSuffix("YouTubeKitPlayers-\(playerName).abn") {
+                        try FileManager.default.removeItem(at: file)
+                    }
                 }
             }
         }
 
         /// Remove all `.ab` and `.abn` player files from disk.
         static func removeAllDiskFiles() throws {
-            let playersDirectory = try getDocumentDirectory()
-            let url = URL(fileURLWithPath: playersDirectory)
-            guard let enumerator = FileManager.default.enumerator(at: url, includingPropertiesForKeys: nil) else { return }
-            for case let file as URL in enumerator {
-                if file.absoluteString.hasSuffix(".ab") || file.absoluteString.hasSuffix(".abn") {
-                    try FileManager.default.removeItem(at: file)
+            for directory in try getPlayerDirectories() {
+                guard let enumerator = FileManager.default.enumerator(
+                    at: directory,
+                    includingPropertiesForKeys: nil
+                ) else { continue }
+                for case let file as URL in enumerator {
+                    let name = file.lastPathComponent
+                    if name.hasPrefix("YouTubeKitPlayers-")
+                        && (name.hasSuffix(".ab") || name.hasSuffix(".abn")) {
+                        try FileManager.default.removeItem(at: file)
+                    }
                 }
             }
         }
 
-        /// Get the documents directory path as a `String`, handling API differences across platforms.
-        private static func getDocumentDirectory() throws -> String {
-            guard let url = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first else {
-                throw Player.ResponseError(step: .getDocumentDirectory, reason: "Failed to get the documentsDirectory.")
+        private static func getPlayerDirectories() throws -> [URL] {
+            var directories = [try getCacheDirectory()]
+            // TODO: remove check for documents directory
+            if let documents = FileManager.default.urls(
+                for: .documentDirectory,
+                in: .userDomainMask
+            ).first {
+                directories.append(documents)
             }
-            if #available(macOS 13, iOS 16.0, watchOS 9.0, tvOS 16.0, *) {
-                return url.path()
-            } else {
-                return url.path
+            return directories
+        }
+
+        private static func getCacheDirectory() throws -> URL {
+            guard let root = FileManager.default.urls(for: .cachesDirectory, in: .userDomainMask).first else {
+                throw Player.ResponseError(step: .getDocumentDirectory, reason: "Failed to get the caches directory.")
             }
+            let directory = root.appendingPathComponent("YouTubeKitPlayers", isDirectory: true)
+            try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
+            return directory
         }
     }
 
