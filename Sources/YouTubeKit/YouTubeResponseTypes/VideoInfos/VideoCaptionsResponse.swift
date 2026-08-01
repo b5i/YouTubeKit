@@ -21,6 +21,22 @@ public struct VideoCaptionsResponse: YouTubeResponse {
     }
     
     public static func decodeData(data: Data) throws -> VideoCaptionsResponse {
+        if data.first != Character("{").asciiValue {
+            // is returned by default
+            return try decodeXML(data)
+        } else {
+            // is returned if &fmt=json3 is added to the timedtext query
+            return try decodeJSON3(data)
+        }
+    }
+    
+    private static func decodeXML(_ data: Data) throws -> VideoCaptionsResponse {
+        /*
+         <transcript>
+         <text start="1.964" dur="2.02">J&#39;[musique]</text>
+         ...
+         </transcript>
+         */
         var toReturn = VideoCaptionsResponse(captionParts: [])
         
         #if os(macOS)
@@ -55,6 +71,33 @@ public struct VideoCaptionsResponse: YouTubeResponse {
         toReturn.captionParts.reverse()
 
         return toReturn
+    }
+    
+
+    private static func decodeJSON3(_ data: Data) throws -> VideoCaptionsResponse {
+        struct Document: Decodable {
+            let events: [Event]?
+        }
+        struct Event: Decodable {
+            let tStartMs: Double?
+            let dDurationMs: Double?
+            let segs: [Segment]?
+        }
+        struct Segment: Decodable {
+            let utf8: String?
+        }
+
+        let document = try JSONDecoder().decode(Document.self, from: data)
+        let parts = (document.events ?? []).compactMap { event -> CaptionPart? in
+            let text = event.segs?.compactMap(\.utf8).joined() ?? ""
+            guard let start = event.tStartMs, !text.isEmpty else { return nil }
+            return CaptionPart(
+                text: text,
+                startTime: start / 1_000,
+                duration: max(0, event.dDurationMs ?? 0) / 1_000
+            )
+        }
+        return VideoCaptionsResponse(captionParts: parts)
     }
     
     /// Decode json to give an instance of ``VideoInfosResponse``.
