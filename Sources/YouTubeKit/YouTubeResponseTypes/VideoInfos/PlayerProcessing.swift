@@ -163,7 +163,15 @@ public enum PlayerProcessing {
     }
 
     public final class Player: Sendable {
+        /// Struct representing the information required to solve a POT challenge (Web Attestation API values).
+        public struct WebPoConfiguration: Sendable {
+            public let apiKey: String
+            public let requestKey: String
+        }
+
         public let name: String
+        /// Web Attestation API values discovered from this exact player script.
+        public let webPoConfiguration: WebPoConfiguration?
         private let instructions: [CipherDecodeInstruction]
         /// Closure that decodes a single raw n-parameter value.
         /// `nil` on platforms where JavaScriptCore is unavailable.
@@ -199,6 +207,7 @@ public enum PlayerProcessing {
             // `playerJs` is used only here to build the solver; it is not stored.
             let (instructionArray, playerJs) = try Self.processPlayerScrapping(playerPath: path, playerName: self.name)
             self.instructions = instructionArray
+            self.webPoConfiguration = Self.extractWebPoConfiguration(from: playerJs)
             #if canImport(JavaScriptCore)
             self.solver = JscSolver.makeSolver(playerJs: playerJs, playerName: self.name)
             #endif
@@ -210,6 +219,37 @@ public enum PlayerProcessing {
         private static func getNameFromPath(_ path: String) throws -> String {
             guard let name = path.ytkFirstGroupMatch(for: "s/player/([^\\s|\\/]*)") else { throw "Can't find player name in path" }
             return name
+        }
+
+        static func extractWebPoConfiguration(from playerJS: String) -> WebPoConfiguration? {
+            guard let apiKey = playerJS.ytkFirstGroupMatch(for: #"\["X-Goog-Api-Key"\]\s*(?::|=)\s*"(AIza[0-9A-Za-z_-]+)""#),
+                  let marker = playerJS.range(of: #""html5_web_po_request_key""#)
+            else {
+                return nil
+            }
+
+            let selectorTail = String(playerJS[marker.upperBound...].prefix(512))
+            /*
+             D9q = function(H) {
+                 var B = vQ(H.experiments, "html5_web_po_request_key");
+                 return B ? B : g.hN(H) ? "Z1elNaegLpSR3oPOUMSN" : "O43z03sghgX20SCx4KAo"
+             };
+             */
+            let functionTail = selectorTail.range(of: "};").map {
+                String(selectorTail[..<$0.upperBound])
+            } ?? selectorTail
+            guard let regex = try? NSRegularExpression(pattern: #""([0-9A-Za-z_-]{20})""#) else {
+                return nil
+            }
+            let matches = regex.matches(
+                in: functionTail,
+                range: NSRange(functionTail.startIndex..., in: functionTail))
+            guard let match = matches.last,
+                  let range = Range(match.range(at: 1), in: functionTail)
+            else {
+                return nil
+            }
+            return WebPoConfiguration(apiKey: apiKey, requestKey: String(functionTail[range]))
         }
 
         /// Decipher a signature-ciphered URL using the extracted instruction sequence.
