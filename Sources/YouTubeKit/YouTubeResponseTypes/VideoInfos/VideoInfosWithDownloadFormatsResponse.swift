@@ -32,10 +32,10 @@ public struct VideoInfosWithDownloadFormatsResponse: YouTubeResponse {
     public static let parametersValidationList: ValidationList = [.query: .videoIdValidator]
     
     /// Array of formats used to download the video, they usually contain both audio and video data and the download speed is higher than the ``VideoInfosWithDownloadFormatsResponse/downloadFormats``.
-    public var defaultFormats: [any DownloadFormat]
+    public var defaultFormats: [any AdaptiveDownloadFormat]
     
     /// Array of formats used to download the video, usually sorted from highest video quality to lowest followed by audio formats.
-    public var downloadFormats: [any DownloadFormat]
+    public var downloadFormats: [any AdaptiveDownloadFormat]
     
     /// Base video infos like if it did a ``VideoInfosResponse`` request.
     public var videoInfos: VideoInfosResponse
@@ -58,7 +58,7 @@ public struct VideoInfosWithDownloadFormatsResponse: YouTubeResponse {
     /// Decode a ``DownloadFormat`` base informations from a JSON instance.
     /// - Parameter json: the JSON to be decoded.
     /// - Returns: A ``DownloadFormat``.
-    static func decodeFormatFromJSON(json: JSON) -> DownloadFormat {
+    static func decodeFormatFromJSON(json: JSON) -> any AdaptiveDownloadFormat {
         if json["fps"].int != nil {
             /// Will return an instance of ``VideoInfosWithDownloadFormatsResponse/VideoDownloadFormat``
             return YouTubeKit.VideoDownloadFormat(
@@ -86,7 +86,11 @@ public struct VideoInfosWithDownloadFormatsResponse: YouTubeResponse {
                 width: json["width"].int,
                 height: json["height"].int,
                 quality: json["qualityLabel"].string,
-                fps: json["fps"].int
+                fps: json["fps"].int,
+                itag: json["itag"].intValue,
+                bitrate: json["bitrate"].int,
+                lastModified: UInt64(json["lastModified"].stringValue) ?? 0,
+                xtags: json["xtags"].stringValue
             )
         } else {
             /// Will return an instance of ``VideoInfosWithDownloadFormatsResponse/AudioOnlyFormat``
@@ -119,7 +123,12 @@ public struct VideoInfosWithDownloadFormatsResponse: YouTubeResponse {
                     }
                 }(),
                 loudness: json["loudnessDb"].double,
-                formatLocaleInfos: json["audioTrack", "id"].string != nil ? .init(displayName: json["audioTrack", "displayName"].string, localeId: json["audioTrack", "id"].string, isDefaultAudioFormat: json["audioTrack", "audioIsDefault"].bool, isAutoDubbed: json["audioTrack", "isAutoDubbed"].bool) : nil
+                formatLocaleInfos: json["audioTrack", "id"].string != nil ? .init(displayName: json["audioTrack", "displayName"].string, localeId: json["audioTrack", "id"].string, isDefaultAudioFormat: json["audioTrack", "audioIsDefault"].bool, isAutoDubbed: json["audioTrack", "isAutoDubbed"].bool) : nil,
+                itag: json["itag"].intValue,
+                bitrate: json["bitrate"].int,
+                lastModified: UInt64(json["lastModified"].stringValue) ?? 0,
+                xtags: json["xtags"].stringValue,
+                isDrc: json["isDrc"].boolValue
             )
         }
     }

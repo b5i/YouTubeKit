@@ -9,8 +9,8 @@
 import Foundation
 
 /// Struct representing a download format that contains the video and audio.
-public struct VideoDownloadFormat: DownloadFormat {
-    public init(averageBitrate: Int? = nil, contentDuration: Int? = nil, contentLength: Int? = nil, is360: Bool? = nil, isCopyrightedMedia: Bool? = nil, mimeType: String? = nil, codec: String? = nil, url: URL? = nil, signatureCipher: String? = nil, width: Int? = nil, height: Int? = nil, quality: String? = nil, fps: Int? = nil) {
+public struct VideoDownloadFormat: AdaptiveDownloadFormat {
+    public init(averageBitrate: Int? = nil, contentDuration: Int? = nil, contentLength: Int? = nil, is360: Bool? = nil, isCopyrightedMedia: Bool? = nil, mimeType: String? = nil, codec: String? = nil, url: URL? = nil, signatureCipher: String? = nil, width: Int? = nil, height: Int? = nil, quality: String? = nil, fps: Int? = nil, itag: Int = 0, bitrate: Int? = nil, lastModified: UInt64 = 0, xtags: String = "") {
         self.averageBitrate = averageBitrate
         self.contentDuration = contentDuration
         self.contentLength = contentLength
@@ -24,6 +24,10 @@ public struct VideoDownloadFormat: DownloadFormat {
         self.height = height
         self.quality = quality
         self.fps = fps
+        self.itag = itag
+        self.bitrate = bitrate
+        self.lastModified = lastModified
+        self.xtags = xtags
     }
     
     /// Protocol properties
@@ -65,4 +69,12 @@ public struct VideoDownloadFormat: DownloadFormat {
     
     /// Frames per second of the media.
     public var fps: Int?
+
+    public var itag: Int
+    public var bitrate: Int?
+    public var lastModified: UInt64
+    public var xtags: String
+    
+    /// - Warning: Not applicable to ``VideoDownloadFormat``.
+    public var isDrc: Bool = false
 }

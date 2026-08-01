@@ -103,11 +103,11 @@ public struct VideoInfosResponse: YouTubeResponse {
     ///
     /// - Note: Those formats usually don't contain a valid URL, but only their metadata. Use a ``VideoInfosWithDownloadFormatsResponse`` and call ``VideoInfosWithDownloadFormatsResponse/deciphersURLs(player:)`` with the ``PlayerProcessing/Player`` instance of this `VideoInfosResponse` to get the download URLs of those formats.
     //@available(*, deprecated, message: "This property is unstable for the moment.")
-    public var defaultFormats: [any DownloadFormat]
+    public var defaultFormats: [any AdaptiveDownloadFormat]
     
     /// Array of formats used to download the video, usually sorted from highest video quality to lowest followed by audio formats.
     //@available(*, deprecated, message: "This property is unstable for the moment.")
-    public var downloadFormats: [any DownloadFormat]
+    public var downloadFormats: [any AdaptiveDownloadFormat]
     
     public var player: PlayerProcessing.Player?
 
@@ -126,8 +126,8 @@ public struct VideoInfosResponse: YouTubeResponse {
         aspectRatio: Double? = nil,
         endScreen: EndScreen? = nil,
         //startTime: Int? = nil,
-        defaultFormats: [any DownloadFormat] = [],
-        downloadFormats: [any DownloadFormat] = [],
+        defaultFormats: [any AdaptiveDownloadFormat] = [],
+        downloadFormats: [any AdaptiveDownloadFormat] = [],
         player: PlayerProcessing.Player? = nil
     ) {
         self.captions = captions

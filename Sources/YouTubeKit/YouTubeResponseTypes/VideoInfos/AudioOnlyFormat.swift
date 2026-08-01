@@ -8,8 +8,8 @@
 
 import Foundation
 
-public struct AudioOnlyFormat: DownloadFormat {
-    public init(averageBitrate: Int? = nil, contentLength: Int? = nil, contentDuration: Int? = nil, isCopyrightedMedia: Bool? = nil, url: URL? = nil, signatureCipher: String? = nil, mimeType: String? = nil, codec: String? = nil, audioSampleRate: Int? = nil, loudness: Double? = nil, formatLocaleInfos: FormatLocaleInfos? = nil) {
+public struct AudioOnlyFormat: AdaptiveDownloadFormat {
+    public init(averageBitrate: Int? = nil, contentLength: Int? = nil, contentDuration: Int? = nil, isCopyrightedMedia: Bool? = nil, url: URL? = nil, signatureCipher: String? = nil, mimeType: String? = nil, codec: String? = nil, audioSampleRate: Int? = nil, loudness: Double? = nil, formatLocaleInfos: FormatLocaleInfos? = nil, itag: Int = 0, bitrate: Int? = nil, lastModified: UInt64 = 0, xtags: String = "", isDrc: Bool = false) {
         self.averageBitrate = averageBitrate
         self.contentLength = contentLength
         self.contentDuration = contentDuration
@@ -21,6 +21,11 @@ public struct AudioOnlyFormat: DownloadFormat {
         self.audioSampleRate = audioSampleRate
         self.loudness = loudness
         self.formatLocaleInfos = formatLocaleInfos
+        self.itag = itag
+        self.bitrate = bitrate
+        self.lastModified = lastModified
+        self.xtags = xtags
+        self.isDrc = isDrc
     }
     
     /// Protocol properties
@@ -54,6 +59,18 @@ public struct AudioOnlyFormat: DownloadFormat {
     ///
     /// - Note: it will be present only if the audio is not the original audio of the video.
     public var formatLocaleInfos: FormatLocaleInfos?
+
+    public var itag: Int
+    public var bitrate: Int?
+    public var lastModified: UInt64
+    public var xtags: String
+    public var isDrc: Bool
+    
+    /// - Warning: Not applicable to ``AudioOnlyFormat``.
+    public var width: Int? = nil
+    
+    /// - Warning: Not applicable to ``AudioOnlyFormat``.
+    public var height: Int? = nil
     
     /// Struct representing some informations about the audio track language.
     public struct FormatLocaleInfos: Sendable, Hashable {

@@ -259,7 +259,7 @@ public enum PlayerProcessing {
         ///   - item: The partially decoded format item (may already contain a direct `url`).
         ///   - cipher: Optional `signatureCipher` string; if present, it will be deciphered.
         /// - Returns: The same format with its `url` fully processed, including `n`-parameter decoding.
-        public func processDownloadFormatURL(item: inout DownloadFormat) throws {
+        public func processDownloadFormatURL(item: inout AdaptiveDownloadFormat) throws {
             let url: URL
             if let cipher = item.signatureCipher {
                 url = try self.decipherFormatURL(signatureCipher: cipher)
