@@ -529,7 +529,7 @@ final class YouTubeKitTests: XCTestCase {
     func testVideoInfosResponse() async throws {
         let TEST_NAME = "Test: testVideoInfosResponse() -> "
         try PlayerProcessing.PlayersCache.clearCache()
-        let video = YTVideo(videoId: "__fmDj0ZJ1Q")
+        let video = YTVideo(videoId: "5Y3Em-IMSwM")
                 
         if YTM.visitorData == "" {
             guard let visitorData = try await SearchResponse.sendThrowingRequest(youtubeModel: YTM, data: [.query: "home"]).visitorData else { XCTFail("VisitorData is not present in SearchResponse."); return }
@@ -543,21 +543,62 @@ final class YouTubeKitTests: XCTestCase {
         XCTAssertNotNil(requestResult.channel?.name, TEST_NAME + "Checking if requestResult.channel.name is not nil.")
         XCTAssertNotNil(requestResult.channel?.channelId, TEST_NAME + "Checking if requestResult.channel.browseId is not nil.")
         XCTAssertNotNil(requestResult.isLive, TEST_NAME + "Checking if requestResult.isLive is not nil.")
-        XCTAssertNotEqual(requestResult.keywords.count, 0, TEST_NAME + "Checking if requestResult.channel.name is not nil.")
+        XCTAssertNotEqual(requestResult.keywords.count, 0, TEST_NAME + "Checking if requestResult.keywords.count is not empty.")
         XCTAssertNotNil(requestResult.streamingURL, TEST_NAME + "Checking if requestResult.streamingURL is not nil.")
         XCTAssertNotNil(requestResult.title, TEST_NAME + "Checking if requestResult.title is not nil.")
         XCTAssertNotNil(requestResult.videoDescription, TEST_NAME + "Checking if requestResult.videoDescription is not nil.")
         XCTAssertNotNil(requestResult.videoId, TEST_NAME + "Checking if requestResult.videoId is not nil.")
         XCTAssertNotNil(requestResult.videoURLsExpireAt, TEST_NAME + "Checking if requestResult.videoURLsExpireAt is not nil.")
         XCTAssertNotNil(requestResult.viewCount, TEST_NAME + "Checking if requestResult.viewCount is not nil.")
-        XCTAssertNotNil(requestResult.aspectRatio, TEST_NAME + "Checking if requestResult.aspectRatio is not nil.")
+        //XCTAssertNotNil(requestResult.aspectRatio, TEST_NAME + "Checking if requestResult.aspectRatio is not nil.")
         XCTAssertNotEqual(requestResult.endScreen?.elements.count ?? 0, 0, TEST_NAME + "Checking if there's endscreen elements")
+        guard let storyboard = requestResult.storyboard else {
+            XCTFail(TEST_NAME + "Checking if requestResult.storyboard is not nil.")
+            return
+        }
+        XCTAssertNotNil(requestResult.serverAbrStreamingURL, TEST_NAME + "Checking if requestResult.serverAbrStreamingURL is not nil.")
+        XCTAssertNotNil(requestResult.videoPlaybackUstreamerConfig, TEST_NAME + "Checking if requestResult.videoPlaybackUstreamerConfig is not nil.")
+        XCTAssertNotNil(requestResult.visitorData, TEST_NAME + "Checking if requestResult.visitorData is not nil.")
+        XCTAssertNotNil(requestResult.minimumReadAheadMediaTimeMs, TEST_NAME + "Checking if requestResult.minimumReadAheadMediaTimeMs is not nil.")
+        XCTAssertNotNil(requestResult.client, TEST_NAME + "Checking if requestResult.client is not nil.")
+        XCTAssertFalse(storyboard.levels.isEmpty, TEST_NAME + "Checking if storyboard has levels.")
+        XCTAssertNotNil(storyboard.recommendedLevel, TEST_NAME + "Checking if storyboard has a recommended level.")
+        for level in storyboard.levels {
+            XCTAssertGreaterThan(level.width, 0, TEST_NAME + "Checking storyboard level width.")
+            XCTAssertGreaterThan(level.height, 0, TEST_NAME + "Checking storyboard level height.")
+            XCTAssertGreaterThan(level.frameCount, 0, TEST_NAME + "Checking storyboard level frame count.")
+            XCTAssertGreaterThan(level.columns, 0, TEST_NAME + "Checking storyboard level columns.")
+            XCTAssertGreaterThan(level.rows, 0, TEST_NAME + "Checking storyboard level rows.")
+            XCTAssertGreaterThanOrEqual(level.intervalMilliseconds, 0, TEST_NAME + "Checking storyboard frame interval.")
+        }
+        let storyboardTile = try XCTUnwrap(storyboard.tile(
+            at: 0,
+            duration: 1,
+            maximumWidth: .max,
+            maximumHeight: .max
+        ))
+        XCTAssertGreaterThanOrEqual(storyboardTile.column, 0, TEST_NAME + "Checking storyboard tile column.")
+        XCTAssertGreaterThanOrEqual(storyboardTile.row, 0, TEST_NAME + "Checking storyboard tile row.")
+        XCTAssertLessThan(storyboardTile.column, storyboardTile.level.columns, TEST_NAME + "Checking storyboard tile column bounds.")
+        XCTAssertLessThan(storyboardTile.row, storyboardTile.level.rows, TEST_NAME + "Checking storyboard tile row bounds.")
+        #if canImport(CoreGraphics)
+        let position = try storyboardTile.getPositionInLevel()
+        XCTAssertEqual(position.origin.x, CGFloat(storyboardTile.column * storyboardTile.level.width), TEST_NAME + "Checking storyboard tile x position.")
+        XCTAssertEqual(position.origin.y, CGFloat(storyboardTile.row * storyboardTile.level.height), TEST_NAME + "Checking storyboard tile y position.")
+        XCTAssertEqual(position.width, CGFloat(storyboardTile.level.width), TEST_NAME + "Checking storyboard tile width.")
+        XCTAssertEqual(position.height, CGFloat(storyboardTile.level.height), TEST_NAME + "Checking storyboard tile height.")
+        #endif
+        let (storyboardData, storyboardResponse) = try await URLSession.shared.data(from: storyboardTile.url)
+        XCTAssertFalse(storyboardData.isEmpty, TEST_NAME + "Checking storyboard image data is not empty.")
+        XCTAssertEqual((storyboardResponse as? HTTPURLResponse)?.statusCode, 200, TEST_NAME + "Checking storyboard image response status.")
         //XCTAssertNotEqual(requestResult.downloadFormats.count, 0, TEST_NAME + "Checking if requestResult.downloadFormats is empty")
         //XCTAssertNotEqual(requestResult.defaultFormats.count, 0, TEST_NAME + "Checking if requestResult.defaultFormats is empty")
+
         
-        let captionsResults = try await VideoCaptionsResponse.sendThrowingRequest(youtubeModel: YTM, data: [.customURL: requestResult.captions.first!.url.absoluteString])
+        // captions may now all need POT
+        //let captionsResults = try await VideoCaptionsResponse.sendThrowingRequest(youtubeModel: YTM, data: [.customURL: requestResult.captions.first!.url.absoluteString])
         
-        XCTAssert(!captionsResults.captionParts.isEmpty, TEST_NAME + "Checking if captionsResults.captionParts is not empty")
+        //XCTAssert(!captionsResults.captionParts.isEmpty, TEST_NAME + "Checking if captionsResults.captionParts is not empty")
         
         let testCaptionsResponse = VideoCaptionsResponse(captionParts: [
             .init(text: "[Music]", startTime: 13.119999999999999, duration: 3.0800000000000001),

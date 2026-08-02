@@ -9,6 +9,19 @@
 import Foundation
 
 /// Struct representing a response containing the captions of a video.
+///
+/// - Note: In some cases, a Proof-Of-Origin token is required in order to get the captions (especially when they're auto-translated).
+///
+///     You'd need to set the `pot`, `potc` and `c` parameters like this:
+///     ```swift
+///     let parameters: [HeadersList.ParameterToAdd]
+///     parameters = [
+///         .init(name: "pot", content: proofOfOriginToken),
+///         .init(name: "potc", content: "1"),
+///         .init(name: "c", content: "WEB"), // or can be something else, it's the client name
+///     ]
+///     ```
+///
 public struct VideoCaptionsResponse: YouTubeResponse {
     public static let headersType: HeaderTypes = .videoCaptionsHeaders
     

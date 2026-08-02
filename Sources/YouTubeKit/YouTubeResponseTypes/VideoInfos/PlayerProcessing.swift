@@ -172,6 +172,8 @@ public enum PlayerProcessing {
         public let name: String
         /// Web Attestation API values discovered from this exact player script.
         public let webPoConfiguration: WebPoConfiguration?
+        /// Timestamp required by a current WEB player request.
+        public let signatureTimestamp: Int?
         private let instructions: [CipherDecodeInstruction]
         /// Closure that decodes a single raw n-parameter value.
         /// `nil` on platforms where JavaScriptCore is unavailable.
@@ -208,6 +210,9 @@ public enum PlayerProcessing {
             let (instructionArray, playerJs) = try Self.processPlayerScrapping(playerPath: path, playerName: self.name)
             self.instructions = instructionArray
             self.webPoConfiguration = Self.extractWebPoConfiguration(from: playerJs)
+            self.signatureTimestamp = Int(
+                playerJs.ytkFirstGroupMatch(for: #"signatureTimestamp:(\d+)"#) ?? ""
+            )
             #if canImport(JavaScriptCore)
             self.solver = JscSolver.makeSolver(playerJs: playerJs, playerName: self.name)
             #endif
