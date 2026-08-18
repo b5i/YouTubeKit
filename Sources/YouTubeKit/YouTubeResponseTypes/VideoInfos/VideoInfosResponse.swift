@@ -459,7 +459,7 @@ public struct VideoInfosResponse: YouTubeResponse {
         youtubeModel.sendRequest(
             responseType: Self.self,
             data: data,
-            useCookies: false,
+            useCookies: true,
             result: result
         )
     }
